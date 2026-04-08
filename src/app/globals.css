@@ -1,4 +1,6 @@
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -6,4 +8,148 @@ html,
 body {
   margin: 0;
   padding: 0;
+}
+
+:root {
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  --background: oklch(0.985 0.006 300);
+  --foreground: oklch(0.22 0.02 285);
+  --primary: oklch(0.58 0.2 295);
+  --primary-foreground: oklch(0.985 0.01 300);
+  --secondary: oklch(0.95 0.015 295);
+  --secondary-foreground: oklch(0.28 0.025 285);
+  --muted: oklch(0.96 0.008 300);
+  --muted-foreground: oklch(0.52 0.02 285);
+  --accent: oklch(0.93 0.025 300);
+  --accent-foreground: oklch(0.27 0.025 285);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.89 0.01 295);
+  --input: oklch(0.89 0.01 295);
+  --ring: oklch(0.64 0.16 295);
+  --radius: 0.75rem;
+  --surface-1: oklch(0.99 0.004 300);
+  --surface-2: oklch(0.965 0.01 300);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.16 0.015 290);
+  --foreground: oklch(0.96 0.01 300);
+  --primary: oklch(0.7 0.19 295);
+  --primary-foreground: oklch(0.19 0.03 285);
+  --secondary: oklch(0.27 0.02 295);
+  --secondary-foreground: oklch(0.95 0.01 300);
+  --muted: oklch(0.24 0.015 295);
+  --muted-foreground: oklch(0.74 0.02 300);
+  --accent: oklch(0.3 0.03 295);
+  --accent-foreground: oklch(0.96 0.01 300);
+  --destructive: oklch(0.67 0.2 24);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.33 0.015 295);
+  --input: oklch(0.33 0.015 295);
+  --ring: oklch(0.72 0.16 295);
+  --surface-1: oklch(0.2 0.015 290);
+  --surface-2: oklch(0.24 0.02 292);
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--foreground);
+}
+
+.t-display {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.75rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.t-h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.4rem + 2vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+
+.t-h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.t-h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1rem + 0.5vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.t-body {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.625;
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+
+.t-muted {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.t-caption {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.t-label {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  text-wrap: pretty;
 }
