@@ -36,6 +36,7 @@
 
 .toggleRow {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1rem;
   padding: 0.35rem;

@@ -3,8 +3,9 @@ import { eq, or } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { accounts } from "@/db/schema";
 
-const DEFAULT_USER_ROLE = "user";
-const DEFAULT_ACCOUNT_STATUS = "active";
+export const DEFAULT_USER_ROLE = "user";
+export const DEFAULT_PUBLISHER_ROLE = "publisher";
+export const DEFAULT_ACCOUNT_STATUS = "active";
 
 type AccountRecord = {
   id: string;
@@ -43,6 +44,11 @@ export type CreateUserAccountInput = {
   email: string;
   username: string;
   passwordHash: string;
+};
+
+export type ExistingAccountSummary = {
+  email: string;
+  username: string;
 };
 
 export function sanitizeEmail(email: string) {
@@ -95,6 +101,26 @@ export async function findExistingAccounts(email: string, username: string) {
     );
 }
 
+export function getExistingAccountConflictMessage(
+  email: string,
+  username: string,
+  existingAccounts: ExistingAccountSummary[]
+) {
+  const hasEmailConflict = existingAccounts.some((row) => row.email === email);
+
+  if (hasEmailConflict) {
+    return "Bu e-posta zaten kullanılıyor.";
+  }
+
+  const hasUsernameConflict = existingAccounts.some((row) => row.username === username);
+
+  if (hasUsernameConflict) {
+    return "Bu kullanıcı adı zaten kullanılıyor.";
+  }
+
+  return null;
+}
+
 export async function createUserAccount(input: CreateUserAccountInput) {
   const db = getDb();
   const inserted = await db
@@ -112,5 +138,3 @@ export async function createUserAccount(input: CreateUserAccountInput) {
 
   return inserted[0] ?? null;
 }
-
-export const ACCOUNT_STATUS_ASSUMPTION = DEFAULT_ACCOUNT_STATUS;

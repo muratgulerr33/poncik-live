@@ -4,13 +4,15 @@ import { getAuthCoreView } from "./_controllers/auth-core-controller";
 type AuthPageProps = Readonly<{
   searchParams: Promise<{
     next?: string;
+    registered?: string;
   }>;
 }>;
 
 export default async function AuthPage({ searchParams }: AuthPageProps) {
   const resolvedSearchParams = await searchParams;
   const view = await getAuthCoreView({
-    next: resolvedSearchParams.next
+    next: resolvedSearchParams.next,
+    registered: resolvedSearchParams.registered
   });
 
   return (
@@ -18,6 +20,7 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
       destination={view.continuation.destination}
       currentSession={view.currentSession}
       degradedMessage={view.degradedMessage}
+      publisherNotice={view.publisherNotice}
     />
   );
 }

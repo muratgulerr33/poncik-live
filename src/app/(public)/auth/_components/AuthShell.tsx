@@ -1,14 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 
-import { signOutAction } from "../_actions/auth-actions";
-import { INITIAL_AUTH_ACTION_STATE } from "../_lib/auth-action-state";
 import { AUTH_COPY } from "../_lib/auth-copy";
 
 import { AuthModeToggle } from "./AuthModeToggle";
 import { AuthNotice } from "./AuthNotice";
+import { CurrentSessionPanel } from "./CurrentSessionPanel";
+import { PublisherRegisterForm } from "./PublisherRegisterForm";
 import { SharedLoginForm } from "./SharedLoginForm";
 import styles from "./auth.module.css";
 import { UserRegisterForm } from "./UserRegisterForm";
@@ -22,17 +21,22 @@ type AuthShellProps = Readonly<{
     accountStatus: string;
   } | null;
   degradedMessage: string | null;
+  publisherNotice:
+    | {
+        title: string;
+        body: string;
+      }
+    | null;
 }>;
 
 export function AuthShell({
   destination,
   currentSession,
-  degradedMessage
+  degradedMessage,
+  publisherNotice
 }: AuthShellProps) {
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [signOutState, signOutFormAction, isSigningOut] = useActionState(
-    signOutAction,
-    INITIAL_AUTH_ACTION_STATE
+  const [mode, setMode] = useState<"login" | "user-register" | "publisher-register">(
+    "login"
   );
 
   return (
@@ -53,54 +57,34 @@ export function AuthShell({
             />
           ) : null}
           {currentSession ? (
-            <>
-              <h2 className={`t-h2 ${styles.panelTitle}`}>{AUTH_COPY.sessionTitle}</h2>
-              <p className={`t-body ${styles.panelDescription}`}>
-                {AUTH_COPY.sessionDescription}
-              </p>
-              <AuthNotice
-                title={`@${currentSession.username}`}
-                body={AUTH_COPY.sessionActiveBody}
-                tone="info"
-                meta={currentSession.email}
-              />
-              {signOutState.status === "error" && signOutState.message ? (
-                <AuthNotice
-                  title="Çıkış tamamlanamadı"
-                  body={signOutState.message}
-                  tone="error"
-                />
-              ) : null}
-              <div className={styles.actionRow}>
-                <Link href={destination} className={styles.action}>
-                  {AUTH_COPY.continueLabel}
-                </Link>
-                <form action={signOutFormAction}>
-                  <button
-                    type="submit"
-                    className={styles.secondaryAction}
-                    disabled={isSigningOut}
-                  >
-                    {AUTH_COPY.signOutLabel}
-                  </button>
-                </form>
-              </div>
-            </>
+            <CurrentSessionPanel
+              destination={destination}
+              currentSession={currentSession}
+              publisherNotice={publisherNotice}
+            />
           ) : (
             <>
               <AuthModeToggle mode={mode} onChange={setMode} />
               <h2 className={`t-h2 ${styles.panelTitle}`}>
-                {mode === "login" ? AUTH_COPY.loginTitle : AUTH_COPY.registerTitle}
+                {mode === "login"
+                  ? AUTH_COPY.loginTitle
+                  : mode === "user-register"
+                    ? AUTH_COPY.userRegisterTitle
+                    : AUTH_COPY.publisherRegisterTitle}
               </h2>
               <p className={`t-body ${styles.panelDescription}`}>
                 {mode === "login"
                   ? AUTH_COPY.loginDescription
-                  : AUTH_COPY.registerDescription}
+                  : mode === "user-register"
+                    ? AUTH_COPY.userRegisterDescription
+                    : AUTH_COPY.publisherRegisterDescription}
               </p>
               {mode === "login" ? (
                 <SharedLoginForm next={destination} />
-              ) : (
+              ) : mode === "user-register" ? (
                 <UserRegisterForm next={destination} />
+              ) : (
+                <PublisherRegisterForm />
               )}
             </>
           )}

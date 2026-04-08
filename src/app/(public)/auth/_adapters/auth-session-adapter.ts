@@ -1,10 +1,5 @@
 import {
-  ACCOUNT_STATUS_ASSUMPTION,
-  createUserAccount,
   findAccountByIdentifier,
-  findExistingAccounts,
-  sanitizeEmail,
-  sanitizeUsername
 } from "./auth-account-boundary";
 import {
   clearCurrentSessionCookie,
@@ -15,12 +10,11 @@ import {
   type CurrentSession,
   type CurrentSessionReadResult
 } from "./auth-session-boundary";
-import { hashPassword, verifyPassword } from "./auth-password-boundary";
+import { verifyPassword } from "./auth-password-boundary";
 
 type AuthResult =
   | {
       ok: true;
-      accountStatusAssumption?: string;
     }
   | {
       ok: false;
@@ -28,7 +22,7 @@ type AuthResult =
     };
 
 const AUTH_UNAVAILABLE_MESSAGE =
-  "Auth servisi şu anda hazır değil. Ortam veya veritabanı bağlantısını kontrol et.";
+  "Giriş şu anda tamamlanamıyor. Lütfen daha sonra tekrar dene.";
 
 function toAuthUnavailableResult(): AuthResult {
   return {
@@ -86,66 +80,6 @@ export async function signInWithPassword(input: {
   }
 }
 
-export async function registerUserAccount(input: {
-  email: string;
-  username: string;
-  password: string;
-}): Promise<AuthResult> {
-  const email = sanitizeEmail(input.email);
-  const username = sanitizeUsername(input.username);
-  const password = input.password;
-
-  if (!email || !username || !password) {
-    return {
-      ok: false as const,
-      message: "Kayıt için tüm alanları doldur."
-    };
-  }
-
-  try {
-    const existingAccounts = await findExistingAccounts(email, username);
-    const hasEmailConflict = existingAccounts.some((row) => row.email === email);
-    const hasUsernameConflict = existingAccounts.some((row) => row.username === username);
-
-    if (hasEmailConflict) {
-      return {
-        ok: false as const,
-        message: "Bu e-posta zaten kullanılıyor."
-      };
-    }
-
-    if (hasUsernameConflict) {
-      return {
-        ok: false as const,
-        message: "Bu kullanıcı adı zaten kullanılıyor."
-      };
-    }
-
-    const passwordHash = await hashPassword(password);
-    const account = await createUserAccount({
-      email,
-      username,
-      passwordHash
-    });
-
-    if (!account) {
-      return {
-        ok: false as const,
-        message: "Kayıt şu anda tamamlanamadı."
-      };
-    }
-
-    await replaceAccountSession(account.id);
-
-    return {
-      ok: true as const,
-      accountStatusAssumption: ACCOUNT_STATUS_ASSUMPTION
-    };
-  } catch {
-    return toAuthUnavailableResult();
-  }
-}
-
 export async function signOutCurrentSession(): Promise<AuthResult> {
   const sessionToken = await readCurrentSessionToken();
 
@@ -164,8 +98,7 @@ export async function signOutCurrentSession(): Promise<AuthResult> {
 
     return {
       ok: false,
-      message:
-        "Oturum bu cihazda kapatıldı, fakat auth servisi şu anda tam doğrulama yapamıyor."
+      message: "Çıkış tamamlandı, ancak oturum durumu şu anda yeniden doğrulanamıyor."
     };
   }
 }

@@ -3,10 +3,13 @@
 import { redirect } from "next/navigation";
 
 import {
-  registerUserAccount,
   signInWithPassword,
   signOutCurrentSession
 } from "../_adapters/auth-session-adapter";
+import {
+  registerPublisherAccount,
+  registerUserAccount
+} from "../_adapters/auth-register-adapter";
 import { type AuthActionState } from "../_lib/auth-action-state";
 import { resolveAuthContinuation } from "../_lib/auth-continuation";
 
@@ -57,8 +60,7 @@ export async function registerUserAction(
     if (!result.ok) {
       return {
         status: "error",
-        message: result.message,
-        assumption: undefined
+        message: result.message
       };
     }
 
@@ -67,8 +69,36 @@ export async function registerUserAction(
   } catch {
     return {
       status: "error",
-      message: "Kayıt şu anda tamamlanamıyor. Lütfen daha sonra tekrar dene.",
-      assumption: undefined
+      message: "Kayıt şu anda tamamlanamıyor. Lütfen daha sonra tekrar dene."
+    };
+  }
+}
+
+export async function registerPublisherAction(
+  _previousState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  try {
+    const result = await registerPublisherAccount({
+      fullName: getFormValue(formData, "full_name"),
+      username: getFormValue(formData, "username"),
+      phone: getFormValue(formData, "phone"),
+      email: getFormValue(formData, "email"),
+      password: getFormValue(formData, "password")
+    });
+
+    if (!result.ok) {
+      return {
+        status: "error",
+        message: result.message
+      };
+    }
+
+    redirect("/auth?registered=publisher");
+  } catch {
+    return {
+      status: "error",
+      message: "Başvuru şu anda tamamlanamıyor. Lütfen daha sonra tekrar dene."
     };
   }
 }

@@ -63,20 +63,13 @@ export function UserRegisterForm({ next }: UserRegisterFormProps) {
       {state.status === "error" && state.message ? (
         <AuthNotice title="Kayıt açılamadı" body={state.message} tone="error" />
       ) : null}
-      {state.assumption ? (
-        <AuthNotice
-          title="Varsayım notu"
-          body={state.assumption}
-          tone="info"
-        />
-      ) : null}
       <div className={styles.actionRow}>
         <button
           type="submit"
           className={`${styles.action} ${isPending ? styles.actionDisabled : ""}`}
           disabled={isPending}
         >
-          {isPending ? "Hesap oluşturuluyor" : AUTH_COPY.registerLabel}
+          {isPending ? "Hesap oluşturuluyor" : AUTH_COPY.userRegisterLabel}
         </button>
       </div>
     </form>
