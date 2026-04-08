@@ -10,6 +10,7 @@ PR-1 kapsamında dar ve compile eden teknik foundation zemini kurmak, canonical 
 - Canonical route tree olusturuldu: `/`, `/auth`, `/live/[username]`, `/studio`.
 - Tek root layout ve ince global foundation CSS zemini eklendi.
 - `src/db/client.ts` ve `src/db/schema/` altinda minimum Drizzle/PostgreSQL foundation omurgasi kuruldu.
+- DB foundation isim/doctrine zemini canonical truth ile hizalandi: `accounts.account_status`, `accounts.role_type`, `publisher_applications.status`, `publisher_settings.cover_image_id`, `broadcasts.publisher_account_id`.
 - `.gitignore`, `.env.example`, lint/build bootstrap config'leri ve lockfile repo icine alindi.
 - Local dev server portu follow-up ile `3006` olarak sabitlendi.
 - `docs/` altindaki canonical proje dokumanlari repo kapsaminda tutuldu.
