@@ -7,6 +7,6 @@ export default defineConfig({
   dbCredentials: {
     url:
       process.env.DATABASE_URL ??
-      "postgresql://postgres:postgres@localhost:5432/poncik_live"
+      "postgresql://postgres:postgres@127.0.0.1:5437/poncik_live"
   }
 });

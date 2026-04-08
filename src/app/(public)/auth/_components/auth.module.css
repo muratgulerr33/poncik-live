@@ -1,0 +1,176 @@
+.page {
+  min-height: 100vh;
+  padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
+  background:
+    radial-gradient(circle at top, color-mix(in oklch, var(--primary) 10%, transparent), transparent 38%),
+    linear-gradient(180deg, var(--background) 0%, var(--surface-1) 100%);
+}
+
+.shell {
+  display: grid;
+  gap: 2rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.hero {
+  max-width: 42rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--primary);
+}
+
+.description {
+  margin: 1rem 0 0;
+  color: var(--muted-foreground);
+}
+
+.card {
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 0.75rem);
+  background: var(--surface-2);
+}
+
+.toggleRow {
+  display: inline-flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-1);
+}
+
+.toggleButton {
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.toggleButtonActive {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.panelTitle {
+  margin: 0;
+}
+
+.panelDescription {
+  margin: 0.75rem 0 0;
+  color: var(--muted-foreground);
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.input:focus-visible,
+.action:focus-visible,
+.secondaryAction:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.action,
+.secondaryAction {
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  font: inherit;
+  cursor: pointer;
+}
+
+.action {
+  border: 0;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.secondaryAction {
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--foreground);
+}
+
+.actionDisabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.notice {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+}
+
+.noticeError {
+  border-color: color-mix(in oklch, var(--destructive) 45%, var(--border));
+  color: var(--destructive);
+}
+
+.noticeInfo {
+  border-color: color-mix(in oklch, var(--primary) 40%, var(--border));
+}
+
+.noticeTitle {
+  margin: 0;
+}
+
+.noticeBody {
+  margin: 0.5rem 0 0;
+}
+
+.meta {
+  margin: 0.75rem 0 0;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding-top: 1.5rem;
+  }
+
+  .actionRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action,
+  .secondaryAction {
+    width: 100%;
+  }
+}
