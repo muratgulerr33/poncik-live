@@ -19,6 +19,7 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
     <AuthShell
       destination={view.continuation.destination}
       primaryAction={view.primaryAction}
+      adminSurface={view.adminSurface}
       currentSession={view.currentSession}
       degradedMessage={view.degradedMessage}
       publisherSurface={view.publisherSurface}

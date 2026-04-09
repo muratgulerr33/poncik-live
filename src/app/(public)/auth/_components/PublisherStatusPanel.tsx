@@ -1,4 +1,4 @@
-import { type PublisherSurfaceView } from "../_controllers/auth-core-controller";
+import { type PublisherSurfaceView } from "../_controllers/auth-surface-view";
 
 import { PublisherApprovedSurface } from "./PublisherApprovedSurface";
 import { PublisherPendingSurface } from "./PublisherPendingSurface";

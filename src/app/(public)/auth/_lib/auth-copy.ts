@@ -37,6 +37,21 @@ export const AUTH_COPY = {
     "Başvuru kaydın henüz doğrulanamıyor. Şimdilik keşiften devam edebilirsin.",
   publisherDegradedBody:
     "Başvuru durumun şu anda okunamıyor. Daha sonra tekrar deneyebilirsin.",
+  adminApprovalTitle: "Başvuru onayı",
+  adminApprovalBody:
+    "Bekleyen yayıncı başvurularını buradan dar şekilde inceleyebilirsin.",
+  adminApprovalEmptyTitle: "Bekleyen başvuru yok",
+  adminApprovalEmptyBody:
+    "Şu anda işlem bekleyen yayıncı başvurusu görünmüyor.",
+  adminApprovalDegradedTitle: "Başvuru kuyruğu şu anda açılamıyor",
+  adminApprovalDegradedBody:
+    "Bekleyen başvurular şu anda okunamıyor. Daha sonra tekrar deneyebilirsin.",
+  adminApproveLabel: "Onayla",
+  adminRejectLabel: "Reddet",
+  adminApproveSuccessLabel: "Onay bekleyen başvuru",
+  adminReviewMetaPrefix: "Başvuru tarihi",
+  adminApproveErrorBody:
+    "Bu başvuru şu anda işlenemiyor. Listeyi yenileyip tekrar dene.",
   continueLabel: "Devam et",
   returnDiscoveryLabel: "Keşfe dön",
   goStudioLabel: "Stüdyoya git",

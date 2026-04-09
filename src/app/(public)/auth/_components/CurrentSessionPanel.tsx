@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { signOutAction } from "../_actions/auth-actions";
-import { type PublisherSurfaceView } from "../_controllers/auth-core-controller";
+import { type AdminSurfaceView } from "../_controllers/auth-surface-view";
+import { type PublisherSurfaceView } from "../_controllers/auth-surface-view";
 import { INITIAL_AUTH_ACTION_STATE } from "../_lib/auth-action-state";
 import { AUTH_COPY } from "../_lib/auth-copy";
 
+import { AdminApprovalPanel } from "./AdminApprovalPanel";
 import { AuthNotice } from "./AuthNotice";
 import { PublisherStatusPanel } from "./PublisherStatusPanel";
 import styles from "./auth.module.css";
@@ -15,6 +17,7 @@ import styles from "./auth.module.css";
 type CurrentSessionPanelProps = Readonly<{
   primaryActionHref: string;
   primaryActionLabel: string;
+  adminSurface: AdminSurfaceView;
   currentSession: {
     email: string;
     username: string;
@@ -25,6 +28,7 @@ type CurrentSessionPanelProps = Readonly<{
 export function CurrentSessionPanel({
   primaryActionHref,
   primaryActionLabel,
+  adminSurface,
   currentSession,
   publisherSurface
 }: CurrentSessionPanelProps) {
@@ -35,6 +39,7 @@ export function CurrentSessionPanel({
 
   return (
     <>
+      {adminSurface ? <AdminApprovalPanel adminSurface={adminSurface} /> : null}
       {publisherSurface ? (
         <PublisherStatusPanel publisherSurface={publisherSurface} />
       ) : null}

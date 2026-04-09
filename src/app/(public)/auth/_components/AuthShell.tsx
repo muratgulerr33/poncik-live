@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import { type PublisherSurfaceView } from "../_controllers/auth-core-controller";
+import { type AdminSurfaceView } from "../_controllers/auth-surface-view";
+import { type PublisherSurfaceView } from "../_controllers/auth-surface-view";
 import { AUTH_COPY } from "../_lib/auth-copy";
 
 import { AuthModeToggle } from "./AuthModeToggle";
@@ -19,6 +20,7 @@ type AuthShellProps = Readonly<{
     href: string;
     label: string;
   };
+  adminSurface: AdminSurfaceView;
   currentSession: {
     email: string;
     username: string;
@@ -32,6 +34,7 @@ type AuthShellProps = Readonly<{
 export function AuthShell({
   destination,
   primaryAction,
+  adminSurface,
   currentSession,
   degradedMessage,
   publisherSurface
@@ -61,6 +64,7 @@ export function AuthShell({
             <CurrentSessionPanel
               primaryActionHref={primaryAction.href}
               primaryActionLabel={primaryAction.label}
+              adminSurface={adminSurface}
               currentSession={currentSession}
               publisherSurface={publisherSurface}
             />

@@ -8,6 +8,8 @@ export const publisherApplications = pgTable(
     fullName: text("full_name").notNull(),
     phone: text("phone").notNull(),
     status: text("status").notNull(),
+    reviewedByAccountId: uuid("reviewed_by_account_id"),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },

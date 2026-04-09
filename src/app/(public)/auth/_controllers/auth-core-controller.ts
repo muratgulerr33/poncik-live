@@ -1,19 +1,14 @@
 import { readPublisherApplicationStatus } from "../_adapters/auth-publisher-application-boundary";
+import { readPendingPublisherApplications } from "../_adapters/auth-publisher-application-boundary";
 import { readCurrentSession } from "../_adapters/auth-session-adapter";
 import { resolveAuthContinuation } from "../_lib/auth-continuation";
 import { AUTH_COPY } from "../_lib/auth-copy";
+import { type AdminSurfaceView, type PublisherSurfaceView } from "./auth-surface-view";
 
 type AuthCoreControllerInput = Readonly<{
   next: string | null | undefined;
   registered: string | null | undefined;
 }>;
-
-export type PublisherSurfaceView =
-  | {
-      kind: "pending_review" | "approved" | "rejected" | "missing" | "degraded";
-      showContinuityHint: boolean;
-    }
-  | null;
 
 export async function getAuthCoreView(input: AuthCoreControllerInput) {
   const sessionState = await readCurrentSession();
@@ -21,6 +16,7 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
   const currentSession =
     sessionState.kind === "authenticated" ? sessionState.session : null;
   let publisherSurface: PublisherSurfaceView = null;
+  let adminSurface: AdminSurfaceView = null;
   let primaryAction: {
     href: string;
     label: string;
@@ -29,7 +25,37 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
     label: AUTH_COPY.continueLabel
   };
 
-  if (currentSession?.roleType === "publisher") {
+  if (currentSession?.roleType === "admin") {
+    const pendingQueue = await readPendingPublisherApplications();
+
+    if (pendingQueue.kind === "found") {
+      adminSurface =
+        pendingQueue.items.length > 0
+          ? {
+              kind: "queue",
+              items: pendingQueue.items.map((item) => ({
+                ...item,
+                createdAtLabel: item.createdAt.toLocaleDateString("tr-TR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric"
+                })
+              }))
+            }
+          : {
+              kind: "empty"
+            };
+    } else {
+      adminSurface = {
+        kind: "degraded"
+      };
+    }
+
+    primaryAction = {
+      href: "/",
+      label: AUTH_COPY.returnDiscoveryLabel
+    };
+  } else if (currentSession?.roleType === "publisher") {
     const applicationState = await readPublisherApplicationStatus(currentSession.accountId);
     const showContinuityHint = input.registered === "publisher";
 
@@ -91,6 +117,7 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
         : null,
     continuation,
     primaryAction,
+    adminSurface,
     publisherSurface
   };
 }
