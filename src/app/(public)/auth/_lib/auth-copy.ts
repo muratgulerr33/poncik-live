@@ -16,14 +16,30 @@ export const AUTH_COPY = {
   sessionDescription:
     "İstersen kaldığın yerden devam et veya bu cihazdaki oturumu kapat.",
   sessionActiveBody: "Bu cihazda hesabınla giriş yapılmış görünüyor.",
+  publisherPendingContinuityTitle: "Başvurun alındı",
   publisherPendingTitle: "Başvurun alındı",
   publisherPendingBody:
-    "İnceleme tamamlanana kadar keşiften devam edebilirsin.",
-  publisherPendingFallbackTitle: "Başvurun alındı",
-  publisherPendingFallbackBody:
-    "Başvuru durumun şu anda gösterilemiyor. Keşiften devam edebilirsin.",
+    "İnceleme tamamlanana kadar bekleyebilir ve keşiften devam edebilirsin.",
+  publisherPendingSupportTitle: "Destek",
+  publisherPendingSupportBody:
+    "İnceleme uzarsa kayıt bilgilerinle destek ekibine başvurabilirsin.",
+  publisherApprovedTitle: "Onay tamamlandı",
+  publisherApprovedBody:
+    "Yayın açma iznin hazır. Sonraki adım için stüdyoya geçebilirsin.",
+  publisherRejectedTitle: "Başvurun kabul edilmedi",
+  publisherRejectedBody:
+    "Yayın açma izni şu anda açılmadı. Bu aşamada yeniden başvuru gönderemezsin.",
+  publisherRejectedSupportTitle: "Destek",
+  publisherRejectedSupportBody:
+    "Kayıt bilgilerinle destek ekibine başvurarak durumunu paylaşabilirsin.",
+  publisherFallbackTitle: "Başvuru durumu şu anda gösterilemiyor",
+  publisherMissingBody:
+    "Başvuru kaydın henüz doğrulanamıyor. Şimdilik keşiften devam edebilirsin.",
+  publisherDegradedBody:
+    "Başvuru durumun şu anda okunamıyor. Daha sonra tekrar deneyebilirsin.",
   continueLabel: "Devam et",
   returnDiscoveryLabel: "Keşfe dön",
+  goStudioLabel: "Stüdyoya git",
   signOutLabel: "Çıkış yap",
   signInLabel: "Giriş yap",
   userRegisterLabel: "Kullanıcı hesabı oluştur",

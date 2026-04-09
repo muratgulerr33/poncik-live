@@ -160,6 +160,36 @@
   color: var(--muted-foreground);
 }
 
+.statusStack {
+  display: grid;
+  gap: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.supportSlot {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  background: var(--surface-1);
+}
+
+.supportSlotSecondary {
+  border: 1px solid color-mix(in oklch, var(--primary) 20%, var(--border));
+}
+
+.supportSlotPrimary {
+  border: 1px solid color-mix(in oklch, var(--destructive) 32%, var(--border));
+}
+
+.supportTitle,
+.supportBody {
+  margin: 0;
+}
+
+.supportBody {
+  margin-top: 0.4rem;
+  color: var(--muted-foreground);
+}
+
 @media (max-width: 640px) {
   .page {
     padding-top: 1.5rem;

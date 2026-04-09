@@ -8,29 +8,79 @@ type AuthCoreControllerInput = Readonly<{
   registered: string | null | undefined;
 }>;
 
+export type PublisherSurfaceView =
+  | {
+      kind: "pending_review" | "approved" | "rejected" | "missing" | "degraded";
+      showContinuityHint: boolean;
+    }
+  | null;
+
 export async function getAuthCoreView(input: AuthCoreControllerInput) {
   const sessionState = await readCurrentSession();
   const continuation = resolveAuthContinuation(input.next);
   const currentSession =
     sessionState.kind === "authenticated" ? sessionState.session : null;
-  let publisherNotice: {
-    title: string;
-    body: string;
-  } | null = null;
+  let publisherSurface: PublisherSurfaceView = null;
+  let primaryAction: {
+    href: string;
+    label: string;
+  } = {
+    href: continuation.destination,
+    label: AUTH_COPY.continueLabel
+  };
 
-  if (currentSession?.roleType === "publisher" && input.registered === "publisher") {
+  if (currentSession?.roleType === "publisher") {
     const applicationState = await readPublisherApplicationStatus(currentSession.accountId);
+    const showContinuityHint = input.registered === "publisher";
 
-    publisherNotice =
-      applicationState.kind === "found" && applicationState.status === "pending_review"
-        ? {
-            title: AUTH_COPY.publisherPendingTitle,
-            body: AUTH_COPY.publisherPendingBody
-          }
-        : {
-            title: AUTH_COPY.publisherPendingFallbackTitle,
-            body: AUTH_COPY.publisherPendingFallbackBody
-          };
+    if (applicationState.kind === "found") {
+      if (applicationState.status === "approved") {
+        publisherSurface = {
+          kind: "approved",
+          showContinuityHint: false
+        };
+        primaryAction = {
+          href: "/studio",
+          label: AUTH_COPY.goStudioLabel
+        };
+      } else if (applicationState.status === "rejected") {
+        publisherSurface = {
+          kind: "rejected",
+          showContinuityHint: false
+        };
+        primaryAction = {
+          href: "/",
+          label: AUTH_COPY.returnDiscoveryLabel
+        };
+      } else if (applicationState.status === "pending_review") {
+        publisherSurface = {
+          kind: "pending_review",
+          showContinuityHint
+        };
+        primaryAction = {
+          href: "/",
+          label: AUTH_COPY.returnDiscoveryLabel
+        };
+      } else {
+        publisherSurface = {
+          kind: "degraded",
+          showContinuityHint
+        };
+        primaryAction = {
+          href: "/",
+          label: AUTH_COPY.returnDiscoveryLabel
+        };
+      }
+    } else {
+      publisherSurface = {
+        kind: applicationState.kind,
+        showContinuityHint
+      };
+      primaryAction = {
+        href: "/",
+        label: AUTH_COPY.returnDiscoveryLabel
+      };
+    }
   }
 
   return {
@@ -40,6 +90,7 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
         ? "Giriş işlemleri şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene."
         : null,
     continuation,
-    publisherNotice
+    primaryAction,
+    publisherSurface
   };
 }

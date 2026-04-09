@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { type PublisherSurfaceView } from "../_controllers/auth-core-controller";
 import { AUTH_COPY } from "../_lib/auth-copy";
 
 import { AuthModeToggle } from "./AuthModeToggle";
@@ -14,6 +15,10 @@ import { UserRegisterForm } from "./UserRegisterForm";
 
 type AuthShellProps = Readonly<{
   destination: string;
+  primaryAction: {
+    href: string;
+    label: string;
+  };
   currentSession: {
     email: string;
     username: string;
@@ -21,19 +26,15 @@ type AuthShellProps = Readonly<{
     accountStatus: string;
   } | null;
   degradedMessage: string | null;
-  publisherNotice:
-    | {
-        title: string;
-        body: string;
-      }
-    | null;
+  publisherSurface: PublisherSurfaceView;
 }>;
 
 export function AuthShell({
   destination,
+  primaryAction,
   currentSession,
   degradedMessage,
-  publisherNotice
+  publisherSurface
 }: AuthShellProps) {
   const [mode, setMode] = useState<"login" | "user-register" | "publisher-register">(
     "login"
@@ -58,9 +59,10 @@ export function AuthShell({
           ) : null}
           {currentSession ? (
             <CurrentSessionPanel
-              destination={destination}
+              primaryActionHref={primaryAction.href}
+              primaryActionLabel={primaryAction.label}
               currentSession={currentSession}
-              publisherNotice={publisherNotice}
+              publisherSurface={publisherSurface}
             />
           ) : (
             <>

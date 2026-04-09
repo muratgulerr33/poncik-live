@@ -4,30 +4,29 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { signOutAction } from "../_actions/auth-actions";
+import { type PublisherSurfaceView } from "../_controllers/auth-core-controller";
 import { INITIAL_AUTH_ACTION_STATE } from "../_lib/auth-action-state";
 import { AUTH_COPY } from "../_lib/auth-copy";
 
 import { AuthNotice } from "./AuthNotice";
+import { PublisherStatusPanel } from "./PublisherStatusPanel";
 import styles from "./auth.module.css";
 
 type CurrentSessionPanelProps = Readonly<{
-  destination: string;
+  primaryActionHref: string;
+  primaryActionLabel: string;
   currentSession: {
     email: string;
     username: string;
   };
-  publisherNotice:
-    | {
-        title: string;
-        body: string;
-      }
-    | null;
+  publisherSurface: PublisherSurfaceView;
 }>;
 
 export function CurrentSessionPanel({
-  destination,
+  primaryActionHref,
+  primaryActionLabel,
   currentSession,
-  publisherNotice
+  publisherSurface
 }: CurrentSessionPanelProps) {
   const [signOutState, signOutFormAction, isSigningOut] = useActionState(
     signOutAction,
@@ -36,12 +35,8 @@ export function CurrentSessionPanel({
 
   return (
     <>
-      {publisherNotice ? (
-        <AuthNotice
-          title={publisherNotice.title}
-          body={publisherNotice.body}
-          tone="info"
-        />
+      {publisherSurface ? (
+        <PublisherStatusPanel publisherSurface={publisherSurface} />
       ) : null}
       <h2 className={`t-h2 ${styles.panelTitle}`}>{AUTH_COPY.sessionTitle}</h2>
       <p className={`t-body ${styles.panelDescription}`}>
@@ -61,8 +56,8 @@ export function CurrentSessionPanel({
         />
       ) : null}
       <div className={styles.actionRow}>
-        <Link href={destination} className={styles.action}>
-          {publisherNotice ? AUTH_COPY.returnDiscoveryLabel : AUTH_COPY.continueLabel}
+        <Link href={primaryActionHref} className={styles.action}>
+          {primaryActionLabel}
         </Link>
         <form action={signOutFormAction}>
           <button
