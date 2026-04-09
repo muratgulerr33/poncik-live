@@ -1,0 +1,117 @@
+.page {
+  min-height: 100vh;
+  padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
+  background:
+    radial-gradient(circle at top right, color-mix(in oklch, var(--primary) 14%, transparent), transparent 35%),
+    linear-gradient(180deg, var(--background) 0%, var(--surface-1) 100%);
+}
+
+.shell {
+  display: grid;
+  gap: 2rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.hero {
+  max-width: 44rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--primary);
+}
+
+.title {
+  margin: 0;
+}
+
+.description {
+  margin: 1rem 0 0;
+  color: var(--muted-foreground);
+}
+
+.card {
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 0.75rem);
+  background: var(--surface-2);
+}
+
+.panelTitle,
+.noticeTitle,
+.previewTitle {
+  margin: 0;
+}
+
+.panelDescription,
+.noticeBody,
+.previewBody,
+.meta {
+  margin: 0.75rem 0 0;
+  color: var(--muted-foreground);
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+  color: var(--foreground);
+  font: inherit;
+  text-decoration: none;
+}
+
+.secondaryAction:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.prepStack {
+  display: grid;
+  gap: 1rem;
+}
+
+.previewCard {
+  padding: 1rem;
+  border: 1px dashed color-mix(in oklch, var(--primary) 35%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--surface-1) 85%, var(--background));
+}
+
+.previewLabel {
+  margin: 0 0 0.6rem;
+  color: var(--primary);
+}
+
+.notice {
+  padding: 0.95rem 1rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 24%, var(--border));
+  border-radius: var(--radius);
+  background: var(--surface-1);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding-top: 1.5rem;
+  }
+
+  .actionRow {
+    flex-direction: column;
+  }
+
+  .secondaryAction {
+    width: 100%;
+  }
+}
