@@ -19,7 +19,7 @@ export function StudioShell({ view }: StudioShellProps) {
         </header>
 
         {view.kind === "approved_prep" ? (
-          <StudioPrepSurface session={view.session} />
+          <StudioPrepSurface lifecycle={view.lifecycle} session={view.session} />
         ) : (
           <StudioGateSurface view={view} />
         )}

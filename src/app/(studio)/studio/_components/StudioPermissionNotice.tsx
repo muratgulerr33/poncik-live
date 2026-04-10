@@ -1,15 +1,33 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
-import {
-  readStudioBrowserCapabilityState,
-  type StudioBrowserCapabilityState
-} from "../_adapters/studio-browser-capability-adapter";
+import { type StudioPreviewState } from "../_adapters/studio-preview-adapter";
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import styles from "./studio.module.css";
 
-function getCapabilityCopy(state: StudioBrowserCapabilityState) {
+type StudioPermissionNoticeProps = {
+  state: StudioPreviewState;
+};
+
+function getCapabilityCopy(state: StudioPreviewState) {
+  if (state === "requesting") {
+    return {
+      title: STUDIO_COPY.requestingTitle,
+      body: STUDIO_COPY.requestingBody
+    };
+  }
+
+  if (state === "preview_ready") {
+    return {
+      title: STUDIO_COPY.previewReadyTitle,
+      body: STUDIO_COPY.previewReadyBody
+    };
+  }
+
+  if (state === "denied") {
+    return {
+      title: STUDIO_COPY.deniedTitle,
+      body: STUDIO_COPY.deniedBody
+    };
+  }
+
   if (state === "unsupported") {
     return {
       title: STUDIO_COPY.unsupportedTitle,
@@ -17,39 +35,20 @@ function getCapabilityCopy(state: StudioBrowserCapabilityState) {
     };
   }
 
-  if (state === "not_ready") {
+  if (state === "timeout") {
     return {
-      title: STUDIO_COPY.notReadyTitle,
-      body: STUDIO_COPY.notReadyBody
-    };
-  }
-
-  if (state === "degraded") {
-    return {
-      title: STUDIO_COPY.capabilityDegradedTitle,
-      body: STUDIO_COPY.capabilityDegradedBody
+      title: STUDIO_COPY.timeoutTitle,
+      body: STUDIO_COPY.timeoutBody
     };
   }
 
   return {
-    title: STUDIO_COPY.readyLaterTitle,
-    body: STUDIO_COPY.readyLaterBody
+    title: STUDIO_COPY.capabilityDegradedTitle,
+    body: STUDIO_COPY.capabilityDegradedBody
   };
 }
 
-export function StudioPermissionNotice() {
-  const [state, setState] = useState<StudioBrowserCapabilityState>("not_ready");
-
-  useEffect(() => {
-    const frameId = window.requestAnimationFrame(() => {
-      setState(readStudioBrowserCapabilityState());
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, []);
-
+export function StudioPermissionNotice({ state }: StudioPermissionNoticeProps) {
   const copy = getCapabilityCopy(state);
 
   return (

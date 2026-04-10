@@ -59,6 +59,7 @@
   margin-top: 1.25rem;
 }
 
+.primaryAction,
 .secondaryAction {
   display: inline-flex;
   align-items: center;
@@ -71,8 +72,22 @@
   color: var(--foreground);
   font: inherit;
   text-decoration: none;
+  cursor: pointer;
 }
 
+.primaryAction {
+  border: 1px solid color-mix(in oklch, var(--primary) 55%, transparent);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.primaryAction:disabled,
+.secondaryAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.primaryAction:focus-visible,
 .secondaryAction:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 3px;
@@ -90,9 +105,56 @@
   background: color-mix(in oklch, var(--surface-1) 85%, var(--background));
 }
 
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .previewLabel {
   margin: 0 0 0.6rem;
   color: var(--primary);
+}
+
+.previewFrame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 15rem;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: calc(var(--radius) - 0.1rem);
+  background:
+    radial-gradient(circle at top, color-mix(in oklch, var(--primary) 16%, transparent), transparent 60%),
+    color-mix(in oklch, var(--surface-2) 90%, black);
+}
+
+.previewVideo,
+.previewVideoInactive {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.previewVideoInactive {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.previewPlaceholder {
+  position: absolute;
+  padding: 1rem;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+.lifecycleBadge {
+  align-self: flex-start;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 28%, var(--border));
+  border-radius: 999px;
+  color: var(--primary);
+  font-size: 0.88rem;
 }
 
 .notice {
@@ -102,15 +164,27 @@
   background: var(--surface-1);
 }
 
+.lifecycleStack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.errorText {
+  margin: 0;
+  color: var(--destructive);
+}
+
 @media (max-width: 640px) {
   .page {
     padding-top: 1.5rem;
   }
 
+  .previewHeader,
   .actionRow {
     flex-direction: column;
   }
 
+  .primaryAction,
   .secondaryAction {
     width: 100%;
   }

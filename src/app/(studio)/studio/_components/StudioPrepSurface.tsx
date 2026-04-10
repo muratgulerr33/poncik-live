@@ -1,4 +1,4 @@
-import { StudioPermissionNotice } from "./StudioPermissionNotice";
+import { StudioPreviewPanel } from "./StudioPreviewPanel";
 import styles from "./studio.module.css";
 import { STUDIO_COPY } from "../_lib/studio-copy";
 
@@ -8,9 +8,13 @@ type StudioPrepSurfaceProps = {
     username: string;
     email: string;
   };
+  lifecycle: {
+    kind: "idle" | "live" | "degraded";
+    broadcastId?: string;
+  };
 };
 
-export function StudioPrepSurface({ session }: StudioPrepSurfaceProps) {
+export function StudioPrepSurface({ session, lifecycle }: StudioPrepSurfaceProps) {
   return (
     <section className={styles.card}>
       <div className={styles.prepStack}>
@@ -19,13 +23,7 @@ export function StudioPrepSurface({ session }: StudioPrepSurfaceProps) {
           <p className={styles.panelDescription}>{STUDIO_COPY.prepBody}</p>
         </div>
 
-        <div className={styles.previewCard}>
-          <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
-          <h3 className={styles.previewTitle}>{session.username}</h3>
-          <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
-        </div>
-
-        <StudioPermissionNotice />
+        <StudioPreviewPanel lifecycle={lifecycle} username={session.username} />
 
         <p className={styles.meta}>
           {STUDIO_COPY.prepMetaPrefix} {session.email}

@@ -1,15 +1,14 @@
 "use client";
 
 export type StudioBrowserCapabilityState =
-  | "ready_to_request_later"
+  | "requestable"
   | "unsupported"
-  | "not_ready"
   | "degraded";
 
 export function readStudioBrowserCapabilityState(): StudioBrowserCapabilityState {
   try {
     if (typeof window === "undefined" || !window.isSecureContext) {
-      return "not_ready";
+      return "unsupported";
     }
 
     if (!("mediaDevices" in navigator)) {
@@ -20,7 +19,7 @@ export function readStudioBrowserCapabilityState(): StudioBrowserCapabilityState
       return "unsupported";
     }
 
-    return "ready_to_request_later";
+    return "requestable";
   } catch {
     return "degraded";
   }

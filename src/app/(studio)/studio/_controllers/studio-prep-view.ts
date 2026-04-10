@@ -25,4 +25,8 @@ export type StudioPrepView =
         username: string;
         email: string;
       };
+      lifecycle: {
+        kind: "idle" | "live" | "degraded";
+        broadcastId?: string;
+      };
     };

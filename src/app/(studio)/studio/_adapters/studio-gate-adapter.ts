@@ -4,6 +4,7 @@ import {
 } from "@/app/(public)/auth/_adapters/auth-session-boundary";
 import { readPublisherApplicationStatus } from "@/app/(public)/auth/_adapters/auth-publisher-application-boundary";
 
+import { readCurrentActiveBroadcast } from "./studio-broadcast-adapter";
 import { type StudioPrepView } from "../_controllers/studio-prep-view";
 
 function mapSessionStateToView(
@@ -56,12 +57,19 @@ export async function readStudioPrepView(): Promise<StudioPrepView> {
   }
 
   if (applicationState.status === "approved") {
+    const broadcastState = await readCurrentActiveBroadcast(session.accountId);
+
     return {
       kind: "approved_prep",
       session: {
         accountId: session.accountId,
         username: session.username,
         email: session.email
+      },
+      lifecycle: {
+        kind: broadcastState.kind,
+        broadcastId:
+          broadcastState.kind === "live" ? broadcastState.broadcastId : undefined
       }
     };
   }

@@ -23,21 +23,40 @@ export const STUDIO_COPY = {
     "Başvuru durumun şu anda doğrulanamadı. Şimdilik keşiften devam edip daha sonra tekrar deneyebilirsin.",
   prepTitle: "Yayın hazırlığı",
   prepBody:
-    "Onay tamamlandı. Bu adımda yalnız temel hazırlık ve cihaz uygunluğu bilgisi gösterilir.",
+    "Onay tamamlandı. Bu adımda yerel önizleme hazırlanır ve canlı yayın giriş davranışı en dar haliyle açılır.",
   previewLabel: "Hazırlık önizlemesi",
   previewBody:
-    "Kapak seçimi, yayın başlatma ve medya akışı bu turda açılmadı. Burada yalnız hazırlık kabuğu gösterilir.",
+    "Yerel önizleme yayının kendisi değildir. Buradaki hazırlık durumu veritabanına yazılmaz.",
+  previewPlaceholder: "Kamera ve mikrofon hazırlığı kontrol ediliyor.",
   prepMetaPrefix: "Hazırlık hesabı",
-  readyLaterTitle: "Tarayıcı hazırlığı uygun görünüyor",
-  readyLaterBody:
-    "Bu tarayıcıda gerekli temel API'ler görünüyor. Gerçek izin isteme ve yayın başlatma sonraki turda açılacak.",
+  requestingTitle: "Cihaz izni isteniyor",
+  requestingBody:
+    "Tarayıcı yanıt verirse yerel önizleme hazırlanacak. Yanıt gelmezse burada dar bir fallback kalır.",
+  previewReadyTitle: "Yerel önizleme hazır",
+  previewReadyBody:
+    "Kamera ve mikrofon bu sekmede doğrulandı. Bu yalnız hazırlık aşamasıdır; yayın henüz başlamadı.",
+  deniedTitle: "Cihaz izni verilmedi",
+  deniedBody:
+    "İzin verilmediği için yerel önizleme açılmadı. İstersen tekrar deneyebilirsin.",
   unsupportedTitle: "Bu cihazda yayın hazırlığı sınırlı",
   unsupportedBody:
-    "Gerekli medya API'leri görünmüyor. Şimdilik yalnız hazırlık bilgisi gösteriliyor.",
-  notReadyTitle: "İzin akışı henüz açılmadı",
-  notReadyBody:
-    "Bu turda gerçek kamera veya mikrofon isteği yapılmıyor. Hazırlık yüzeyi yalnız bilgi verir.",
+    "Gerekli medya API'leri görünmüyor veya güvenli bağlam sağlanmadı. Şimdilik yerel önizleme açılamıyor.",
+  timeoutTitle: "Cihaz yanıtı zamanında gelmedi",
+  timeoutBody:
+    "İzin isteği tamamlanamadı. Şimdilik dar fallback gösteriliyor; istersen tekrar deneyebilirsin.",
   capabilityDegradedTitle: "Cihaz uygunluğu şu anda okunamıyor",
   capabilityDegradedBody:
-    "Tarayıcı hazırlığı doğrulanamadı. Gerçek izin akışı bu turda yine de başlatılmaz."
+    "Yerel önizleme doğrulanamadı. Şimdilik dar fallback gösteriliyor.",
+  retryPreviewLabel: "Tekrar dene",
+  startBroadcastLabel: "Başlat",
+  startingBroadcastLabel: "Başlatılıyor",
+  stopBroadcastLabel: "Bitir",
+  stoppingBroadcastLabel: "Bitiriliyor",
+  idleLifecycleLabel: "Henüz canlı değil",
+  liveLifecycleLabel: "Şu anda canlı",
+  degradedLifecycleLabel: "Durum senkronu sınırlı",
+  startBroadcastError:
+    "Yayın şu anda başlatılamıyor. Onaylı publisher oturumu ile tekrar dene.",
+  stopBroadcastError:
+    "Yayın şu anda kapatılamıyor. Biraz sonra tekrar deneyebilirsin."
 } as const;
