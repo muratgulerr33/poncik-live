@@ -16,7 +16,6 @@ export function useStudioPreviewBootstrap() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const attemptIdRef = useRef(0);
-  const hasBootstrappedRef = useRef(false);
   const isMountedRef = useRef(false);
   const [previewState, setPreviewState] = useState<StudioPreviewState>("requesting");
 
@@ -55,10 +54,7 @@ export function useStudioPreviewBootstrap() {
 
     setPreviewState("requesting");
 
-    let didTimeout = false;
     const timeoutId = window.setTimeout(() => {
-      didTimeout = true;
-
       if (!isMountedRef.current || attemptIdRef.current !== attemptId) {
         return;
       }
@@ -70,14 +66,6 @@ export function useStudioPreviewBootstrap() {
     window.clearTimeout(timeoutId);
 
     if (!isMountedRef.current || attemptIdRef.current !== attemptId) {
-      if (result.kind === "success") {
-        stopStudioPreviewStream(result.stream);
-      }
-
-      return;
-    }
-
-    if (didTimeout) {
       if (result.kind === "success") {
         stopStudioPreviewStream(result.stream);
       }
@@ -117,17 +105,12 @@ export function useStudioPreviewBootstrap() {
 
   useEffect(() => {
     isMountedRef.current = true;
-    let frameId = 0;
-
-    if (!hasBootstrappedRef.current) {
-      hasBootstrappedRef.current = true;
-      frameId = window.requestAnimationFrame(() => {
-        void runPreviewAttempt();
-      });
-    }
+    const timeoutId = window.setTimeout(() => {
+      void runPreviewAttempt();
+    }, 0);
 
     return () => {
-      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
       isMountedRef.current = false;
       attemptIdRef.current += 1;
       cleanupStream();
