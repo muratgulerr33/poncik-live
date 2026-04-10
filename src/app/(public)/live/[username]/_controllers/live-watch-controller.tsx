@@ -1,5 +1,6 @@
 import { readWatchView } from "@/app/(public)/_lib/public-live-read";
 
+import { LiveWatchFreshness } from "../_components/live-watch-freshness";
 import { LiveWatchShell } from "../_components/live-watch-shell";
 import {
   LiveEndedState,
@@ -20,6 +21,7 @@ export async function LiveWatchController({
     return (
       <LiveWatchShell username={view.username}>
         <LiveWatchFrame username={view.username} />
+        <LiveWatchFreshness mode="live" />
       </LiveWatchShell>
     );
   }
@@ -28,6 +30,7 @@ export async function LiveWatchController({
     return (
       <LiveWatchShell username={view.username}>
         <LiveEndedState username={view.username} />
+        <LiveWatchFreshness mode="non_live" />
       </LiveWatchShell>
     );
   }
@@ -35,6 +38,7 @@ export async function LiveWatchController({
   return (
     <LiveWatchShell username={view.username}>
       <LiveUnavailableState username={view.username} />
+      <LiveWatchFreshness mode="non_live" />
     </LiveWatchShell>
   );
 }
