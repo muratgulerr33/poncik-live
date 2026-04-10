@@ -29,7 +29,8 @@ export function StudioPreviewPanel({
   username,
   lifecycle
 }: StudioPreviewPanelProps) {
-  const { previewState, retryPreview, videoRef } = useStudioPreviewBootstrap();
+  const { canRetry, previewState, retryPreview, videoRef } =
+    useStudioPreviewBootstrap();
 
   return (
     <div className={styles.prepStack}>
@@ -63,9 +64,7 @@ export function StudioPreviewPanel({
 
       <StudioPermissionNotice state={previewState} />
 
-      {previewState === "denied" ||
-      previewState === "timeout" ||
-      previewState === "degraded" ? (
+      {canRetry ? (
         <button
           className={styles.secondaryAction}
           onClick={() => {

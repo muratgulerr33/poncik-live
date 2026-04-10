@@ -21,10 +21,10 @@ function getCapabilityCopy(state: StudioPreviewState) {
     };
   }
 
-  if (state === "denied") {
+  if (state === "blocked") {
     return {
-      title: STUDIO_COPY.deniedTitle,
-      body: STUDIO_COPY.deniedBody
+      title: STUDIO_COPY.blockedTitle,
+      body: STUDIO_COPY.blockedBody
     };
   }
 

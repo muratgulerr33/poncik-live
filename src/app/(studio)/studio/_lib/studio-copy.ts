@@ -35,9 +35,9 @@ export const STUDIO_COPY = {
   previewReadyTitle: "Yerel önizleme hazır",
   previewReadyBody:
     "Kamera ve mikrofon bu sekmede doğrulandı. Bu yalnız hazırlık aşamasıdır; yayın henüz başlamadı.",
-  deniedTitle: "Cihaz izni verilmedi",
-  deniedBody:
-    "İzin verilmediği için yerel önizleme açılmadı. İstersen tekrar deneyebilirsin.",
+  blockedTitle: "Cihaz izni tamamlanamadı",
+  blockedBody:
+    "Tarayıcı izin istemini tamamlamadı veya izin verilmedi. İstersen tekrar deneyebilirsin.",
   unsupportedTitle: "Bu cihazda yayın hazırlığı sınırlı",
   unsupportedBody:
     "Gerekli medya API'leri görünmüyor veya güvenli bağlam sağlanmadı. Şimdilik yerel önizleme açılamıyor.",

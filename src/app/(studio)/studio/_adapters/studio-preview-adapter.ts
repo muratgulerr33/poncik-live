@@ -3,7 +3,7 @@
 export type StudioPreviewState =
   | "requesting"
   | "preview_ready"
-  | "denied"
+  | "blocked"
   | "unsupported"
   | "timeout"
   | "degraded";
@@ -14,7 +14,7 @@ export type StudioPreviewRequestResult =
       stream: MediaStream;
     }
   | {
-      kind: "denied";
+      kind: "blocked";
     }
   | {
       kind: "unsupported";
@@ -55,13 +55,13 @@ export async function requestStudioPreviewStream(): Promise<StudioPreviewRequest
       ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
     ) {
       return {
-        kind: "denied"
+        kind: "blocked"
       };
     }
 
     if (
       error instanceof DOMException &&
-      ["NotFoundError", "NotReadableError", "AbortError"].includes(error.name)
+      ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
     ) {
       return {
         kind: "unsupported"

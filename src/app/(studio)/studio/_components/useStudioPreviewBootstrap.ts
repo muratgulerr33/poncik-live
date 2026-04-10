@@ -20,6 +20,10 @@ export function useStudioPreviewBootstrap() {
   const isMountedRef = useRef(false);
   const [previewState, setPreviewState] = useState<StudioPreviewState>("requesting");
 
+  function isRetryableState(state: StudioPreviewState) {
+    return state === "blocked" || state === "timeout" || state === "degraded";
+  }
+
   const clearPreviewElement = useCallback(() => {
     const videoElement = videoRef.current;
 
@@ -131,6 +135,7 @@ export function useStudioPreviewBootstrap() {
   }, [cleanupStream, runPreviewAttempt]);
 
   return {
+    canRetry: isRetryableState(previewState),
     previewState,
     retryPreview: runPreviewAttempt,
     videoRef
