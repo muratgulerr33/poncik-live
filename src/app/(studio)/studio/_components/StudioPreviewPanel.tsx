@@ -3,6 +3,7 @@
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
+import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
 import styles from "./studio.module.css";
 
@@ -29,8 +30,28 @@ export function StudioPreviewPanel({
   username,
   lifecycle
 }: StudioPreviewPanelProps) {
-  const { canRetry, previewState, retryPreview, videoRef } =
+  const {
+    canRetry,
+    getPreviewStream,
+    previewState,
+    retryPreview,
+    videoRef
+  } =
     useStudioPreviewBootstrap();
+  const {
+    canStart,
+    canStop,
+    effectiveLifecycleKind,
+    isStarting,
+    isStopping,
+    lifecycleMessage,
+    startPublishing,
+    stopPublishing
+  } = useStudioPublishFoundation({
+    lifecycleKind: lifecycle.kind,
+    previewState,
+    readPreviewStream: getPreviewStream
+  });
 
   return (
     <div className={styles.prepStack}>
@@ -40,7 +61,9 @@ export function StudioPreviewPanel({
             <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
             <h3 className={styles.previewTitle}>{username}</h3>
           </div>
-          <span className={styles.lifecycleBadge}>{getLifecycleLabel(lifecycle.kind)}</span>
+          <span className={styles.lifecycleBadge}>
+            {getLifecycleLabel(effectiveLifecycleKind)}
+          </span>
         </div>
 
         <div className={styles.previewFrame}>
@@ -77,8 +100,17 @@ export function StudioPreviewPanel({
       ) : null}
 
       <StudioLifecycleActions
-        canStart={previewState === "preview_ready" && lifecycle.kind !== "live"}
-        canStop={lifecycle.kind === "live"}
+        canStart={canStart}
+        canStop={canStop}
+        isStarting={isStarting}
+        isStopping={isStopping}
+        message={lifecycleMessage}
+        onStart={() => {
+          void startPublishing();
+        }}
+        onStop={() => {
+          void stopPublishing();
+        }}
       />
     </div>
   );

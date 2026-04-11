@@ -42,10 +42,7 @@ function revalidateStudioRoutes(username: string) {
 }
 
 export async function startBroadcastAction(
-  _previousState: StudioLifecycleActionState
 ): Promise<StudioLifecycleActionState> {
-  void _previousState;
-
   try {
     const session = await readApprovedPublisherSession();
 
@@ -71,10 +68,7 @@ export async function startBroadcastAction(
 }
 
 export async function stopBroadcastAction(
-  _previousState: StudioLifecycleActionState
 ): Promise<StudioLifecycleActionState> {
-  void _previousState;
-
   try {
     const session = await readApprovedPublisherSession();
 

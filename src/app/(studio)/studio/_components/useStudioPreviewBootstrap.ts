@@ -119,6 +119,7 @@ export function useStudioPreviewBootstrap() {
 
   return {
     canRetry: isRetryableState(previewState),
+    getPreviewStream: () => streamRef.current,
     previewState,
     retryPreview: runPreviewAttempt,
     videoRef
