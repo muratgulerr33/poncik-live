@@ -25,7 +25,14 @@ export type StudioPreviewRequestResult =
 
 export async function requestStudioPreviewStream(): Promise<StudioPreviewRequestResult> {
   try {
-    if (typeof window === "undefined" || !window.isSecureContext) {
+    const allowInsecureLanMediaDev =
+      process.env.NEXT_PUBLIC_ALLOW_INSECURE_LAN_MEDIA_DEV === "1";
+    const isDev = process.env.NODE_ENV === "development";
+
+    if (
+      typeof window === "undefined" ||
+      (!window.isSecureContext && !(isDev && allowInsecureLanMediaDev))
+    ) {
       return {
         kind: "unsupported"
       };
