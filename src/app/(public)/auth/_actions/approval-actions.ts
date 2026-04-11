@@ -38,6 +38,7 @@ async function reviewPublisherApplication(
     }
 
     revalidatePath("/auth");
+    revalidatePath("/studio");
 
     return {
       status: "idle"

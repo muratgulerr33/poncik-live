@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { useActionState } from "react";
 
 import {
@@ -24,6 +26,9 @@ type AdminApprovalRowProps = Readonly<{
 }>;
 
 export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
+  const router = useRouter();
+  const approveSubmittedRef = useRef(false);
+  const rejectSubmittedRef = useRef(false);
   const [approveState, approveAction, isApproving] = useActionState(
     approvePublisherApplicationAction.bind(null, item.id),
     INITIAL_AUTH_ACTION_STATE
@@ -32,6 +37,38 @@ export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
     rejectPublisherApplicationAction.bind(null, item.id),
     INITIAL_AUTH_ACTION_STATE
   );
+
+  useEffect(() => {
+    if (!approveSubmittedRef.current || isApproving) {
+      return;
+    }
+
+    if (approveState.status === "error") {
+      approveSubmittedRef.current = false;
+      return;
+    }
+
+    if (approveState.status === "idle") {
+      approveSubmittedRef.current = false;
+      router.refresh();
+    }
+  }, [approveState.status, isApproving, router]);
+
+  useEffect(() => {
+    if (!rejectSubmittedRef.current || isRejecting) {
+      return;
+    }
+
+    if (rejectState.status === "error") {
+      rejectSubmittedRef.current = false;
+      return;
+    }
+
+    if (rejectState.status === "idle") {
+      rejectSubmittedRef.current = false;
+      router.refresh();
+    }
+  }, [isRejecting, rejectState.status, router]);
 
   return (
     <div className={styles.notice}>
@@ -57,7 +94,13 @@ export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
         />
       ) : null}
       <div className={styles.actionRow}>
-        <form action={approveAction}>
+        <form
+          action={approveAction}
+          onSubmit={() => {
+            approveSubmittedRef.current = true;
+            rejectSubmittedRef.current = false;
+          }}
+        >
           <button
             type="submit"
             className={styles.action}
@@ -66,7 +109,13 @@ export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
             {AUTH_COPY.adminApproveLabel}
           </button>
         </form>
-        <form action={rejectAction}>
+        <form
+          action={rejectAction}
+          onSubmit={() => {
+            rejectSubmittedRef.current = true;
+            approveSubmittedRef.current = false;
+          }}
+        >
           <button
             type="submit"
             className={styles.secondaryAction}

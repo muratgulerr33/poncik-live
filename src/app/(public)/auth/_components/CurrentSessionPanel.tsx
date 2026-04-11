@@ -10,6 +10,7 @@ import { INITIAL_AUTH_ACTION_STATE } from "../_lib/auth-action-state";
 import { AUTH_COPY } from "../_lib/auth-copy";
 
 import { AdminApprovalPanel } from "./AdminApprovalPanel";
+import { AuthFreshness } from "./AuthFreshness";
 import { AuthNotice } from "./AuthNotice";
 import { PublisherStatusPanel } from "./PublisherStatusPanel";
 import styles from "./auth.module.css";
@@ -39,6 +40,7 @@ export function CurrentSessionPanel({
 
   return (
     <>
+      <AuthFreshness />
       {adminSurface ? <AdminApprovalPanel adminSurface={adminSurface} /> : null}
       {publisherSurface ? (
         <PublisherStatusPanel publisherSurface={publisherSurface} />

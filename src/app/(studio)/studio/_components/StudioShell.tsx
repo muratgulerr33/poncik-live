@@ -1,4 +1,5 @@
 import { StudioGateSurface } from "./StudioGateSurface";
+import { StudioFreshness } from "./StudioFreshness";
 import { StudioPrepSurface } from "./StudioPrepSurface";
 import styles from "./studio.module.css";
 import { type StudioPrepView } from "../_controllers/studio-prep-view";
@@ -11,6 +12,7 @@ type StudioShellProps = {
 export function StudioShell({ view }: StudioShellProps) {
   return (
     <main className={styles.page}>
+      <StudioFreshness />
       <section className={styles.shell}>
         <header className={styles.hero}>
           <p className={styles.eyebrow}>{STUDIO_COPY.eyebrow}</p>
