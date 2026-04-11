@@ -15,20 +15,6 @@ export function LiveWatchLoadingState() {
   );
 }
 
-export function LiveWatchFrame({ username }: LiveWatchMessageProps) {
-  return (
-    <section className={styles.frame} aria-label={`@${username} canli yayin cercevesi`}>
-      <div className={styles.frameInner}>
-        <h2 className="t-h2">Canli yayin</h2>
-        <p className={`t-body ${styles.frameBody}`}>
-          @{username} su anda yayinda. Bu yuzey yalniz public watch frame ve durum
-          bilgisini tasir.
-        </p>
-      </div>
-    </section>
-  );
-}
-
 export function LiveEndedState({ username }: LiveWatchMessageProps) {
   return (
     <div className={styles.stateCard}>

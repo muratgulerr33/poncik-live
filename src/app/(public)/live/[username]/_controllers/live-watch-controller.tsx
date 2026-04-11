@@ -4,9 +4,9 @@ import { LiveWatchFreshness } from "../_components/live-watch-freshness";
 import { LiveWatchShell } from "../_components/live-watch-shell";
 import {
   LiveEndedState,
-  LiveUnavailableState,
-  LiveWatchFrame
+  LiveUnavailableState
 } from "../_components/live-watch-state";
+import { LiveWatchPlaybackController } from "./LiveWatchPlaybackController";
 
 type LiveWatchControllerProps = Readonly<{
   username: string;
@@ -20,7 +20,7 @@ export async function LiveWatchController({
   if (view.kind === "live") {
     return (
       <LiveWatchShell username={view.username}>
-        <LiveWatchFrame username={view.username} />
+        <LiveWatchPlaybackController username={view.username} />
         <LiveWatchFreshness mode="live" />
       </LiveWatchShell>
     );

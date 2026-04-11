@@ -2,6 +2,7 @@ import "server-only";
 
 import { AccessToken } from "livekit-server-sdk";
 
+import { getLiveKitBroadcastRoomName } from "@/app/api/livekit/_lib/livekit-room-naming";
 import { readPublisherApplicationStatus } from "@/app/(public)/auth/_adapters/auth-publisher-application-boundary";
 import { readCurrentSessionState } from "@/app/(public)/auth/_adapters/auth-session-boundary";
 
@@ -33,10 +34,6 @@ function readLiveKitServerEnv() {
     apiSecret,
     serverUrl
   };
-}
-
-function getPreferredPublisherRoomName(accountId: string) {
-  return `broadcast-${accountId}`;
 }
 
 function getPreferredPublisherIdentity(accountId: string) {
@@ -84,7 +81,7 @@ export async function createStudioPublisherToken(): Promise<StudioPublisherToken
     });
 
     token.addGrant({
-      room: getPreferredPublisherRoomName(sessionState.session.accountId),
+      room: getLiveKitBroadcastRoomName(sessionState.session.accountId),
       roomJoin: true,
       canPublish: true,
       canSubscribe: false

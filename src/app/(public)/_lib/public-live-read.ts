@@ -24,6 +24,7 @@ export type DiscoveryResult =
 export type WatchViewModel =
   | {
       kind: "live";
+      broadcasterAccountId: string;
       username: string;
     }
   | {
@@ -143,6 +144,7 @@ export async function readWatchView(username: string): Promise<WatchViewModel> {
 
     if (latestBroadcast.status === LIVE_BROADCAST_STATUS) {
       return {
+        broadcasterAccountId: broadcaster.id,
         kind: "live",
         username: broadcaster.username
       };
