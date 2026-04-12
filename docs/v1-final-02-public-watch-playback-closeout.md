@@ -78,7 +78,7 @@ Bu bolum command-verified degildir; local/manual smoke olarak ayrilmistir.
 - `src/app/api/livekit/_lib/livekit-room-naming.ts`
 - `src/app/api/livekit/viewer-token/route.ts`
 - `src/app/(studio)/studio/_adapters/studio-livekit-token-adapter.ts`
-- `docs/pr-1x-tur2-public-watch-playback-closeout.md`
+- `docs/v1-final-02-public-watch-playback-closeout.md`
 
 ## 7) Kucuk follow-up / risk
 

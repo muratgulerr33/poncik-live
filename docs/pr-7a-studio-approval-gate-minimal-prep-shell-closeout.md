@@ -4,9 +4,12 @@
 
 PR-7A, `/studio` placeholder yerine route-local approval gate ve minimal prep shell kurar.
 
+Bu close-out yalnız PR-7A içindir.
+PR-7 canonical başlığı daha geniştir; `PR-7B` bu repo history'sinde yapılmamıştır.
+
 Bu PR:
 - anonymous `/studio` isteğini `/auth?next=/studio` yönüne taşır
-- publisher approval truth’una göre studio gate yüzeylerini çözer
+- publisher approval truth'una göre studio gate yüzeylerini çözer
 - yalnız `approved` publisher için minimal prep shell açar
 
 Bu PR:
@@ -26,7 +29,7 @@ Yapılan dar iş:
 - session `degraded` için ayrı fallback gate
 
 Açıkça dışarıda bırakılanlar:
-- PR-7B alanı
+- `PR-7B` alanı
 - PR-8 publish lifecycle
 - gerçek `getUserMedia`
 - gerçek broadcast start/stop
@@ -38,17 +41,17 @@ Açıkça dışarıda bırakılanlar:
 
 ## 3) uygulanan teknik çıktı
 
-- `/studio` route-local shell/controller/adapter/component sınırlarıyla kuruldu.
-- Studio gate kararı `role_type` ve `publisher_applications.status` truth’undan okunuyor.
-- `account_status` approval truth yerine kullanılmadı.
-- `Current session degraded` durumu redirect veya wrong-role yerine dar fallback surface olarak ayrıldı.
-- Approved publisher için yalnız bilgi seviyesi prep shell eklendi:
+- `/studio` route-local shell/controller/adapter/component sınırlarıyla kuruldu
+- studio gate kararı `role_type` ve `publisher_applications.status` truth'undan okunuyor
+- `account_status` approval truth yerine kullanılmadı
+- `Current session degraded` durumu redirect veya wrong-role yerine dar fallback surface olarak ayrıldı
+- approved publisher için yalnız bilgi seviyesi prep shell eklendi:
   - heading/body
   - placeholder preview
   - capability/readiness notice
-- Capability adapter yalnız non-invasive browser checks yapıyor; gerçek permission request çağrısı yok.
-- Schema değişikliği yapılmadı.
-- Auth dosyaları büyütülmedi.
+- capability adapter yalnız non-invasive browser checks yapıyor; gerçek permission request çağrısı yok
+- schema değişikliği yapılmadı
+- auth dosyaları büyütülmedi
 
 ## 4) command-verified sanity
 
@@ -58,26 +61,26 @@ Açıkça dışarıda bırakılanlar:
   - `/` `200`
   - `/auth` `200`
   - `/live/test-user` `200`
-  - anonymous `/studio` `307` → `/auth?next=/studio`
+  - anonymous `/studio` `307` -> `/auth?next=/studio`
 - scope guard:
   - `rg 'getUserMedia\\(' src/app/(studio)/studio` boş
   - `rg 'broadcast' src/app/(studio)/studio` boş
 - role/status route checks:
-  - authenticated `user` → wrong-role gate
-  - authenticated `admin` → wrong-role gate
-  - authenticated `publisher + pending_review` → gate
-  - authenticated `publisher + rejected` → gate
-  - authenticated `publisher + missing` → fallback gate
-  - authenticated `publisher + approved` → minimal prep shell
+  - authenticated `user` -> wrong-role gate
+  - authenticated `admin` -> wrong-role gate
+  - authenticated `publisher + pending_review` -> gate
+  - authenticated `publisher + rejected` -> gate
+  - authenticated `publisher + missing` -> fallback gate
+  - authenticated `publisher + approved` -> minimal prep shell
 
 ## 5) operator-verified manual smoke
 
-- anonymous `/studio` → auth continuation
-- authenticated `user` `/studio` → wrong-role gate
-- authenticated `admin` `/studio` → wrong-role gate
-- authenticated `publisher + pending_review` `/studio` → gate
-- authenticated `publisher + approved` `/studio` → minimal prep shell
-- authenticated `publisher + rejected` `/studio` → gate
+- anonymous `/studio` -> auth continuation
+- authenticated `user` `/studio` -> wrong-role gate
+- authenticated `admin` `/studio` -> wrong-role gate
+- authenticated `publisher + pending_review` `/studio` -> gate
+- authenticated `publisher + approved` `/studio` -> minimal prep shell
+- authenticated `publisher + rejected` `/studio` -> gate
 
 ## 6) diff özeti
 
@@ -103,11 +106,10 @@ Açıkça dışarıda bırakılanlar:
 
 ## 8) risk / unknown
 
-- browser capability notice, güvenli bağlam yoksa `not_ready` çizgisinde kalır; gerçek permission akışı sonraki PR’dadır
+- browser capability notice, güvenli bağlam yoksa `not_ready` çizgisinde kalır; gerçek permission akışı sonraki iştedir
 - local smoke için kullanılan runtime fixture ve session kayıtları repo dışıdır
 
 ## 9) son karar
 
 - PASS
-- sıradaki canonical adım:
-  - `PR-7B — Studio permission request wiring`
+- bu close-out full PR-7 kapanışı değildir; yalnız PR-7A truth'unu taşır

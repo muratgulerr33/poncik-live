@@ -1,100 +1,92 @@
-# PR-4 Auth Core Close-out
+## PR-4 Auth Core — Final Close-out
 
-## Amaç
+### 1) Kısa hüküm
+`KABUL`  
+PR-4 scope’u korunarak auth core, local runtime hizası ve commit/push tamamlandı; worktree temiz ve `main` ile senkron.
 
-PR-4, `/auth` altında tek route auth core kurar:
-- shared login
-- minimal user register
-- current session read
-- sign in / sign out
-- session continuation boundary
+### 2) Scope denetimi
+Evet, PR-4 scope’una uydu.  
+Dışarıda bırakılanlar: publisher register/status, support/Tawk, admin approval UI, ayrı admin CTA, auth subroute, watch gating, PR-5/PR-6 alanları, payment/minute/1v1.
 
-V1 public watch davranışı korunur. `/live/[username]` auth gate yemez.
+### 3) Uygulanan teknik çıktı
+`/auth` altında route-local auth core kuruldu: shared login, minimal user register, current session read, sign in/sign out ve continuation boundary.  
+Adapter boundary split yapıldı: cookie, password hash/verify, account lookup/create, session read/write ve orchestration route-local küçük dosyalara ayrıldı.  
+Local runtime için `.env.example` ve [drizzle.config.ts](/Users/apple/dev/poncik-live/drizzle.config.ts) `5437` portuna hizalandı; auth smoke için local PostgreSQL üzerinde `accounts.password_hash`, `accounts.username` ve `auth_sessions` doğrulandı.  
+Kalan runtime blocker olan `use server` export sorunu, [auth-action-state.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_lib/auth-action-state.ts) ile route-local ayrıştırılarak kapatıldı.
 
-## Scope denetimi
-
-Bu PR yalnız auth core ve local runtime hizasını kapsar.
-
-Bilerek dışarıda bırakılanlar:
-- publisher register ve status yüzeyleri
-- support/Tawk
-- admin approval UI
-- password reset
-- yeni auth subroute
-- watch gating
-- PR-5 / PR-6 alanları
-
-## Teknik çıktı
-
-- `/auth` route-local auth shell, controller, action, adapter ve küçük component sınırlarıyla kuruldu.
-- Adapter boundary tek büyük dosyadan route-local küçük sorumluluklara ayrıldı.
-- `use server` export blocker kapatıldı; action state route-local ayrı dosyaya taşındı.
-- `DATABASE_URL` yokken hard-crash azaltıldı; local runtime ile gerçek auth smoke doğrulandı.
-- Local runtime için `.env.example` ve `drizzle.config.ts` 5437 portuna hizalandı.
-- `accounts.password_hash` ve `auth_sessions` runtime beklentileri local PostgreSQL üzerinde doğrulandı.
-
-## Sanity sonuçları
-
-### command-verified now
-
+### 4) Sanity sonuçları
+**command-verified now**
 - `npm run lint`: PASS
 - `npm run build`: PASS
-- HTTP 200:
-  - `/`
-  - `/auth`
-  - `/live/test-user`
-  - `/studio`
+- HTTP 200: `/`
+- HTTP 200: `/auth`
+- HTTP 200: `/live/test-user`
+- HTTP 200: `/studio`
 
-### previously validated smoke evidence in this PR cycle
-
-- gerçek browser smoke ile `register` PASS
-- `login` PASS
-- `current session read` PASS
-- `logout` PASS
-- refresh sonrası session persistence PASS
+**previously validated smoke evidence in this PR cycle**
+- Gerçek browser smoke ile `register`: PASS
+- `login`: PASS
+- `current session read`: PASS
+- `logout`: PASS
+- Refresh sonrası session persistence: PASS
+- Smoke kullanıcısı DB kanıtı: `authsmoke1775677285481`, `session_count = 1`
 - `/live/test-user` auth redirect almadan açıldı
 
-## Diff özeti
+### 5) Changed files
+- [.env.example](/Users/apple/dev/poncik-live/.env.example)
+- [docs/pr-4-auth-core-closeout.md](/Users/apple/dev/poncik-live/docs/pr-4-auth-core-closeout.md)
+- [drizzle.config.ts](/Users/apple/dev/poncik-live/drizzle.config.ts)
+- [auth-actions.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_actions/auth-actions.ts)
+- [auth-account-boundary.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_adapters/auth-account-boundary.ts)
+- [auth-cookie-boundary.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_adapters/auth-cookie-boundary.ts)
+- [auth-password-boundary.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_adapters/auth-password-boundary.ts)
+- [auth-session-adapter.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_adapters/auth-session-adapter.ts)
+- [auth-session-boundary.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_adapters/auth-session-boundary.ts)
+- [AuthModeToggle.tsx](/Users/apple/dev/poncik-live/src/app/(public)/auth/_components/AuthModeToggle.tsx)
+- [AuthNotice.tsx](/Users/apple/dev/poncik-live/src/app/(public)/auth/_components/AuthNotice.tsx)
+- [AuthShell.tsx](/Users/apple/dev/poncik-live/src/app/(public)/auth/_components/AuthShell.tsx)
+- [SharedLoginForm.tsx](/Users/apple/dev/poncik-live/src/app/(public)/auth/_components/SharedLoginForm.tsx)
+- [UserRegisterForm.tsx](/Users/apple/dev/poncik-live/src/app/(public)/auth/_components/UserRegisterForm.tsx)
+- [auth.module.css](/Users/apple/dev/poncik-live/src/app/(public)/auth/_components/auth.module.css)
+- [auth-core-controller.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_controllers/auth-core-controller.ts)
+- [auth-action-state.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_lib/auth-action-state.ts)
+- [auth-continuation.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_lib/auth-continuation.ts)
+- [auth-copy.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_lib/auth-copy.ts)
+- [page.tsx](/Users/apple/dev/poncik-live/src/app/(public)/auth/page.tsx)
+- [accounts.ts](/Users/apple/dev/poncik-live/src/db/schema/accounts.ts)
 
+### 6) Diff özeti
 - changed files total count: `21`
 - shortstat: `21 files changed, 1275 insertions(+), 4 deletions(-)`
-- toplam eklenen/silinen satırlar: `+1275 / -4`
+- numstat toplamı: `+1275 / -4`
 - en çok büyüyen dosyalar:
-  - `src/app/(public)/auth/_components/auth.module.css` `+176`
-  - `src/app/(public)/auth/_adapters/auth-session-adapter.ts` `+171`
-  - `src/app/(public)/auth/_adapters/auth-session-boundary.ts` `+125`
-  - `src/app/(public)/auth/_adapters/auth-account-boundary.ts` `+116`
-  - `src/app/(public)/auth/_components/AuthShell.tsx` `+111`
+- [auth.module.css](/Users/apple/dev/poncik-live/src/app/(public)/auth/_components/auth.module.css) `+176`
+- [auth-session-adapter.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_adapters/auth-session-adapter.ts) `+171`
+- [auth-session-boundary.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_adapters/auth-session-boundary.ts) `+125`
+- [auth-account-boundary.ts](/Users/apple/dev/poncik-live/src/app/(public)/auth/_adapters/auth-account-boundary.ts) `+116`
+- [AuthShell.tsx](/Users/apple/dev/poncik-live/src/app/(public)/auth/_components/AuthShell.tsx) `+111`
+- dosya şişmesi riski: kritik boyutta god file kalmadı; adapter split sonrası sorumluluklar okunabilir sınırda
 
-Adapter boundary split etkisi:
-- auth session/account/cookie/password sorumlulukları route-local ayrı dosyalara ayrıldı.
+### 7) Local runtime/env notu
+`.env.local` commitlenmedi.  
+Local PostgreSQL host port `5437`.  
+Docker runtime dış bağımlılığı kısa notu: `poncik-live-postgres-5437` container’ı local smoke için kullanıldı.  
+Repo içi hizalanan dosyalar: [.env.example](/Users/apple/dev/poncik-live/.env.example) ve [drizzle.config.ts](/Users/apple/dev/poncik-live/drizzle.config.ts).
 
-Local runtime/env alignment etkisi:
-- `.env.example` ve `drizzle.config.ts` local postgres `5437` portuna hizalandı.
+### 8) Commit / push kanıtı
+- commit hash: `82606e910748a75f56c606596e25a147f76322e9`
+- push sonucu: `main -> origin/main` başarılı
+- worktree temiz: evet
+- `HEAD = origin/main`: evet
 
-## Local runtime/env notu
+### 9) Bilerek yapılmayanlar
+PR-5/PR-6 alanları, support/Tawk, publisher status, admin approval, watch gating, password reset, yeni auth subroute ve generic/shared abstraction açılmadı.
 
-- `.env.local` local runtime için kullanıldı ve commitlenmeyecek.
-- Local PostgreSQL host port: `5437`
-- Docker runtime dış bağımlılığı: `poncik-live-postgres-5437`
+### 10) Follow-up notları
+Sıradaki canonical iş `PR-5 — Publisher Register + Application + Status Surfaces`.  
+Local runtime korunacaksa `.env.local` ile Docker’daki `5437` postgres çizgisi korunmalı.  
+Küçük teknik debt: close-out dokümanındaki commit/push exact kanıtı final raporda taşınıyor; doküman kendisi bunu referans notu olarak bırakıyor.
 
-## Commit / push kanıtı
-
-- exact commit hash ve push kanıtı commit/push adımından sonra final close-out raporunda doğrulanır.
-- close-out anında intended commit set yalnız PR-4 auth core ve local runtime alignment dosyalarından oluşur.
-- `.env.local`, docker runtime state ve geçici smoke dosyaları commit setine dahil edilmez.
-
-## Bilerek yapılmayanlar
-
-- PR-5 / PR-6 alanları
-- publisher status / onboarding
-- support/Tawk
-- admin approval
-- watch gating
-- payment / minute / 1v1
-
-## Follow-up notları
-
-- Sıradaki canonical iş: `PR-5 — Publisher Register + Application + Status Surfaces`
-- Local runtime korunacaksa Docker container ve `.env.local` aynı çizgide tutulmalı.
-- `account_status` truth’u approval zincirinden ayrı tutulmaya devam etmeli.
+### 11) Son karar
+`PASS`  
+PR-4 auth core, local runtime hizası ve smoke kanıtı ile kapanışa uygun; commit/push tamam ve worktree temiz.

@@ -64,7 +64,7 @@ Bilerek disarida kalanlar:
 - `src/app/(studio)/studio/_components/StudioPreviewPanel.tsx`
 - `src/app/(studio)/studio/_components/useStudioPreviewBootstrap.ts`
 - `src/app/(studio)/studio/_components/useStudioPublishFoundation.ts`
-- `docs/pr-1x-tur1-livekit-foundation-closeout.md`
+- `docs/v1-final-01-livekit-foundation-closeout.md`
 
 ## 7) Kucuk follow-up / risk
 
