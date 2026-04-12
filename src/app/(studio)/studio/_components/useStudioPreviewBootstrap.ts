@@ -20,15 +20,8 @@ export function useStudioPreviewBootstrap() {
   const allowInsecureLanMediaDev =
     process.env.NEXT_PUBLIC_ALLOW_INSECURE_LAN_MEDIA_DEV === "1";
   const isDev = process.env.NODE_ENV === "development";
-  const shouldUseManualStart =
-    isDev &&
-    allowInsecureLanMediaDev &&
-    typeof window !== "undefined" &&
-    !window.isSecureContext;
-  const [previewState, setPreviewState] = useState<StudioPreviewState>(() =>
-    shouldUseManualStart ? "unsupported" : "requesting"
-  );
-  const [isAwaitingManualStart, setIsAwaitingManualStart] = useState(() => shouldUseManualStart);
+  const [previewState, setPreviewState] = useState<StudioPreviewState>("requesting");
+  const [isAwaitingManualStart, setIsAwaitingManualStart] = useState(false);
 
   function isRetryableState(state: StudioPreviewState) {
     return state === "blocked" || state === "timeout" || state === "degraded";
@@ -117,8 +110,28 @@ export function useStudioPreviewBootstrap() {
 
   useEffect(() => {
     isMountedRef.current = true;
+    const shouldUseManualStart =
+      isDev &&
+      allowInsecureLanMediaDev &&
+      !window.isSecureContext;
 
-    if (!shouldUseManualStart) {
+    if (shouldUseManualStart) {
+      const timeoutId = window.setTimeout(() => {
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        setIsAwaitingManualStart(true);
+        setPreviewState("unsupported");
+      }, 0);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+        isMountedRef.current = false;
+        attemptIdRef.current += 1;
+        cleanupStream();
+      };
+    } else {
       const timeoutId = window.setTimeout(() => {
         void runPreviewAttempt();
       }, 0);
@@ -136,7 +149,7 @@ export function useStudioPreviewBootstrap() {
       attemptIdRef.current += 1;
       cleanupStream();
     };
-  }, [cleanupStream, runPreviewAttempt, shouldUseManualStart]);
+  }, [allowInsecureLanMediaDev, cleanupStream, isDev, runPreviewAttempt]);
 
   return {
     canStartPreview: isAwaitingManualStart,
