@@ -17,7 +17,18 @@ export function useStudioPreviewBootstrap() {
   const streamRef = useRef<MediaStream | null>(null);
   const attemptIdRef = useRef(0);
   const isMountedRef = useRef(false);
-  const [previewState, setPreviewState] = useState<StudioPreviewState>("requesting");
+  const allowInsecureLanMediaDev =
+    process.env.NEXT_PUBLIC_ALLOW_INSECURE_LAN_MEDIA_DEV === "1";
+  const isDev = process.env.NODE_ENV === "development";
+  const shouldUseManualStart =
+    isDev &&
+    allowInsecureLanMediaDev &&
+    typeof window !== "undefined" &&
+    !window.isSecureContext;
+  const [previewState, setPreviewState] = useState<StudioPreviewState>(() =>
+    shouldUseManualStart ? "unsupported" : "requesting"
+  );
+  const [isAwaitingManualStart, setIsAwaitingManualStart] = useState(() => shouldUseManualStart);
 
   function isRetryableState(state: StudioPreviewState) {
     return state === "blocked" || state === "timeout" || state === "degraded";
@@ -46,6 +57,7 @@ export function useStudioPreviewBootstrap() {
     const capabilityState = readStudioBrowserCapabilityState();
 
     cleanupStream();
+    setIsAwaitingManualStart(false);
 
     if (capabilityState !== "requestable") {
       setPreviewState(capabilityState === "unsupported" ? "unsupported" : "degraded");
@@ -105,23 +117,35 @@ export function useStudioPreviewBootstrap() {
 
   useEffect(() => {
     isMountedRef.current = true;
-    const timeoutId = window.setTimeout(() => {
-      void runPreviewAttempt();
-    }, 0);
+
+    if (!shouldUseManualStart) {
+      const timeoutId = window.setTimeout(() => {
+        void runPreviewAttempt();
+      }, 0);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+        isMountedRef.current = false;
+        attemptIdRef.current += 1;
+        cleanupStream();
+      };
+    }
 
     return () => {
-      window.clearTimeout(timeoutId);
       isMountedRef.current = false;
       attemptIdRef.current += 1;
       cleanupStream();
     };
-  }, [cleanupStream, runPreviewAttempt]);
+  }, [cleanupStream, runPreviewAttempt, shouldUseManualStart]);
 
   return {
+    canStartPreview: isAwaitingManualStart,
     canRetry: isRetryableState(previewState),
     getPreviewStream: () => streamRef.current,
+    isAwaitingManualStart,
     previewState,
     retryPreview: runPreviewAttempt,
+    startPreview: runPreviewAttempt,
     videoRef
   };
 }

@@ -32,10 +32,13 @@ export function StudioPreviewPanel({
   lifecycle
 }: StudioPreviewPanelProps) {
   const {
+    canStartPreview,
     canRetry,
     getPreviewStream,
+    isAwaitingManualStart,
     previewState,
     retryPreview,
+    startPreview,
     videoRef
   } =
     useStudioPreviewBootstrap();
@@ -88,7 +91,19 @@ export function StudioPreviewPanel({
         <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
       </div>
 
-      <StudioPermissionNotice state={previewState} />
+      {isAwaitingManualStart ? null : <StudioPermissionNotice state={previewState} />}
+
+      {canStartPreview ? (
+        <button
+          className={styles.secondaryAction}
+          onClick={() => {
+            void startPreview();
+          }}
+          type="button"
+        >
+          {STUDIO_COPY.startPreviewLabel}
+        </button>
+      ) : null}
 
       {canRetry ? (
         <button
