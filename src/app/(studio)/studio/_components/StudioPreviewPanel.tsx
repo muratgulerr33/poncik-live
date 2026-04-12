@@ -1,6 +1,7 @@
 "use client";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
+import { StudioFreshness } from "./StudioFreshness";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
@@ -55,6 +56,8 @@ export function StudioPreviewPanel({
 
   return (
     <div className={styles.prepStack}>
+      {previewState !== "requesting" ? <StudioFreshness /> : null}
+
       <div className={styles.previewCard}>
         <div className={styles.previewHeader}>
           <div>
