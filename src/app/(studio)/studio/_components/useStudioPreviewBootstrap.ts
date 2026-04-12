@@ -17,11 +17,7 @@ export function useStudioPreviewBootstrap() {
   const streamRef = useRef<MediaStream | null>(null);
   const attemptIdRef = useRef(0);
   const isMountedRef = useRef(false);
-  const allowInsecureLanMediaDev =
-    process.env.NEXT_PUBLIC_ALLOW_INSECURE_LAN_MEDIA_DEV === "1";
-  const isDev = process.env.NODE_ENV === "development";
   const [previewState, setPreviewState] = useState<StudioPreviewState>("requesting");
-  const [isAwaitingManualStart, setIsAwaitingManualStart] = useState(false);
 
   function isRetryableState(state: StudioPreviewState) {
     return state === "blocked" || state === "timeout" || state === "degraded";
@@ -50,7 +46,6 @@ export function useStudioPreviewBootstrap() {
     const capabilityState = readStudioBrowserCapabilityState();
 
     cleanupStream();
-    setIsAwaitingManualStart(false);
 
     if (capabilityState !== "requestable") {
       setPreviewState(capabilityState === "unsupported" ? "unsupported" : "degraded");
@@ -110,55 +105,23 @@ export function useStudioPreviewBootstrap() {
 
   useEffect(() => {
     isMountedRef.current = true;
-    const shouldUseManualStart =
-      isDev &&
-      allowInsecureLanMediaDev &&
-      !window.isSecureContext;
-
-    if (shouldUseManualStart) {
-      const timeoutId = window.setTimeout(() => {
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        setIsAwaitingManualStart(true);
-        setPreviewState("unsupported");
-      }, 0);
-
-      return () => {
-        window.clearTimeout(timeoutId);
-        isMountedRef.current = false;
-        attemptIdRef.current += 1;
-        cleanupStream();
-      };
-    } else {
-      const timeoutId = window.setTimeout(() => {
-        void runPreviewAttempt();
-      }, 0);
-
-      return () => {
-        window.clearTimeout(timeoutId);
-        isMountedRef.current = false;
-        attemptIdRef.current += 1;
-        cleanupStream();
-      };
-    }
+    const timeoutId = window.setTimeout(() => {
+      void runPreviewAttempt();
+    }, 0);
 
     return () => {
+      window.clearTimeout(timeoutId);
       isMountedRef.current = false;
       attemptIdRef.current += 1;
       cleanupStream();
     };
-  }, [allowInsecureLanMediaDev, cleanupStream, isDev, runPreviewAttempt]);
+  }, [cleanupStream, runPreviewAttempt]);
 
   return {
-    canStartPreview: isAwaitingManualStart,
     canRetry: isRetryableState(previewState),
     getPreviewStream: () => streamRef.current,
-    isAwaitingManualStart,
     previewState,
     retryPreview: runPreviewAttempt,
-    startPreview: runPreviewAttempt,
     videoRef
   };
 }

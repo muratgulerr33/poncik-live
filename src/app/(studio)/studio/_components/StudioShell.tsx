@@ -12,6 +12,7 @@ type StudioShellProps = {
 export function StudioShell({ view }: StudioShellProps) {
   return (
     <main className={styles.page}>
+      <StudioFreshness />
       <section className={styles.shell}>
         <header className={styles.hero}>
           <p className={styles.eyebrow}>{STUDIO_COPY.eyebrow}</p>
@@ -22,10 +23,7 @@ export function StudioShell({ view }: StudioShellProps) {
         {view.kind === "approved_prep" ? (
           <StudioPrepSurface lifecycle={view.lifecycle} session={view.session} />
         ) : (
-          <>
-            <StudioFreshness />
-            <StudioGateSurface view={view} />
-          </>
+          <StudioGateSurface view={view} />
         )}
       </section>
     </main>

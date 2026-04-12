@@ -1,7 +1,6 @@
 "use client";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
-import { StudioFreshness } from "./StudioFreshness";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
@@ -32,13 +31,10 @@ export function StudioPreviewPanel({
   lifecycle
 }: StudioPreviewPanelProps) {
   const {
-    canStartPreview,
     canRetry,
     getPreviewStream,
-    isAwaitingManualStart,
     previewState,
     retryPreview,
-    startPreview,
     videoRef
   } =
     useStudioPreviewBootstrap();
@@ -59,8 +55,6 @@ export function StudioPreviewPanel({
 
   return (
     <div className={styles.prepStack}>
-      {previewState !== "requesting" ? <StudioFreshness /> : null}
-
       <div className={styles.previewCard}>
         <div className={styles.previewHeader}>
           <div>
@@ -91,19 +85,7 @@ export function StudioPreviewPanel({
         <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
       </div>
 
-      {isAwaitingManualStart ? null : <StudioPermissionNotice state={previewState} />}
-
-      {canStartPreview ? (
-        <button
-          className={styles.secondaryAction}
-          onClick={() => {
-            void startPreview();
-          }}
-          type="button"
-        >
-          {STUDIO_COPY.startPreviewLabel}
-        </button>
-      ) : null}
+      <StudioPermissionNotice state={previewState} />
 
       {canRetry ? (
         <button

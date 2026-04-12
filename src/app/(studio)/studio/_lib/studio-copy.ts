@@ -47,7 +47,6 @@ export const STUDIO_COPY = {
   capabilityDegradedTitle: "Cihaz uygunluğu şu anda okunamıyor",
   capabilityDegradedBody:
     "Yerel önizleme doğrulanamadı. Şimdilik dar fallback gösteriliyor.",
-  startPreviewLabel: "Önizlemeyi başlat",
   retryPreviewLabel: "Tekrar dene",
   startBroadcastLabel: "Başlat",
   startingBroadcastLabel: "Başlatılıyor",
