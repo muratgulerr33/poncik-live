@@ -6,9 +6,9 @@ import { readPublisherApplicationStatus } from "@/app/(public)/auth/_adapters/au
 import { readCurrentSessionState } from "@/app/(public)/auth/_adapters/auth-session-boundary";
 
 import {
-  startBroadcastForPublisher,
-  stopBroadcastForPublisher
+  startBroadcastForPublisher
 } from "../_adapters/studio-broadcast-adapter";
+import { stopCurrentApprovedPublisherBroadcast } from "../_adapters/studio-broadcast-stop-adapter";
 import {
   type StudioLifecycleActionState
 } from "../_lib/studio-lifecycle-action-state";
@@ -69,26 +69,16 @@ export async function startBroadcastAction(
 
 export async function stopBroadcastAction(
 ): Promise<StudioLifecycleActionState> {
-  try {
-    const session = await readApprovedPublisherSession();
+  const result = await stopCurrentApprovedPublisherBroadcast();
 
-    if (!session) {
-      return {
-        status: "error",
-        message: STUDIO_COPY.stopBroadcastError
-      };
-    }
-
-    await stopBroadcastForPublisher(session.accountId);
-    revalidateStudioRoutes(session.username);
-
+  if (result.kind === "stopped" || result.kind === "noop") {
     return {
       status: "idle"
     };
-  } catch {
-    return {
-      status: "error",
-      message: STUDIO_COPY.stopBroadcastError
-    };
   }
+
+  return {
+    status: "error",
+    message: STUDIO_COPY.stopBroadcastError
+  };
 }

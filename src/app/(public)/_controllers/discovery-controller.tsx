@@ -1,4 +1,5 @@
 import { DiscoveryCard } from "../_components/discovery-card";
+import { DiscoveryFreshness } from "../_components/discovery-freshness";
 import {
   DiscoveryEmptyState,
   DiscoveryErrorState
@@ -15,6 +16,7 @@ export async function DiscoveryController() {
     return (
       <DiscoveryShell>
         <DiscoveryErrorState />
+        <DiscoveryFreshness />
       </DiscoveryShell>
     );
   }
@@ -23,6 +25,7 @@ export async function DiscoveryController() {
     return (
       <DiscoveryShell>
         <DiscoveryEmptyState />
+        <DiscoveryFreshness />
       </DiscoveryShell>
     );
   }
@@ -34,6 +37,7 @@ export async function DiscoveryController() {
           <DiscoveryCard key={entry.id} entry={entry} />
         ))}
       </div>
+      <DiscoveryFreshness />
     </DiscoveryShell>
   );
 }

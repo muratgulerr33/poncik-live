@@ -1,6 +1,6 @@
 "use client";
 
-import { Room, Track } from "livekit-client";
+import { Room, RoomEvent, Track } from "livekit-client";
 
 type PublisherTokenResponse = {
   server_url: string;
@@ -129,4 +129,21 @@ export async function disconnectStudioPublisherRoom(room: Room | null) {
   } catch {
     await room.disconnect(false).catch(() => undefined);
   }
+}
+
+export function bindStudioPublisherRoomDisconnect(
+  room: Room,
+  onDisconnected: () => void
+) {
+  function handleDisconnected() {
+    onDisconnected();
+  }
+
+  room.on(RoomEvent.Disconnected, handleDisconnected);
+
+  return {
+    cleanup: () => {
+      room.off(RoomEvent.Disconnected, handleDisconnected);
+    }
+  };
 }

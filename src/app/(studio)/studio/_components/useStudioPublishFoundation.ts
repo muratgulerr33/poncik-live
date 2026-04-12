@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Room } from "livekit-client";
 
 import {
+  bindStudioPublisherRoomDisconnect,
   connectStudioPublisherRoom,
   disconnectStudioPublisherRoom,
   fetchStudioPublisherToken,
@@ -12,7 +13,8 @@ import {
 } from "../_adapters/studio-livekit-publisher-adapter";
 import {
   startStudioBroadcastLifecycle,
-  stopStudioBroadcastLifecycle
+  stopStudioBroadcastLifecycle,
+  triggerStudioBroadcastCloseStop
 } from "../_adapters/studio-lifecycle-client-adapter";
 import { type StudioPreviewState } from "../_adapters/studio-preview-adapter";
 import { STUDIO_COPY } from "../_lib/studio-copy";
@@ -31,6 +33,10 @@ export function useStudioPublishFoundation({
   readPreviewStream
 }: UseStudioPublishFoundationArgs) {
   const router = useRouter();
+  const disconnectCleanupRef = useRef<(() => void) | null>(null);
+  const closeStopFiredRef = useRef(false);
+  const isLocallyLiveRef = useRef(false);
+  const isStoppingRef = useRef(false);
   const roomRef = useRef<Room | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
@@ -40,12 +46,33 @@ export function useStudioPublishFoundation({
   const effectiveLifecycleKind: StudioLifecycleKind =
     lifecycleKind === "live" || isLocallyLive ? "live" : lifecycleKind;
 
+  const clearRoomDisconnectBinding = useCallback(() => {
+    disconnectCleanupRef.current?.();
+    disconnectCleanupRef.current = null;
+  }, []);
+
   const clearLocalPublisher = useCallback(async () => {
     const room = roomRef.current;
 
+    clearRoomDisconnectBinding();
     roomRef.current = null;
+    isLocallyLiveRef.current = false;
     setIsLocallyLive(false);
     await disconnectStudioPublisherRoom(room);
+  }, [clearRoomDisconnectBinding]);
+
+  const triggerCloseStop = useCallback(() => {
+    if (
+      !isLocallyLiveRef.current ||
+      isStoppingRef.current ||
+      closeStopFiredRef.current
+    ) {
+      return false;
+    }
+
+    closeStopFiredRef.current = true;
+    triggerStudioBroadcastCloseStop();
+    return true;
   }, []);
 
   const startPublishing = useCallback(async () => {
@@ -102,6 +129,8 @@ export function useStudioPublishFoundation({
       return;
     }
 
+    closeStopFiredRef.current = false;
+    isLocallyLiveRef.current = true;
     setIsLocallyLive(true);
     setIsStarting(false);
     router.refresh();
@@ -123,6 +152,8 @@ export function useStudioPublishFoundation({
     }
 
     setIsStopping(true);
+    isStoppingRef.current = true;
+    closeStopFiredRef.current = true;
     setLifecycleMessage(null);
 
     const stopResult = await stopStudioBroadcastLifecycle();
@@ -130,13 +161,56 @@ export function useStudioPublishFoundation({
     if (stopResult.status === "error") {
       setLifecycleMessage(stopResult.message);
       setIsStopping(false);
+      isStoppingRef.current = false;
+      closeStopFiredRef.current = false;
       return;
     }
 
     await clearLocalPublisher();
     setIsStopping(false);
+    isStoppingRef.current = false;
     router.refresh();
   }, [clearLocalPublisher, isLocallyLive, isStopping, lifecycleKind, router]);
+
+  useEffect(() => {
+    const room = roomRef.current;
+
+    if (!room) {
+      clearRoomDisconnectBinding();
+      return;
+    }
+
+    const binding = bindStudioPublisherRoomDisconnect(room, () => {
+      if (!triggerCloseStop()) {
+        return;
+      }
+
+      void clearLocalPublisher();
+      router.refresh();
+    });
+
+    disconnectCleanupRef.current = binding.cleanup;
+
+    return () => {
+      if (disconnectCleanupRef.current === binding.cleanup) {
+        clearRoomDisconnectBinding();
+      } else {
+        binding.cleanup();
+      }
+    };
+  }, [clearLocalPublisher, clearRoomDisconnectBinding, router, triggerCloseStop]);
+
+  useEffect(() => {
+    function handlePageHide() {
+      triggerCloseStop();
+    }
+
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+    };
+  }, [triggerCloseStop]);
 
   useEffect(() => {
     return () => {
