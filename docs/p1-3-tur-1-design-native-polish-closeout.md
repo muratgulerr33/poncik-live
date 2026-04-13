@@ -15,7 +15,7 @@ Bu batch içinde birlikte kapanan işler:
   - `--surface-3` tokenı
 - Geist font root cause fix
 - public discovery + live görünür Türkçe karakter / ASCII düzeltmeleri
-- `/auth` + `/studio` current standalone CTA action language standardization
+- `/auth` + `/studio` current route-surface CTA action language standardization
 - `/auth` mobile segmented toggle polish
 - `test-results/` commit dışı bırakma hazırlığı
 
@@ -72,13 +72,13 @@ Etkilenen route'lar:
 
 Bu close-out batch'inde açılmayanlar:
 
-- header/navigation yeni turu
+- navigation-heavy header/shell breadth turu
 - discovery redesign breadth
 - public watch redesign breadth
 - media ratio / `P1.1`
 - public surface/cover breadth / `P1.2`
-- `shared/ui`
-- generic abstraction
+- `shared/ui` açılımı
+- shell / navigation / media için generic abstraction
 - yeni button component
 - yeni typography expansion turu
 - studio/publish lifecycle redesign
