@@ -55,7 +55,7 @@ export function StudioGateSurface({ view }: StudioGateSurfaceProps) {
       <p className={styles.panelDescription}>{copy.body}</p>
 
       <div className={styles.actionRow}>
-        <Link className={styles.secondaryAction} href="/">
+        <Link className="ui-action ui-action-secondary" href="/">
           {STUDIO_COPY.returnDiscoveryLabel}
         </Link>
       </div>

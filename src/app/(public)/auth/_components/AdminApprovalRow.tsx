@@ -95,6 +95,7 @@ export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
       ) : null}
       <div className={styles.actionRow}>
         <form
+          className={styles.actionForm}
           action={approveAction}
           onSubmit={() => {
             approveSubmittedRef.current = true;
@@ -103,13 +104,14 @@ export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
         >
           <button
             type="submit"
-            className={styles.action}
+            className="ui-action ui-action-primary"
             disabled={isApproving || isRejecting}
           >
             {AUTH_COPY.adminApproveLabel}
           </button>
         </form>
         <form
+          className={styles.actionForm}
           action={rejectAction}
           onSubmit={() => {
             rejectSubmittedRef.current = true;
@@ -118,7 +120,7 @@ export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
         >
           <button
             type="submit"
-            className={styles.secondaryAction}
+            className="ui-action ui-action-secondary"
             disabled={isApproving || isRejecting}
           >
             {AUTH_COPY.adminRejectLabel}

@@ -38,9 +38,9 @@ export function LiveWatchPlaybackSurface({
         {playbackState === "playing" && !playbackMessage ? null : (
           <div className={styles.frameOverlay}>
             <div className={styles.frameInner}>
-              <h2 className="t-h2">Canli yayin</h2>
+              <h2 className="t-h2">Canlı yayın</h2>
               <p className={`t-body ${styles.frameBody}`}>
-                {playbackMessage ?? "Canli yayin baglaniyor."}
+                {playbackMessage ?? "Canlı yayın bağlanıyor."}
               </p>
               {canRetryPlayback ? (
                 <button
@@ -48,7 +48,7 @@ export function LiveWatchPlaybackSurface({
                   onClick={onRetryPlayback}
                   type="button"
                 >
-                  Oynatmayi baslat
+                  Oynatmayı başlat
                 </button>
               ) : null}
             </div>

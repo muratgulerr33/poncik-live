@@ -11,8 +11,10 @@ body {
 }
 
 :root {
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist);
+  --font-display: var(--font-geist);
+  --control-min-height: 2.75rem;
+  --control-min-height-coarse: 3rem;
 }
 
 :root {
@@ -35,6 +37,13 @@ body {
   --radius: 0.75rem;
   --surface-1: oklch(0.99 0.004 300);
   --surface-2: oklch(0.965 0.01 300);
+  --surface-3: oklch(0.945 0.014 298);
+  --action-primary-bg: var(--primary);
+  --action-primary-fg: oklch(0.985 0.01 300);
+  --action-primary-border: color-mix(in oklch, var(--primary) 55%, transparent);
+  --action-secondary-bg: var(--surface-1);
+  --action-secondary-fg: var(--foreground);
+  --action-secondary-border: var(--border);
 }
 
 .dark {
@@ -56,6 +65,13 @@ body {
   --ring: oklch(0.72 0.16 295);
   --surface-1: oklch(0.2 0.015 290);
   --surface-2: oklch(0.24 0.02 292);
+  --surface-3: oklch(0.28 0.022 292);
+  --action-primary-bg: var(--primary);
+  --action-primary-fg: oklch(0.985 0.01 300);
+  --action-primary-border: color-mix(in oklch, var(--primary) 45%, var(--surface-2));
+  --action-secondary-bg: var(--surface-1);
+  --action-secondary-fg: var(--foreground);
+  --action-secondary-border: color-mix(in oklch, var(--border) 80%, var(--surface-3));
 }
 
 html {
@@ -69,9 +85,93 @@ body {
   font-family: var(--font-sans);
   font-weight: 400;
   line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  font-feature-settings: "rlig" 1, "calt" 1;
+  font-kerning: normal;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:where(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}
+
+:where(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+    select,
+    textarea
+  ) {
+  min-block-size: var(--control-min-height);
+}
+
+:where(
+    a[href],
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [tabindex]:not([tabindex="-1"])
+  ):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+@media (any-pointer: coarse) {
+  :where(
+      button,
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+      select,
+      textarea
+    ) {
+    min-block-size: var(--control-min-height-coarse);
+  }
+}
+
+.ui-action,
+.ui-action:visited,
+.ui-action:hover,
+.ui-action:active {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-min-height);
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font: inherit;
+  line-height: 1;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.ui-action-primary,
+.ui-action-primary:visited,
+.ui-action-primary:hover,
+.ui-action-primary:active {
+  background: var(--action-primary-bg);
+  color: var(--action-primary-fg);
+  border-color: var(--action-primary-border);
+}
+
+.ui-action-secondary,
+.ui-action-secondary:visited,
+.ui-action-secondary:hover,
+.ui-action-secondary:active {
+  background: var(--action-secondary-bg);
+  color: var(--action-secondary-fg);
+  border-color: var(--action-secondary-border);
 }
 
 h1,

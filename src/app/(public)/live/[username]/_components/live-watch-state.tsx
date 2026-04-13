@@ -7,9 +7,9 @@ type LiveWatchMessageProps = Readonly<{
 export function LiveWatchLoadingState() {
   return (
     <div className={styles.stateCard}>
-      <h2 className="t-h3">Yayin yukleniyor</h2>
+      <h2 className="t-h3">Yayın yükleniyor</h2>
       <p className={`t-body ${styles.stateBody}`}>
-        Public watch yuzeyi hazirlaniyor.
+        Public watch yüzeyi hazırlanıyor.
       </p>
     </div>
   );
@@ -18,10 +18,10 @@ export function LiveWatchLoadingState() {
 export function LiveEndedState({ username }: LiveWatchMessageProps) {
   return (
     <div className={styles.stateCard}>
-      <h2 className="t-h3">Yayin sona erdi</h2>
+      <h2 className="t-h3">Yayın sona erdi</h2>
       <p className={`t-body ${styles.stateBody}`}>
-        @{username} icin en son yayin artik acik degil. Discovery yuzeyine donup
-        baska bir yayin izleyebilirsin.
+        @{username} için en son yayın artık açık değil. Discovery yüzeyine dönüp
+        başka bir yayın izleyebilirsin.
       </p>
     </div>
   );
@@ -30,9 +30,9 @@ export function LiveEndedState({ username }: LiveWatchMessageProps) {
 export function LiveUnavailableState({ username }: LiveWatchMessageProps) {
   return (
     <div className={styles.stateCard}>
-      <h2 className="t-h3">Yayin su anda kullanilabilir degil</h2>
+      <h2 className="t-h3">Yayın şu anda kullanılabilir değil</h2>
       <p className={`t-body ${styles.stateBody}`}>
-        @{username} icin izlenebilir bir yayin bulunamadi.
+        @{username} için izlenebilir bir yayın bulunamadı.
       </p>
     </div>
   );

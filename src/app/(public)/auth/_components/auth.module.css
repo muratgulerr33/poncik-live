@@ -90,9 +90,7 @@
   font: inherit;
 }
 
-.input:focus-visible,
-.action:focus-visible,
-.secondaryAction:focus-visible {
+.input:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 3px;
 }
@@ -104,30 +102,8 @@
   align-items: center;
 }
 
-.action,
-.secondaryAction {
-  min-height: 2.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius);
-  font: inherit;
-  cursor: pointer;
-}
-
-.action {
-  border: 0;
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-
-.secondaryAction {
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  color: var(--foreground);
-}
-
-.actionDisabled {
-  opacity: 0.7;
-  cursor: progress;
+.actionForm {
+  display: flex;
 }
 
 .notice {
@@ -190,6 +166,26 @@
   color: var(--muted-foreground);
 }
 
+@media (max-width: 480px) {
+  .toggleRow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    gap: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .toggleButton {
+    width: 100%;
+    min-width: 0;
+    padding: 0.6rem 0.35rem;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-align: center;
+  }
+}
+
 @media (max-width: 640px) {
   .page {
     padding-top: 1.5rem;
@@ -200,8 +196,12 @@
     align-items: stretch;
   }
 
-  .action,
-  .secondaryAction {
+  .actionRow > a,
+  .actionForm {
+    width: 100%;
+  }
+
+  .actionForm > button {
     width: 100%;
   }
 }

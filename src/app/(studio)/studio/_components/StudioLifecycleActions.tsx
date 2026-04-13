@@ -28,7 +28,7 @@ export function StudioLifecycleActions({
     <div className={styles.lifecycleStack}>
       <div className={styles.actionRow}>
         <button
-          className={styles.primaryAction}
+          className="ui-action ui-action-primary"
           disabled={!canStart || isPending}
           onClick={onStart}
           type="button"
@@ -37,7 +37,7 @@ export function StudioLifecycleActions({
         </button>
 
         <button
-          className={styles.secondaryAction}
+          className="ui-action ui-action-secondary"
           disabled={!canStop || isPending}
           onClick={onStop}
           type="button"

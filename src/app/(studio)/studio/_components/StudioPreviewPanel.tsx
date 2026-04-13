@@ -89,7 +89,7 @@ export function StudioPreviewPanel({
 
       {canRetry ? (
         <button
-          className={styles.secondaryAction}
+          className={`${styles.stackAction} ui-action ui-action-secondary`}
           onClick={() => {
             void retryPreview();
           }}

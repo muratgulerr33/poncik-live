@@ -82,7 +82,7 @@ export function useLiveWatchPlayback(username: string) {
         return;
       }
 
-      setPlaybackMessage("Canli yayin akisi su anda baglanamiyor.");
+      setPlaybackMessage("Canlı yayın akışı şu anda bağlanamıyor.");
       setPlaybackState("degraded");
     }, TRACK_WAIT_TIMEOUT_MS);
   }, [clearTrackWaitTimeout]);
@@ -103,7 +103,7 @@ export function useLiveWatchPlayback(username: string) {
 
           if (!hasPlayableTrackRef.current) {
             setPlaybackMessage(
-              "Yayini acmak icin oynatmayi baslatman gerekebilir."
+              "Yayını açmak için oynatmayı başlatman gerekebilir."
             );
             setPlaybackState("playback_blocked");
           }
@@ -135,7 +135,7 @@ export function useLiveWatchPlayback(username: string) {
         }
 
         setCanRetryPlayback(true);
-        setPlaybackMessage("Yayini acmak icin oynatmayi baslatman gerekebilir.");
+        setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
         setPlaybackState("playback_blocked");
         return;
       }
@@ -161,7 +161,7 @@ export function useLiveWatchPlayback(username: string) {
         setCanRetryPlayback(true);
 
         if (!hasPlayableTrackRef.current) {
-          setPlaybackMessage("Yayini acmak icin oynatmayi baslatman gerekebilir.");
+          setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
           setPlaybackState("playback_blocked");
         }
       }
@@ -181,7 +181,7 @@ export function useLiveWatchPlayback(username: string) {
     );
 
     if (!didRetry) {
-      setPlaybackMessage("Yayini acmak icin oynatmayi baslatman gerekebilir.");
+      setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
       setPlaybackState("playback_blocked");
       return;
     }
@@ -206,14 +206,14 @@ export function useLiveWatchPlayback(username: string) {
 
       if (tokenResult.kind === "not_live") {
         clearTrackWaitTimeout();
-        setPlaybackMessage("Yayin artik acik degil. Sayfa birazdan guncellenecek.");
+        setPlaybackMessage("Yayın artık açık değil. Sayfa birazdan güncellenecek.");
         setPlaybackState("playback_blocked");
         return;
       }
 
       if (tokenResult.kind !== "success") {
         clearTrackWaitTimeout();
-        setPlaybackMessage("Canli yayin akisi su anda baglanamiyor.");
+        setPlaybackMessage("Canlı yayın akışı şu anda bağlanamıyor.");
         setPlaybackState("degraded");
         return;
       }
@@ -230,7 +230,7 @@ export function useLiveWatchPlayback(username: string) {
 
       if (connectionResult.kind !== "success") {
         clearTrackWaitTimeout();
-        setPlaybackMessage("Canli yayin akisi su anda baglanamiyor.");
+        setPlaybackMessage("Canlı yayın akışı şu anda bağlanamıyor.");
         setPlaybackState("degraded");
         return;
       }
@@ -239,7 +239,7 @@ export function useLiveWatchPlayback(username: string) {
 
       const binding = bindLiveWatchRoom(connectionResult.room, {
         onDisconnected: () => {
-          setPlaybackMessage("Canli yayin baglantisi kesildi. Sayfa yenileniyor.");
+          setPlaybackMessage("Canlı yayın bağlantısı kesildi. Sayfa yenileniyor.");
           setPlaybackState("degraded");
         },
         onSubscriptionFailed: () => {
@@ -248,7 +248,7 @@ export function useLiveWatchPlayback(username: string) {
           }
 
           clearTrackWaitTimeout();
-          setPlaybackMessage("Canli yayin akisi su anda baglanamiyor.");
+          setPlaybackMessage("Canlı yayın akışı şu anda bağlanamıyor.");
           setPlaybackState("degraded");
         },
         onTrackSubscribed: (track) => {

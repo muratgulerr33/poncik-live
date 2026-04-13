@@ -63,13 +63,13 @@ export function CurrentSessionPanel({
         />
       ) : null}
       <div className={styles.actionRow}>
-        <Link href={primaryActionHref} className={styles.action}>
+        <Link href={primaryActionHref} className="ui-action ui-action-primary">
           {primaryActionLabel}
         </Link>
-        <form action={signOutFormAction}>
+        <form action={signOutFormAction} className={styles.actionForm}>
           <button
             type="submit"
-            className={styles.secondaryAction}
+            className="ui-action ui-action-secondary"
             disabled={isSigningOut}
           >
             {AUTH_COPY.signOutLabel}

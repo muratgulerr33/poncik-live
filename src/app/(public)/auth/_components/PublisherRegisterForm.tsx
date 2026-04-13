@@ -86,7 +86,7 @@ export function PublisherRegisterForm() {
       <div className={styles.actionRow}>
         <button
           type="submit"
-          className={`${styles.action} ${isPending ? styles.actionDisabled : ""}`}
+          className="ui-action ui-action-primary"
           disabled={isPending}
         >
           {isPending

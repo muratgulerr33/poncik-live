@@ -13,13 +13,13 @@ export function LiveWatchShell({ username, children }: LiveWatchShellProps) {
     <main className={styles.page}>
       <div className={styles.shell}>
         <Link href="/" className={`t-label ${styles.backLink}`}>
-          {"<"} Discovery sayfasina don
+          {"<"} Discovery sayfasına dön
         </Link>
         <header className={styles.header}>
           <p className={`t-label ${styles.eyebrow}`}>Public watch</p>
           <h1 className="t-h1">@{username}</h1>
           <p className={`t-body ${styles.description}`}>
-            Bu yuzey yalniz izleme ve geri donus davranisini tasir. Auth
+            Bu yüzey yalnız izleme ve geri dönüş davranışını taşır. Auth
             gerektirmez.
           </p>
         </header>

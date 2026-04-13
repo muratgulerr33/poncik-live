@@ -22,8 +22,8 @@ type RootLayoutProps = Readonly<{
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html suppressHydrationWarning>
-      <body className={geist.variable}>
+    <html lang="tr" className={geist.variable} suppressHydrationWarning>
+      <body>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

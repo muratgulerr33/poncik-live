@@ -53,7 +53,7 @@ export function SharedLoginForm({ next }: SharedLoginFormProps) {
       <div className={styles.actionRow}>
         <button
           type="submit"
-          className={`${styles.action} ${isPending ? styles.actionDisabled : ""}`}
+          className="ui-action ui-action-primary"
           disabled={isPending}
         >
           {isPending ? "Giriş kontrol ediliyor" : AUTH_COPY.signInLabel}
