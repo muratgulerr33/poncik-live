@@ -221,9 +221,22 @@ Repo ve dosya disiplini çok sıkı korunur.
 
 Varsayılan yaklaşım route-local yapıdır.
 
-Şunları açma:
+`shared/ui` varsayılan çözüm değildir.
+Ancak gerçekten ortak, stabil, kanıtlı ve dar primitive ihtiyaçta düşünülebilir.
 
-- `shared/ui`
+`shared/ui` şunlar için kullanılmaz:
+
+- shell
+- navigation
+- media
+- generic abstraction çöplüğü
+
+Tek mega global header varsayılan çözüm değildir.
+Route/surface bazlı sade chrome varyasyonu olabilir.
+Bu, role-based breadth veya navigation shell açmak anlamına gelmez.
+
+Şunları varsayılan çözüm gibi açma:
+
 - `_routes`
 - `_home`
 - generic `live.ts`
@@ -555,4 +568,3 @@ Güvenli manuel operasyon yeterliyse:
 - yeni admin ekranı açılmaz
 - yeni moderasyon breadth’i açılmaz
 - scope büyütülmez
-

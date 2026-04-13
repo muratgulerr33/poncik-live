@@ -34,8 +34,9 @@ Kurallar:
 
 ### Mimari truth
 - default = route-local
-- `shared/ui` yok
+- `shared/ui` ancak gerçekten ortak, stabil, kanıtlı ve dar primitive ihtiyaçta düşünülebilir
 - generic abstraction yok
+- shell / navigation / media için generic shared abstraction açılmaz
 - god file yok
 - güvenli değişiklik öncelikli
 
@@ -96,6 +97,8 @@ Bu başlık ilk sıradadır.
 - font fallback
 - genel native his düzeltmeleri
 - boşluk / tipografi / aksiyon boyutu / empty state polish
+- `/auth` sade auth/approval yüzeyi olarak kalır; gerektiğinde minimal brand/help/access chrome taşıyabilir; navigation-heavy auth yüzeyi açılmaz
+- `/live` ve `/studio` ana route yüzeyinde minimum route chrome taşıyabilir; yalnız fullscreen overlay açılırsa close/back davranışı overlay tarafından taşınabilir; bu route'u navigation shell'e çevirmez
 
 ### 2. sıradaki iş — P1.1 Mobile usability + media ratio
 
@@ -166,7 +169,7 @@ Bunlar feature roadmap’e karışmaz ama launch öncesi ayrıca kapanır:
 - tokenı frontend’de üretmek
 - API secret’ı frontend’e koymak
 - separate admin/auth route açmak
-- shared/ui veya generic media abstraction çöplüğü açmak
+- `shared/ui`yı shell / navigation / media veya generic abstraction çöplüğü olarak açmak
 - ops/launch işlerini feature roadmap’e gömmek
 - V2/V3 işlerini V1 kalite turuna sızdırmak
 

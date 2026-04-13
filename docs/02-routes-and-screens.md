@@ -64,6 +64,9 @@ Kural:
 - `/auth` tek auth route’tur
 - auth alt route çoğaltılmaz
 - admin ayrı auth sistemi kullanmaz
+- `/auth` sade auth/approval yüzeyi olarak kalır
+- gerektiğinde minimal brand/help/access chrome taşıyabilir
+- navigation-heavy yüzeye dönmez
 
 ## 4) `/live/[username]` — Public watch surface
 
@@ -72,8 +75,7 @@ Ana amacı:
 
 Gösterir:
 - public watch yüzeyi
-- minimum viewer chrome
-- geri dönüş davranışı
+- minimum route chrome
 - gerekli live / unavailable / ended bağlamı
 
 Göstermez:
@@ -88,6 +90,9 @@ Kural:
 - V1 watch publictir
 - guest ve user canlı yayını izleyebilir
 - viewer yalnız izler ve geri döner
+- ana route yüzeyi minimum route chrome taşıyabilir
+- yalnız fullscreen overlay açık state'te close/back davranışı overlay tarafından taşınabilir
+- bu, route'u navigation shell'e çevirmek anlamına gelmez
 
 ## 5) `/studio` — Publisher prep / publish surface
 
@@ -111,6 +116,9 @@ Kural:
 - publisher yüzeyi `/studio`dur
 - publish yetkisi yalnız `approved` ile açılır
 - publisher approval olmadan publish açılmaz
+- ana route yüzeyi minimum route chrome taşıyabilir
+- yalnız fullscreen overlay açık state'te close/back davranışı overlay tarafından taşınabilir
+- bu, route'u navigation shell'e çevirmek anlamına gelmez
 
 ## 6) Route/screen yapışma yasakları
 
@@ -128,4 +136,3 @@ Aşağıdaki karışımlar V1’de yapılmaz:
 ## 7) Kısa hüküm
 
 Bu route/screen omurgası güvenlidir çünkü her route tek bir ana kullanıcı amacı taşır. Böylece yüzeyler birbirine karışmaz, V1 dar kalır ve sonraki fazlar geldiğinde yeni alanlar mevcut route’ları şişirmeden ayrı katmanlarda büyütülebilir.
-
