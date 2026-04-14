@@ -1,20 +1,92 @@
 .page {
   min-height: 100vh;
-  padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
+  padding: 1.25rem clamp(1rem, 4vw, 3rem) 3rem;
   background:
-    radial-gradient(circle at top, color-mix(in oklch, var(--primary) 10%, transparent), transparent 38%),
+    radial-gradient(circle at top, color-mix(in oklch, var(--primary) 10%, transparent), transparent 40%),
     linear-gradient(180deg, var(--background) 0%, var(--surface-1) 100%);
+}
+
+.chromeSlot {
+  max-width: 72rem;
+  margin: 0 auto 1.5rem;
+}
+
+.chromeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid color-mix(in oklch, var(--border) 84%, transparent);
+  border-radius: calc(var(--radius) + 0.85rem);
+  background: color-mix(in oklch, var(--surface-1) 88%, transparent);
+  box-shadow: 0 18px 40px color-mix(in oklch, var(--foreground) 6%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.brandLink {
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.chromeActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.accountSlot,
+.chromeToggle,
+.drawerClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-min-height);
+  min-inline-size: var(--control-min-height);
+  padding: 0.7rem;
+  border: 1px solid color-mix(in oklch, var(--border) 88%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface-1) 92%, transparent);
+  color: var(--foreground);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.accountSlot {
+  text-decoration: none;
+}
+
+.chromeToggle,
+.drawerClose {
+  cursor: pointer;
+}
+
+.accountSlotCurrent,
+.drawerLinkActive {
+  border-color: color-mix(in oklch, var(--primary) 38%, var(--border));
+  background: color-mix(in oklch, var(--primary) 14%, var(--surface-1));
+}
+
+.controlIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  stroke-width: 1.9;
 }
 
 .shell {
   display: grid;
-  gap: 2rem;
+  gap: 1.75rem;
   max-width: 72rem;
   margin: 0 auto;
 }
 
 .hero {
-  max-width: 42rem;
+  max-width: 44rem;
 }
 
 .eyebrow {
@@ -24,21 +96,26 @@
 
 .description {
   margin: 1rem 0 0;
+  max-width: 38rem;
   color: var(--muted-foreground);
 }
 
 .card {
-  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+  padding: 1.75rem;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) + 0.75rem);
   background: var(--surface-2);
+  box-shadow: 0 18px 42px color-mix(in oklch, var(--foreground) 5%, transparent);
 }
 
 .toggleRow {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin: 0;
   padding: 0.35rem;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -64,14 +141,14 @@
 }
 
 .panelDescription {
-  margin: 0.75rem 0 0;
+  margin: 0;
   color: var(--muted-foreground);
 }
 
 .form {
   display: grid;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin: 0.25rem 0 0;
 }
 
 .field {
@@ -107,7 +184,7 @@
 }
 
 .notice {
-  margin-top: 1rem;
+  margin: 0;
   padding: 0.9rem 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -139,7 +216,7 @@
 .statusStack {
   display: grid;
   gap: 0.875rem;
-  margin-bottom: 1rem;
+  margin: 0;
 }
 
 .supportSlot {
@@ -166,6 +243,112 @@
   color: var(--muted-foreground);
 }
 
+.brandLink:focus-visible,
+.accountSlot:focus-visible,
+.chromeToggle:focus-visible,
+.drawerClose:focus-visible,
+.drawerLink:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+  transition: opacity 150ms ease, visibility 150ms ease;
+}
+
+.drawerBackdropOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drawerPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  width: min(19rem, calc(100vw - 1rem));
+  padding: 1rem;
+  border-left: 1px solid color-mix(in oklch, var(--border) 84%, transparent);
+  background: color-mix(in oklch, var(--surface-1) 96%, transparent);
+  box-shadow: -18px 0 42px color-mix(in oklch, var(--foreground) 8%, transparent);
+  transform: translateX(100%);
+  transition: transform 180ms ease;
+}
+
+.drawerPanelOpen {
+  transform: translateX(0);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.drawerTitle {
+  color: var(--muted-foreground);
+}
+
+.drawerNav {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.drawerLink {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--control-min-height);
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in oklch, var(--border) 84%, transparent);
+  border-radius: var(--radius);
+  color: var(--foreground);
+  text-decoration: none;
+  background: color-mix(in oklch, var(--surface-1) 92%, transparent);
+}
+
+.accountSlot:active,
+.chromeToggle:active,
+.drawerClose:active {
+  transform: scale(0.97);
+}
+
+.chromeToggle[aria-expanded="true"] {
+  transform: none;
+}
+
+@media (any-pointer: fine) {
+  .accountSlot:hover,
+  .chromeToggle:hover,
+  .drawerClose:hover {
+    background: color-mix(in oklch, var(--surface-2) 90%, transparent);
+    border-color: color-mix(in oklch, var(--ring) 38%, var(--border));
+  }
+}
+
+@media (any-pointer: coarse) {
+  .accountSlot:hover,
+  .chromeToggle:hover,
+  .drawerClose:hover {
+    background: color-mix(in oklch, var(--surface-1) 92%, transparent);
+    border-color: color-mix(in oklch, var(--border) 88%, transparent);
+  }
+
+  .chromeToggle[aria-expanded="true"] {
+    transform: none;
+  }
+}
+
 @media (max-width: 480px) {
   .toggleRow {
     display: grid;
@@ -189,6 +372,14 @@
 @media (max-width: 640px) {
   .page {
     padding-top: 1.5rem;
+  }
+
+  .chromeBar {
+    padding-inline: 0.8rem;
+  }
+
+  .chromeActions {
+    gap: 0.55rem;
   }
 
   .actionRow {
