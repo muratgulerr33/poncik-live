@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
@@ -6,6 +8,9 @@ import styles from "./studio.module.css";
 
 type StudioRouteShellProps = Readonly<{
   children: ReactNode;
+  closeDisabled?: boolean;
+  closeHref?: string;
+  onRequestClose?: () => void;
   statusLabel?: string;
   statusTone?: "idle" | "live" | "degraded";
   username?: string;
@@ -13,6 +18,9 @@ type StudioRouteShellProps = Readonly<{
 
 export function StudioRouteShell({
   children,
+  closeDisabled = false,
+  closeHref = "/",
+  onRequestClose,
   statusLabel,
   statusTone,
   username
@@ -21,13 +29,25 @@ export function StudioRouteShell({
     <section className={styles.shell}>
       <header className={styles.chrome} aria-label="Studyo ust denetimleri">
         <div className={styles.leadingCluster}>
-          <Link
-            aria-label="Studyo sahnesinden cik"
-            className={styles.closeButton}
-            href="/"
-          >
-            <X aria-hidden="true" size={18} strokeWidth={2.2} />
-          </Link>
+          {onRequestClose ? (
+            <button
+              aria-label="Studyo sahnesinden cik"
+              className={styles.closeButton}
+              disabled={closeDisabled}
+              onClick={onRequestClose}
+              type="button"
+            >
+              <X aria-hidden="true" size={18} strokeWidth={2.2} />
+            </button>
+          ) : (
+            <Link
+              aria-label="Studyo sahnesinden cik"
+              className={styles.closeButton}
+              href={closeHref}
+            >
+              <X aria-hidden="true" size={18} strokeWidth={2.2} />
+            </Link>
+          )}
           {username ? (
             <p className={`t-label ${styles.usernameLabel}`}>@{username}</p>
           ) : null}

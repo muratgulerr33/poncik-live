@@ -148,7 +148,7 @@ export function useStudioPublishFoundation({
       (lifecycleKind !== "live" && !isLocallyLive) ||
       isStopping
     ) {
-      return;
+      return false;
     }
 
     setIsStopping(true);
@@ -163,13 +163,14 @@ export function useStudioPublishFoundation({
       setIsStopping(false);
       isStoppingRef.current = false;
       closeStopFiredRef.current = false;
-      return;
+      return false;
     }
 
     await clearLocalPublisher();
     setIsStopping(false);
     isStoppingRef.current = false;
     router.refresh();
+    return true;
   }, [clearLocalPublisher, isLocallyLive, isStopping, lifecycleKind, router]);
 
   useEffect(() => {

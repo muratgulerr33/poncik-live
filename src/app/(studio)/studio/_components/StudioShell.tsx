@@ -30,19 +30,20 @@ export function StudioShell({ view }: StudioShellProps) {
   return (
     <main className={styles.page}>
       <StudioFreshness />
-      <StudioRouteShell
-        statusLabel={isApprovedPrep ? getLifecycleLabel(view.lifecycle.kind) : undefined}
-        statusTone={isApprovedPrep ? view.lifecycle.kind : undefined}
-        username={isApprovedPrep ? view.session.username : undefined}
-      >
-        <div className={isApprovedPrep ? styles.sceneApproved : styles.sceneGate}>
-          {isApprovedPrep ? (
-            <StudioPrepSurface lifecycle={view.lifecycle} />
-          ) : (
+      <div className={isApprovedPrep ? styles.sceneApproved : styles.sceneGate}>
+        {isApprovedPrep ? (
+          <StudioPrepSurface
+            lifecycle={view.lifecycle}
+            statusLabel={getLifecycleLabel(view.lifecycle.kind)}
+            statusTone={view.lifecycle.kind}
+            username={view.session.username}
+          />
+        ) : (
+          <StudioRouteShell>
             <StudioGateSurface view={view} />
-          )}
-        </div>
-      </StudioRouteShell>
+          </StudioRouteShell>
+        )}
+      </div>
     </main>
   );
 }

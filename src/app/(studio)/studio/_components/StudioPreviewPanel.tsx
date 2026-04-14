@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
@@ -7,13 +9,24 @@ import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
 import styles from "./studio.module.css";
 
+export type StudioExitControlState = {
+  effectiveLifecycleKind: "idle" | "live" | "degraded";
+  isStopping: boolean;
+  lifecycleMessage: string | null;
+  requestStopForExit: () => Promise<boolean>;
+};
+
 type StudioPreviewPanelProps = {
   lifecycle: {
     kind: "idle" | "live" | "degraded";
   };
+  onExitControlChange?: (state: StudioExitControlState) => void;
 };
 
-export function StudioPreviewPanel({ lifecycle }: StudioPreviewPanelProps) {
+export function StudioPreviewPanel({
+  lifecycle,
+  onExitControlChange
+}: StudioPreviewPanelProps) {
   const {
     canRetry,
     getPreviewStream,
@@ -25,6 +38,7 @@ export function StudioPreviewPanel({ lifecycle }: StudioPreviewPanelProps) {
   const {
     canStart,
     canStop,
+    effectiveLifecycleKind,
     isStarting,
     isStopping,
     lifecycleMessage,
@@ -35,6 +49,25 @@ export function StudioPreviewPanel({ lifecycle }: StudioPreviewPanelProps) {
     previewState,
     readPreviewStream: getPreviewStream
   });
+
+  useEffect(() => {
+    if (!onExitControlChange) {
+      return;
+    }
+
+    onExitControlChange({
+      effectiveLifecycleKind,
+      isStopping,
+      lifecycleMessage,
+      requestStopForExit: stopPublishing
+    });
+  }, [
+    effectiveLifecycleKind,
+    isStopping,
+    lifecycleMessage,
+    onExitControlChange,
+    stopPublishing
+  ]);
 
   return (
     <section className={styles.previewScene}>

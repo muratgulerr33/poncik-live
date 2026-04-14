@@ -23,26 +23,28 @@ export function StudioLifecycleActions({
   onStop
 }: StudioLifecycleActionsProps) {
   const isPending = isStarting || isStopping;
+  const shouldShowStopAction = canStop || isStopping;
+  const actionLabel = shouldShowStopAction
+    ? isStopping
+      ? STUDIO_COPY.stoppingBroadcastLabel
+      : STUDIO_COPY.stopBroadcastLabel
+    : isStarting
+      ? STUDIO_COPY.startingBroadcastLabel
+      : STUDIO_COPY.startBroadcastLabel;
+  const isDisabled = shouldShowStopAction
+    ? !canStop || isPending
+    : !canStart || isPending;
 
   return (
     <div className={styles.lifecycleStack}>
       <div className={styles.actionRow}>
         <button
           className="ui-action ui-action-primary"
-          disabled={!canStart || isPending}
-          onClick={onStart}
+          disabled={isDisabled}
+          onClick={shouldShowStopAction ? onStop : onStart}
           type="button"
         >
-          {isStarting ? STUDIO_COPY.startingBroadcastLabel : STUDIO_COPY.startBroadcastLabel}
-        </button>
-
-        <button
-          className="ui-action ui-action-secondary"
-          disabled={!canStop || isPending}
-          onClick={onStop}
-          type="button"
-        >
-          {isStopping ? STUDIO_COPY.stoppingBroadcastLabel : STUDIO_COPY.stopBroadcastLabel}
+          {actionLabel}
         </button>
       </div>
 
