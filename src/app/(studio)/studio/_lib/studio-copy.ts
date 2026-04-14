@@ -22,31 +22,25 @@ export const STUDIO_COPY = {
   fallbackBody:
     "Başvuru durumun şu anda doğrulanamadı. Şimdilik keşiften devam edip daha sonra tekrar deneyebilirsin.",
   prepTitle: "Yayın hazırlığı",
-  prepBody:
-    "Yerel önizleme hazır olduğunda Başlat ile canlı sahneye geçebilirsin.",
-  previewLabel: "Hazırlık önizlemesi",
-  previewBody:
-    "Önizleme hazır olduğunda yayın henüz başlamaz; canlıya geçişi Başlat açar.",
+  prepBody: "Hazır olduğunda Başlat ile canlıya geç.",
+  previewLabel: "Önizleme",
+  previewBody: "Yayın henüz başlamadı.",
   previewPlaceholder: "Kamera ve mikrofon hazırlığı kontrol ediliyor.",
   prepMetaPrefix: "Hazırlık hesabı",
   requestingTitle: "Cihaz izni isteniyor",
-  requestingBody:
-    "Tarayıcı izin verirse önizleme burada açılır.",
+  requestingBody: "İzin verilirse önizleme burada açılır.",
   previewReadyTitle: "Yerel önizleme hazır",
-  previewReadyBody:
-    "Kamera ve mikrofon hazır. Yayın henüz başlamadı.",
+  previewReadyBody: "Kamera ve mikrofon hazır.",
   blockedTitle: "Cihaz izni tamamlanamadı",
   blockedBody:
-    "Tarayıcı izin istemini tamamlamadı veya izin verilmedi. İstersen tekrar deneyebilirsin.",
+    "İzin verilmedi ya da istek tamamlanmadı. İstersen tekrar deneyebilirsin.",
   unsupportedTitle: "Bu cihazda yayın hazırlığı sınırlı",
-  unsupportedBody:
-    "Gerekli medya API'leri görünmüyor veya güvenli bağlam sağlanmadı. Şimdilik yerel önizleme açılamıyor.",
+  unsupportedBody: "Bu cihazda yerel önizleme açılamıyor.",
   timeoutTitle: "Cihaz yanıtı zamanında gelmedi",
   timeoutBody:
-    "İzin isteği tamamlanamadı. Şimdilik dar fallback gösteriliyor; istersen tekrar deneyebilirsin.",
+    "İzin isteği zamanında tamamlanmadı. İstersen tekrar deneyebilirsin.",
   capabilityDegradedTitle: "Cihaz uygunluğu şu anda okunamıyor",
-  capabilityDegradedBody:
-    "Yerel önizleme doğrulanamadı. Şimdilik dar fallback gösteriliyor.",
+  capabilityDegradedBody: "Yerel önizleme şu anda doğrulanamıyor.",
   retryPreviewLabel: "Tekrar dene",
   startBroadcastLabel: "Başlat",
   startingBroadcastLabel: "Başlatılıyor",

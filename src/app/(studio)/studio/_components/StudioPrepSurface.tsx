@@ -10,7 +10,6 @@ import {
 import { StudioExitConfirmDialog } from "./studio-exit-confirm-dialog";
 import { StudioRouteShell } from "./studio-route-shell";
 import styles from "./studio.module.css";
-import { STUDIO_COPY } from "../_lib/studio-copy";
 
 type StudioPrepSurfaceProps = {
   lifecycle: {
@@ -98,11 +97,6 @@ export function StudioPrepSurface({
       username={username}
     >
       <section className={styles.prepScene}>
-        <div className={styles.prepIntro}>
-          <h2 className={styles.panelTitle}>{STUDIO_COPY.prepTitle}</h2>
-          <p className={styles.panelDescription}>{STUDIO_COPY.prepBody}</p>
-        </div>
-
         <StudioPreviewPanel
           lifecycle={lifecycle}
           onExitControlChange={setExitControl}

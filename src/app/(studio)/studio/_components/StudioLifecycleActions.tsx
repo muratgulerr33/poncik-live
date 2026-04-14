@@ -37,9 +37,9 @@ export function StudioLifecycleActions({
 
   return (
     <div className={styles.lifecycleStack}>
-      <div className={styles.actionRow}>
+      <div className={`${styles.actionRow} ${styles.lifecycleActionRow}`}>
         <button
-          className="ui-action ui-action-primary"
+          className={`ui-action ui-action-primary ${styles.lifecyclePrimaryAction}`}
           disabled={isDisabled}
           onClick={shouldShowStopAction ? onStop : onStart}
           type="button"
@@ -48,7 +48,9 @@ export function StudioLifecycleActions({
         </button>
       </div>
 
-      {message ? <p className={styles.errorText}>{message}</p> : null}
+      {message ? (
+        <p className={`${styles.errorText} ${styles.lifecycleMessage}`}>{message}</p>
+      ) : null}
     </div>
   );
 }

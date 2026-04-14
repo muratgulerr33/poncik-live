@@ -49,6 +49,8 @@ export function StudioPreviewPanel({
     previewState,
     readPreviewStream: getPreviewStream
   });
+  const isHealthyPreview = previewState === "preview_ready";
+  const shouldShowSupportStack = !isHealthyPreview || canRetry;
 
   useEffect(() => {
     if (!onExitControlChange) {
@@ -70,10 +72,12 @@ export function StudioPreviewPanel({
   ]);
 
   return (
-    <section className={styles.previewScene}>
+    <section className={styles.previewScene} data-state={previewState}>
       <div className={styles.previewStageStack}>
-        <div className={styles.previewCard}>
-          <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
+        <div className={styles.previewCard} data-state={previewState}>
+          {isHealthyPreview ? null : (
+            <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
+          )}
 
           <div className={styles.previewFrame}>
             <video
@@ -93,39 +97,43 @@ export function StudioPreviewPanel({
             )}
           </div>
 
-          <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
+          {isHealthyPreview ? null : (
+            <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
+          )}
+
+          <StudioLifecycleActions
+            canStart={canStart}
+            canStop={canStop}
+            isStarting={isStarting}
+            isStopping={isStopping}
+            message={lifecycleMessage}
+            onStart={() => {
+              void startPublishing();
+            }}
+            onStop={() => {
+              void stopPublishing();
+            }}
+          />
         </div>
       </div>
 
-      <div className={styles.sceneSupportStack}>
-        <StudioPermissionNotice state={previewState} />
+      {shouldShowSupportStack ? (
+        <div className={styles.sceneSupportStack}>
+          <StudioPermissionNotice state={previewState} />
 
-        {canRetry ? (
-          <button
-            className={`${styles.stackAction} ui-action ui-action-secondary`}
-            onClick={() => {
-              void retryPreview();
-            }}
-            type="button"
-          >
-            {STUDIO_COPY.retryPreviewLabel}
-          </button>
-        ) : null}
-
-        <StudioLifecycleActions
-          canStart={canStart}
-          canStop={canStop}
-          isStarting={isStarting}
-          isStopping={isStopping}
-          message={lifecycleMessage}
-          onStart={() => {
-            void startPublishing();
-          }}
-          onStop={() => {
-            void stopPublishing();
-          }}
-        />
-      </div>
+          {canRetry ? (
+            <button
+              className={`${styles.stackAction} ui-action ui-action-secondary`}
+              onClick={() => {
+                void retryPreview();
+              }}
+              type="button"
+            >
+              {STUDIO_COPY.retryPreviewLabel}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }
