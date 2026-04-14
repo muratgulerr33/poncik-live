@@ -1,7 +1,7 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import styles from "./live-watch.module.css";
+import { LiveWatchRouteShell } from "./live-watch-route-shell";
 
 type LiveWatchShellProps = Readonly<{
   username: string;
@@ -11,20 +11,7 @@ type LiveWatchShellProps = Readonly<{
 export function LiveWatchShell({ username, children }: LiveWatchShellProps) {
   return (
     <main className={styles.page}>
-      <div className={styles.shell}>
-        <Link href="/" className={`t-label ${styles.backLink}`}>
-          {"<"} Discovery sayfasına dön
-        </Link>
-        <header className={styles.header}>
-          <p className={`t-label ${styles.eyebrow}`}>Public watch</p>
-          <h1 className="t-h1">@{username}</h1>
-          <p className={`t-body ${styles.description}`}>
-            Bu yüzey yalnız izleme ve geri dönüş davranışını taşır. Auth
-            gerektirmez.
-          </p>
-        </header>
-        <div className={styles.contentStack}>{children}</div>
-      </div>
+      <LiveWatchRouteShell username={username}>{children}</LiveWatchRouteShell>
     </main>
   );
 }

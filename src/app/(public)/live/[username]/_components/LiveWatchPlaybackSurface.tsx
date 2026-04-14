@@ -38,6 +38,11 @@ export function LiveWatchPlaybackSurface({
         {playbackState === "playing" && !playbackMessage ? null : (
           <div className={styles.frameOverlay}>
             <div className={styles.frameInner}>
+              {playbackState === "connecting" ? (
+                <div className={styles.loadingPresence} aria-hidden="true">
+                  <span className={styles.loadingSpinner} />
+                </div>
+              ) : null}
               <h2 className="t-h2">Canlı yayın</h2>
               <p className={`t-body ${styles.frameBody}`}>
                 {playbackMessage ?? "Canlı yayın bağlanıyor."}
