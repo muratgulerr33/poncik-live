@@ -52,7 +52,7 @@ export function StudioPermissionNotice({ state }: StudioPermissionNoticeProps) {
   const copy = getCapabilityCopy(state);
 
   return (
-    <section className={styles.notice}>
+    <section className={styles.notice} data-state={state}>
       <h3 className={styles.noticeTitle}>{copy.title}</h3>
       <p className={styles.noticeBody}>{copy.body}</p>
     </section>

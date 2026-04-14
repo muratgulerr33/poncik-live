@@ -8,28 +8,12 @@ import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
 import styles from "./studio.module.css";
 
 type StudioPreviewPanelProps = {
-  username: string;
   lifecycle: {
     kind: "idle" | "live" | "degraded";
   };
 };
 
-function getLifecycleLabel(kind: StudioPreviewPanelProps["lifecycle"]["kind"]) {
-  if (kind === "live") {
-    return STUDIO_COPY.liveLifecycleLabel;
-  }
-
-  if (kind === "degraded") {
-    return STUDIO_COPY.degradedLifecycleLabel;
-  }
-
-  return STUDIO_COPY.idleLifecycleLabel;
-}
-
-export function StudioPreviewPanel({
-  username,
-  lifecycle
-}: StudioPreviewPanelProps) {
+export function StudioPreviewPanel({ lifecycle }: StudioPreviewPanelProps) {
   const {
     canRetry,
     getPreviewStream,
@@ -41,7 +25,6 @@ export function StudioPreviewPanel({
   const {
     canStart,
     canStop,
-    effectiveLifecycleKind,
     isStarting,
     isStopping,
     lifecycleMessage,
@@ -54,64 +37,62 @@ export function StudioPreviewPanel({
   });
 
   return (
-    <div className={styles.prepStack}>
-      <div className={styles.previewCard}>
-        <div className={styles.previewHeader}>
-          <div>
-            <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
-            <h3 className={styles.previewTitle}>{username}</h3>
+    <section className={styles.previewScene}>
+      <div className={styles.previewStageStack}>
+        <div className={styles.previewCard}>
+          <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
+
+          <div className={styles.previewFrame}>
+            <video
+              className={
+                previewState === "preview_ready"
+                  ? styles.previewVideo
+                  : styles.previewVideoInactive
+              }
+              muted
+              playsInline
+              ref={videoRef}
+            />
+            {previewState === "preview_ready" ? null : (
+              <div className={styles.previewPlaceholder}>
+                {STUDIO_COPY.previewPlaceholder}
+              </div>
+            )}
           </div>
-          <span className={styles.lifecycleBadge}>
-            {getLifecycleLabel(effectiveLifecycleKind)}
-          </span>
-        </div>
 
-        <div className={styles.previewFrame}>
-          <video
-            className={
-              previewState === "preview_ready"
-                ? styles.previewVideo
-                : styles.previewVideoInactive
-            }
-            muted
-            playsInline
-            ref={videoRef}
-          />
-          {previewState === "preview_ready" ? null : (
-            <div className={styles.previewPlaceholder}>{STUDIO_COPY.previewPlaceholder}</div>
-          )}
+          <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
         </div>
-
-        <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
       </div>
 
-      <StudioPermissionNotice state={previewState} />
+      <div className={styles.sceneSupportStack}>
+        <StudioPermissionNotice state={previewState} />
 
-      {canRetry ? (
-        <button
-          className={`${styles.stackAction} ui-action ui-action-secondary`}
-          onClick={() => {
-            void retryPreview();
+        {canRetry ? (
+          <button
+            className={`${styles.stackAction} ui-action ui-action-secondary`}
+            onClick={() => {
+              void retryPreview();
+            }}
+            type="button"
+          >
+            {STUDIO_COPY.retryPreviewLabel}
+          </button>
+        ) : null}
+
+        <StudioLifecycleActions
+          canStart={canStart}
+          canStop={canStop}
+          isStarting={isStarting}
+          isStopping={isStopping}
+          message={lifecycleMessage}
+          onStart={() => {
+            void startPublishing();
           }}
-          type="button"
-        >
-          {STUDIO_COPY.retryPreviewLabel}
-        </button>
-      ) : null}
-
-      <StudioLifecycleActions
-        canStart={canStart}
-        canStop={canStop}
-        isStarting={isStarting}
-        isStopping={isStopping}
-        message={lifecycleMessage}
-        onStart={() => {
-          void startPublishing();
-        }}
-        onStop={() => {
-          void stopPublishing();
-        }}
-      />
-    </div>
+          onStop={() => {
+            void stopPublishing();
+          }}
+        />
+      </div>
+    </section>
   );
 }

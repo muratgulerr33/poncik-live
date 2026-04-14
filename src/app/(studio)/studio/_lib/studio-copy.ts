@@ -23,18 +23,18 @@ export const STUDIO_COPY = {
     "Başvuru durumun şu anda doğrulanamadı. Şimdilik keşiften devam edip daha sonra tekrar deneyebilirsin.",
   prepTitle: "Yayın hazırlığı",
   prepBody:
-    "Onay tamamlandı. Bu adımda yerel önizleme hazırlanır ve canlı yayın giriş davranışı en dar haliyle açılır.",
+    "Yerel önizleme hazır olduğunda Başlat ile canlı sahneye geçebilirsin.",
   previewLabel: "Hazırlık önizlemesi",
   previewBody:
-    "Yerel önizleme yayının kendisi değildir. Buradaki hazırlık durumu veritabanına yazılmaz.",
+    "Önizleme hazır olduğunda yayın henüz başlamaz; canlıya geçişi Başlat açar.",
   previewPlaceholder: "Kamera ve mikrofon hazırlığı kontrol ediliyor.",
   prepMetaPrefix: "Hazırlık hesabı",
   requestingTitle: "Cihaz izni isteniyor",
   requestingBody:
-    "Tarayıcı yanıt verirse yerel önizleme hazırlanacak. Yanıt gelmezse burada dar bir fallback kalır.",
+    "Tarayıcı izin verirse önizleme burada açılır.",
   previewReadyTitle: "Yerel önizleme hazır",
   previewReadyBody:
-    "Kamera ve mikrofon bu sekmede doğrulandı. Bu yalnız hazırlık aşamasıdır; yayın henüz başlamadı.",
+    "Kamera ve mikrofon hazır. Yayın henüz başlamadı.",
   blockedTitle: "Cihaz izni tamamlanamadı",
   blockedBody:
     "Tarayıcı izin istemini tamamlamadı veya izin verilmedi. İstersen tekrar deneyebilirsin.",

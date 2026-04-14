@@ -9,53 +9,137 @@
     max(clamp(1rem, 4vw, 3rem), calc(var(--safe-area-left) + 1rem))
     max(clamp(1rem, 4vw, 3rem), calc(var(--safe-area-right) + 1rem));
   background:
-    radial-gradient(circle at top right, color-mix(in oklch, var(--primary) 14%, transparent), transparent 35%),
-    linear-gradient(180deg, var(--background) 0%, var(--surface-1) 100%);
+    radial-gradient(circle at top right, color-mix(in oklch, var(--primary) 14%, transparent), transparent 32%),
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--surface-3) 88%, black),
+      color-mix(in oklch, var(--background) 58%, black) 100%
+    );
 }
 
 .shell {
   display: grid;
-  gap: 2rem;
-  max-width: 72rem;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.8rem;
+  width: min(100%, 96rem);
   margin: 0 auto;
-}
-
-.hero {
-  max-width: 44rem;
-}
-
-.eyebrow {
-  margin: 0 0 0.75rem;
-  color: var(--primary);
-}
-
-.title {
-  margin: 0;
-}
-
-.description {
-  margin: 1rem 0 0;
-  max-width: 38rem;
-  color: var(--muted-foreground);
+  min-height: calc(
+    100dvh - max(1rem, calc(var(--safe-area-top) + 0.9rem)) -
+      max(1.5rem, calc(var(--safe-area-bottom) + 1.25rem))
+  );
 }
 
 .card {
+  width: min(100%, 38rem);
   padding: 1.5rem;
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) + 0.75rem);
-  background: var(--surface-2);
+  border: 1px solid color-mix(in oklch, var(--border) 82%, transparent);
+  border-radius: calc(var(--radius) + 0.65rem);
+  background: color-mix(in oklch, var(--surface-2) 92%, black 8%);
+  box-shadow: 0 16px 40px color-mix(in oklch, var(--foreground) 8%, transparent);
+  justify-self: center;
+}
+
+.chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.1rem;
+}
+
+.leadingCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid color-mix(in oklch, var(--border) 88%, var(--foreground) 12%);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface-1) 84%, transparent);
+  color: color-mix(in oklch, var(--foreground) 90%, var(--surface-1));
+  text-decoration: none;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 8%, transparent);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+
+.closeButton:active {
+  transform: scale(0.97);
+}
+
+.usernameLabel {
+  margin: 0;
+  color: color-mix(in oklch, var(--foreground) 88%, var(--surface-1));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusIndicator {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid color-mix(in oklch, var(--border) 80%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface-1) 76%, transparent);
+  color: color-mix(in oklch, var(--foreground) 85%, var(--surface-1));
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.statusIndicator[data-tone="live"] {
+  border-color: color-mix(in oklch, var(--primary) 34%, var(--border));
+  color: color-mix(in oklch, var(--primary) 66%, var(--foreground));
+}
+
+.statusIndicator[data-tone="degraded"] {
+  border-color: color-mix(in oklch, var(--destructive) 22%, var(--border));
+  color: color-mix(in oklch, var(--destructive) 54%, var(--foreground));
+}
+
+.sceneApproved,
+.sceneGate {
+  display: grid;
+  min-height: 0;
+}
+
+.sceneGate {
+  align-items: center;
+}
+
+.prepScene {
+  display: grid;
+  gap: 1.15rem;
+  min-height: 0;
+}
+
+.prepIntro {
+  max-width: 32rem;
 }
 
 .panelTitle,
-.noticeTitle,
-.previewTitle {
+.noticeTitle {
   margin: 0;
 }
 
 .panelDescription,
 .noticeBody,
-.previewBody,
-.meta {
+.previewBody {
   margin: 0.75rem 0 0;
   color: var(--muted-foreground);
 }
@@ -71,28 +155,30 @@
   width: fit-content;
 }
 
-.prepStack {
+.previewScene {
   display: grid;
   gap: 1rem;
+  grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.7fr);
+  align-items: start;
+}
+
+.previewStageStack,
+.sceneSupportStack {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.sceneSupportStack {
+  align-content: start;
 }
 
 .previewCard {
   display: grid;
-  gap: 0.9rem;
-  padding: 1rem;
-  border: 1px dashed color-mix(in oklch, var(--primary) 35%, var(--border));
-  border-radius: var(--radius);
-  background: color-mix(in oklch, var(--surface-1) 85%, var(--background));
-}
-
-.previewHeader {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .previewLabel {
-  margin: 0 0 0.6rem;
+  margin: 0;
   color: var(--primary);
 }
 
@@ -100,16 +186,18 @@
   position: relative;
   display: grid;
   place-items: center;
-  min-height: clamp(16rem, calc(100svh - 23rem), 28rem);
-  min-height: clamp(16rem, calc(100dvh - 23rem), 28rem);
+  min-height: clamp(19rem, calc(100svh - 13rem), 36rem);
+  min-height: clamp(19rem, calc(100dvh - 13rem), 36rem);
   overflow: hidden;
-  border-radius: calc(var(--radius) - 0.1rem);
+  border: 1px solid color-mix(in oklch, var(--border) 72%, transparent);
+  border-radius: calc(var(--radius) + 0.5rem);
+  box-shadow: 0 14px 34px color-mix(in oklch, var(--foreground) 8%, transparent);
   background:
     radial-gradient(circle at top, color-mix(in oklch, var(--primary) 12%, transparent), transparent 60%),
     linear-gradient(
       180deg,
-      color-mix(in oklch, var(--surface-2) 88%, black),
-      color-mix(in oklch, var(--background) 58%, black)
+      color-mix(in oklch, var(--surface-2) 82%, black),
+      color-mix(in oklch, var(--background) 60%, black)
     );
 }
 
@@ -132,25 +220,37 @@
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   text-align: center;
   color: var(--muted-foreground);
 }
 
-.lifecycleBadge {
-  align-self: flex-start;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid color-mix(in oklch, var(--primary) 28%, var(--border));
-  border-radius: 999px;
-  color: var(--primary);
+.previewMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sceneCaption {
+  margin: 0;
+  color: var(--muted-foreground);
+}
+
+.previewLifecycleHint {
+  color: color-mix(in oklch, var(--muted-foreground) 92%, var(--foreground));
   font-size: 0.88rem;
 }
 
 .notice {
-  padding: 0.95rem 1rem;
-  border: 1px solid color-mix(in oklch, var(--primary) 24%, var(--border));
-  border-radius: var(--radius);
-  background: var(--surface-1);
+  padding: 1rem 1.05rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
+  border-radius: calc(var(--radius) + 0.15rem);
+  background: color-mix(in oklch, var(--surface-1) 92%, black 8%);
+}
+
+.notice[data-state="preview_ready"] {
+  border-color: color-mix(in oklch, var(--primary) 22%, var(--border));
 }
 
 .lifecycleStack {
@@ -168,9 +268,26 @@
     padding-block-start: max(0.875rem, calc(var(--safe-area-top) + 0.7rem));
   }
 
-  .previewHeader,
+  .shell {
+    gap: 0.65rem;
+    min-height: calc(
+      100dvh - max(0.875rem, calc(var(--safe-area-top) + 0.7rem)) -
+        max(1.5rem, calc(var(--safe-area-bottom) + 1.25rem))
+    );
+  }
+
+  .chrome,
+  .previewMetaRow,
   .actionRow {
     flex-direction: column;
+  }
+
+  .chrome {
+    align-items: flex-start;
+  }
+
+  .previewScene {
+    grid-template-columns: 1fr;
   }
 
   .actionRow > a,
@@ -180,12 +297,19 @@
   }
 
   .previewFrame {
-    min-height: clamp(15rem, calc(100dvh - 24rem), 24rem);
+    min-height: clamp(16rem, calc(100dvh - 18rem), 28rem);
   }
 }
 
 @media (orientation: landscape) {
   .previewFrame {
-    min-height: clamp(13rem, calc(100dvh - 18rem), 22rem);
+    min-height: clamp(14rem, calc(100dvh - 10rem), 24rem);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .closeButton:hover {
+    background: color-mix(in oklch, var(--surface-1) 94%, transparent);
+    border-color: color-mix(in oklch, var(--primary) 24%, var(--border));
   }
 }
