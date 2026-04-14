@@ -23,7 +23,7 @@ export function LiveWatchShell({ username, children }: LiveWatchShellProps) {
             gerektirmez.
           </p>
         </header>
-        {children}
+        <div className={styles.contentStack}>{children}</div>
       </div>
     </main>
   );

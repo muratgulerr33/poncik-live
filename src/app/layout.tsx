@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import type { ReactNode } from "react";
 
@@ -8,6 +8,12 @@ import { ThemeProvider } from "./theme-provider";
 export const metadata: Metadata = {
   title: "Poncik Live",
   description: "PR-1 technical foundation"
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover"
 };
 
 const geist = Geist({

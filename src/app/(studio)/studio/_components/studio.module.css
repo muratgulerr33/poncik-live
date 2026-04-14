@@ -1,6 +1,13 @@
 .page {
   min-height: 100vh;
-  padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding-block:
+    max(1rem, calc(var(--safe-area-top) + 0.9rem))
+    max(1.5rem, calc(var(--safe-area-bottom) + 1.25rem));
+  padding-inline:
+    max(clamp(1rem, 4vw, 3rem), calc(var(--safe-area-left) + 1rem))
+    max(clamp(1rem, 4vw, 3rem), calc(var(--safe-area-right) + 1rem));
   background:
     radial-gradient(circle at top right, color-mix(in oklch, var(--primary) 14%, transparent), transparent 35%),
     linear-gradient(180deg, var(--background) 0%, var(--surface-1) 100%);
@@ -28,6 +35,7 @@
 
 .description {
   margin: 1rem 0 0;
+  max-width: 38rem;
   color: var(--muted-foreground);
 }
 
@@ -69,6 +77,8 @@
 }
 
 .previewCard {
+  display: grid;
+  gap: 0.9rem;
   padding: 1rem;
   border: 1px dashed color-mix(in oklch, var(--primary) 35%, var(--border));
   border-radius: var(--radius);
@@ -90,20 +100,26 @@
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 15rem;
-  margin-top: 1rem;
+  min-height: clamp(16rem, calc(100svh - 23rem), 28rem);
+  min-height: clamp(16rem, calc(100dvh - 23rem), 28rem);
   overflow: hidden;
   border-radius: calc(var(--radius) - 0.1rem);
   background:
-    radial-gradient(circle at top, color-mix(in oklch, var(--primary) 16%, transparent), transparent 60%),
-    color-mix(in oklch, var(--surface-2) 90%, black);
+    radial-gradient(circle at top, color-mix(in oklch, var(--primary) 12%, transparent), transparent 60%),
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--surface-2) 88%, black),
+      color-mix(in oklch, var(--background) 58%, black)
+    );
 }
 
 .previewVideo,
 .previewVideoInactive {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
 }
 
 .previewVideoInactive {
@@ -113,7 +129,10 @@
 
 .previewPlaceholder {
   position: absolute;
-  padding: 1rem;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem 1.25rem;
   text-align: center;
   color: var(--muted-foreground);
 }
@@ -146,7 +165,7 @@
 
 @media (max-width: 640px) {
   .page {
-    padding-top: 1.5rem;
+    padding-block-start: max(0.875rem, calc(var(--safe-area-top) + 0.7rem));
   }
 
   .previewHeader,
@@ -158,5 +177,15 @@
   .actionRow > button,
   .stackAction {
     width: 100%;
+  }
+
+  .previewFrame {
+    min-height: clamp(15rem, calc(100dvh - 24rem), 24rem);
+  }
+}
+
+@media (orientation: landscape) {
+  .previewFrame {
+    min-height: clamp(13rem, calc(100dvh - 18rem), 22rem);
   }
 }
