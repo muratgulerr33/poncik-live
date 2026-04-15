@@ -1,3 +1,4 @@
+import { readPublisherCoverCatalog } from "../_adapters/auth-cover-selection-boundary";
 import { readPublisherApplicationStatus } from "../_adapters/auth-publisher-application-boundary";
 import { readPendingPublisherApplications } from "../_adapters/auth-publisher-application-boundary";
 import { readCurrentSession } from "../_adapters/auth-session-adapter";
@@ -61,9 +62,28 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
 
     if (applicationState.kind === "found") {
       if (applicationState.status === "approved") {
+        const coverCatalogState = await readPublisherCoverCatalog(
+          currentSession.accountId
+        );
+
         publisherSurface = {
           kind: "approved",
-          showContinuityHint: false
+          selectedCoverImageId:
+            coverCatalogState.kind === "degraded"
+              ? null
+              : coverCatalogState.selectedCoverImageId,
+          coverCatalogState:
+            coverCatalogState.kind === "degraded"
+              ? {
+                  kind: "degraded"
+                }
+              : {
+                  kind: coverCatalogState.kind,
+                  items: coverCatalogState.items.map((item) => ({
+                    ...item,
+                    isSelected: item.id === coverCatalogState.selectedCoverImageId
+                  }))
+                }
         };
         primaryAction = {
           href: "/studio",
@@ -71,8 +91,7 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
         };
       } else if (applicationState.status === "rejected") {
         publisherSurface = {
-          kind: "rejected",
-          showContinuityHint: false
+          kind: "rejected"
         };
         primaryAction = {
           href: "/",

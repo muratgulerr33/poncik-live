@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 1.25rem clamp(1rem, 4vw, 3rem) 3rem;
+  padding: 0.9rem clamp(1rem, 4vw, 3rem) 2.25rem;
   background:
     radial-gradient(circle at top, color-mix(in oklch, var(--primary) 10%, transparent), transparent 40%),
     linear-gradient(180deg, var(--background) 0%, var(--surface-1) 100%);
@@ -8,7 +8,7 @@
 
 .chromeSlot {
   max-width: 72rem;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 1rem;
 }
 
 .chromeBar {
@@ -80,31 +80,38 @@
 
 .shell {
   display: grid;
-  gap: 1.75rem;
+  gap: 1rem;
   max-width: 72rem;
   margin: 0 auto;
 }
 
 .hero {
-  max-width: 44rem;
+  display: grid;
+  gap: 0.45rem;
+  max-width: 36rem;
+}
+
+.heroCompact {
+  gap: 0.2rem;
+  max-width: 28rem;
 }
 
 .eyebrow {
-  margin: 0 0 0.75rem;
+  margin: 0;
   color: var(--primary);
 }
 
 .description {
-  margin: 1rem 0 0;
-  max-width: 38rem;
+  margin: 0.15rem 0 0;
+  max-width: 32rem;
   color: var(--muted-foreground);
 }
 
 .card {
   display: grid;
-  gap: 1rem;
+  gap: 0.85rem;
   max-width: 44rem;
-  padding: 1.75rem;
+  padding: 1.2rem;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) + 0.75rem);
   background: var(--surface-2);
@@ -147,8 +154,8 @@
 
 .form {
   display: grid;
-  gap: 1rem;
-  margin: 0.25rem 0 0;
+  gap: 0.85rem;
+  margin: 0.15rem 0 0;
 }
 
 .field {
@@ -185,7 +192,7 @@
 
 .notice {
   margin: 0;
-  padding: 0.9rem 1rem;
+  padding: 0.75rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-1);
@@ -205,7 +212,7 @@
 }
 
 .noticeBody {
-  margin: 0.5rem 0 0;
+  margin: 0.35rem 0 0;
 }
 
 .meta {
@@ -215,8 +222,154 @@
 
 .statusStack {
   display: grid;
-  gap: 0.875rem;
+  gap: 0.7rem;
   margin: 0;
+}
+
+.inlineStatus {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--primary) 6%, var(--surface-1));
+}
+
+.inlineStatusTitle,
+.inlineStatusBody {
+  margin: 0;
+}
+
+.inlineStatusBody {
+  margin-top: 0.15rem;
+  color: var(--muted-foreground);
+}
+
+.publisherSessionCard {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
+  border-radius: calc(var(--radius) + 0.15rem);
+  background: color-mix(in oklch, var(--surface-1) 94%, transparent);
+}
+
+.publisherSessionLabel {
+  margin: 0;
+  color: var(--primary);
+}
+
+.publisherSessionHandle {
+  margin: 0;
+}
+
+.publisherSessionMeta {
+  display: grid;
+  gap: 0.05rem;
+  margin: 0;
+}
+
+.coverPanel {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 0.15rem);
+  background: var(--surface-1);
+}
+
+.coverPanelHeader {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.coverPanelTitle,
+.coverPanelDescription,
+.coverHelper,
+.coverSelectedHelper {
+  margin: 0;
+}
+
+.coverPanelDescription,
+.coverHelper,
+.coverSelectedHelper {
+  color: var(--muted-foreground);
+}
+
+.coverGrid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+
+.coverCard {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in oklch, var(--border) 90%, transparent);
+  border-radius: calc(var(--radius) + 0.15rem);
+  background: color-mix(in oklch, var(--surface-2) 84%, transparent);
+}
+
+.coverCardSelected {
+  border-color: color-mix(in oklch, var(--primary) 42%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 16%, transparent);
+}
+
+.coverPreviewFrame {
+  overflow: hidden;
+  border-radius: calc(var(--radius) - 0.1rem);
+  background: color-mix(in oklch, var(--surface-1) 92%, transparent);
+}
+
+.coverPreview {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.coverCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.coverSelectedBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--primary) 14%, var(--surface-1));
+  color: var(--primary);
+}
+
+.coverCardActions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.coverCardForm,
+.coverCardForm > button {
+  width: 100%;
+}
+
+.utilityBlock {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid color-mix(in oklch, var(--border) 90%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--surface-1) 95%, transparent);
+}
+
+.utilityTitle,
+.utilityBody {
+  margin: 0;
+}
+
+.utilityBody {
+  color: var(--muted-foreground);
 }
 
 .supportSlot {
@@ -371,7 +524,7 @@
 
 @media (max-width: 640px) {
   .page {
-    padding-top: 1.5rem;
+    padding-top: 0.75rem;
   }
 
   .chromeBar {
@@ -390,6 +543,14 @@
   .actionRow > a,
   .actionForm {
     width: 100%;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .coverGrid {
+    grid-template-columns: 1fr;
   }
 
   .actionForm > button {

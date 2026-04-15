@@ -2,16 +2,16 @@ export const AUTH_COPY = {
   eyebrow: "Hesap",
   title: "Giriş yap veya hesabını oluştur.",
   description:
-    "Hesabına giriş yapabilir, kullanıcı hesabı oluşturabilir veya yayıncı başvurunu başlatabilirsin.",
+    "Giriş yapabilir veya yeni hesabını oluşturabilirsin.",
+  publisherHeroEyebrow: "Yayıncı hesabı",
+  publisherHeroTitle: "Yayıncı hesabın",
   loginTitle: "Giriş yap",
-  loginDescription:
-    "E-posta veya kullanıcı adın ve şifrenle giriş yap.",
+  loginDescription: "Kullanıcı adın veya e-postan ile devam et.",
   userRegisterTitle: "Kullanıcı hesabı oluştur",
-  userRegisterDescription:
-    "Yeni kullanıcı hesabını birkaç adımda oluştur.",
+  userRegisterDescription: "Yeni hesabını birkaç adımda oluştur.",
   publisherRegisterTitle: "Yayıncı hesabı oluştur",
-  publisherRegisterDescription:
-    "Yayıncı başvurunu tek formda tamamla.",
+  publisherRegisterDescription: "Başvurunu tek formda tamamla.",
+  publisherSessionLabel: "Açık hesap",
   sessionTitle: "Aktif oturum bulundu",
   sessionDescription:
     "İstersen kaldığın yerden devam et veya bu cihazdaki oturumu kapat.",
@@ -23,9 +23,8 @@ export const AUTH_COPY = {
   publisherPendingSupportTitle: "Destek",
   publisherPendingSupportBody:
     "İnceleme uzarsa kayıt bilgilerinle destek ekibine başvurabilirsin.",
-  publisherApprovedTitle: "Onay tamamlandı",
-  publisherApprovedBody:
-    "Yayın açma iznin hazır. Sonraki adım için stüdyoya geçebilirsin.",
+  publisherApprovedTitle: "Onay hazır",
+  publisherApprovedBody: "Yayın açma iznin aktif.",
   publisherRejectedTitle: "Başvurun kabul edilmedi",
   publisherRejectedBody:
     "Yayın açma izni şu anda açılmadı. Bu aşamada yeniden başvuru gönderemezsin.",
@@ -37,6 +36,24 @@ export const AUTH_COPY = {
     "Başvuru kaydın henüz doğrulanamıyor. Şimdilik keşiften devam edebilirsin.",
   publisherDegradedBody:
     "Başvuru durumun şu anda okunamıyor. Daha sonra tekrar deneyebilirsin.",
+  publisherCoverPanelTitle: "Kapak seçimi",
+  publisherCoverPanelDescription: "Hazır kapaklardan birini seç.",
+  publisherCoverEmptySelectedBody: "Henüz kapak seçilmedi.",
+  publisherCoverDegradedTitle: "Kapak kataloğu şu anda açılamıyor",
+  publisherCoverDegradedBody: "Daha sonra tekrar deneyebilirsin.",
+  publisherCoverChooseLabel: "Kapak olarak seç",
+  publisherCoverChoosePendingLabel: "Kaydediliyor",
+  publisherCoverSelectedLabel: "Seçili",
+  publisherCoverSelectedBody: "Bu kapak hesabında aktif görünüyor.",
+  publisherCoverSaveErrorTitle: "Kapak kaydedilemedi",
+  publisherCoverUnauthorizedBody:
+    "Kapak seçimi yapmak için yayıncı hesabınla giriş yapman gerekiyor.",
+  publisherCoverInvalidBody:
+    "Seçtiğin kapak şu anda doğrulanamıyor. Listeyi yenileyip tekrar dene.",
+  publisherCoverDataAnomalyBody:
+    "Kapak ayarın şu anda güvenli biçimde güncellenemiyor. Destekle paylaşılacak veri tutarsızlığı var.",
+  publisherCoverUnavailableBody:
+    "Kapak seçimi şu anda kaydedilemiyor. Daha sonra tekrar deneyebilirsin.",
   adminApprovalTitle: "Başvuru onayı",
   adminApprovalBody:
     "Bekleyen yayıncı başvurularını buradan dar şekilde inceleyebilirsin.",

@@ -1,13 +1,15 @@
+import styles from "./auth.module.css";
 import { AUTH_COPY } from "../_lib/auth-copy";
-
-import { AuthNotice } from "./AuthNotice";
 
 export function PublisherApprovedSurface() {
   return (
-    <AuthNotice
-      title={AUTH_COPY.publisherApprovedTitle}
-      body={AUTH_COPY.publisherApprovedBody}
-      tone="info"
-    />
+    <div className={styles.inlineStatus}>
+      <p className={`t-caption ${styles.inlineStatusTitle}`}>
+        {AUTH_COPY.publisherApprovedTitle}
+      </p>
+      <p className={`t-caption ${styles.inlineStatusBody}`}>
+        {AUTH_COPY.publisherApprovedBody}
+      </p>
+    </div>
   );
 }

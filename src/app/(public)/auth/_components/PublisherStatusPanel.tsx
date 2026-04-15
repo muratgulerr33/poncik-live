@@ -1,6 +1,7 @@
 import { type PublisherSurfaceView } from "../_controllers/auth-surface-view";
 
 import { PublisherApprovedSurface } from "./PublisherApprovedSurface";
+import { PublisherCoverSelectionPanel } from "./PublisherCoverSelectionPanel";
 import { PublisherPendingSurface } from "./PublisherPendingSurface";
 import { PublisherRejectedSurface } from "./PublisherRejectedSurface";
 import { PublisherStatusFallback } from "./PublisherStatusFallback";
@@ -20,7 +21,14 @@ export function PublisherStatusPanel({
           showContinuityHint={publisherSurface.showContinuityHint}
         />
       ) : null}
-      {publisherSurface.kind === "approved" ? <PublisherApprovedSurface /> : null}
+      {publisherSurface.kind === "approved" ? (
+        <>
+          <PublisherCoverSelectionPanel
+            coverCatalogState={publisherSurface.coverCatalogState}
+          />
+          <PublisherApprovedSurface />
+        </>
+      ) : null}
       {publisherSurface.kind === "rejected" ? <PublisherRejectedSurface /> : null}
       {publisherSurface.kind === "missing" || publisherSurface.kind === "degraded" ? (
         <PublisherStatusFallback

@@ -1,6 +1,35 @@
+export type PublisherCoverCatalogItem = {
+  id: string;
+  storageKey: string;
+  previewSrc: string;
+  label: string;
+  isSelected: boolean;
+};
+
+export type PublisherCoverCatalogState =
+  | {
+      kind: "ready" | "empty-selected";
+      items: PublisherCoverCatalogItem[];
+    }
+  | {
+      kind: "degraded";
+    };
+
 export type PublisherSurfaceView =
   | {
-      kind: "pending_review" | "approved" | "rejected" | "missing" | "degraded";
+      kind: "pending_review";
+      showContinuityHint: boolean;
+    }
+  | {
+      kind: "approved";
+      selectedCoverImageId: string | null;
+      coverCatalogState: PublisherCoverCatalogState;
+    }
+  | {
+      kind: "rejected";
+    }
+  | {
+      kind: "missing" | "degraded";
       showContinuityHint: boolean;
     }
   | null;

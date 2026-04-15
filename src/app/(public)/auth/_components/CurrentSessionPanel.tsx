@@ -21,6 +21,7 @@ type CurrentSessionPanelProps = Readonly<{
   adminSurface: AdminSurfaceView;
   currentSession: {
     email: string;
+    roleType: string;
     username: string;
   };
   publisherSurface: PublisherSurfaceView;
@@ -37,24 +38,42 @@ export function CurrentSessionPanel({
     signOutAction,
     INITIAL_AUTH_ACTION_STATE
   );
+  const isPublisherSession =
+    currentSession.roleType === "publisher" && publisherSurface !== null;
 
   return (
     <>
       <AuthFreshness />
       {adminSurface ? <AdminApprovalPanel adminSurface={adminSurface} /> : null}
-      {publisherSurface ? (
-        <PublisherStatusPanel publisherSurface={publisherSurface} />
-      ) : null}
-      <h2 className={`t-h2 ${styles.panelTitle}`}>{AUTH_COPY.sessionTitle}</h2>
-      <p className={`t-body ${styles.panelDescription}`}>
-        {AUTH_COPY.sessionDescription}
-      </p>
-      <AuthNotice
-        title={`@${currentSession.username}`}
-        body={AUTH_COPY.sessionActiveBody}
-        tone="info"
-        meta={currentSession.email}
-      />
+      {isPublisherSession ? (
+        <div className={styles.publisherSessionCard}>
+          <div className={styles.publisherSessionMeta}>
+            <p className={`t-caption ${styles.publisherSessionLabel}`}>
+              {AUTH_COPY.publisherSessionLabel}
+            </p>
+            <p className={`t-h3 ${styles.publisherSessionHandle}`}>
+              @{currentSession.username}
+            </p>
+            <p className={`t-caption ${styles.meta}`}>{currentSession.email}</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {publisherSurface ? (
+            <PublisherStatusPanel publisherSurface={publisherSurface} />
+          ) : null}
+          <h2 className={`t-h2 ${styles.panelTitle}`}>{AUTH_COPY.sessionTitle}</h2>
+          <p className={`t-body ${styles.panelDescription}`}>
+            {AUTH_COPY.sessionDescription}
+          </p>
+          <AuthNotice
+            title={`@${currentSession.username}`}
+            body={AUTH_COPY.sessionActiveBody}
+            tone="info"
+            meta={currentSession.email}
+          />
+        </>
+      )}
       {signOutState.status === "error" && signOutState.message ? (
         <AuthNotice
           title="Çıkış tamamlanamadı"
@@ -76,6 +95,9 @@ export function CurrentSessionPanel({
           </button>
         </form>
       </div>
+      {isPublisherSession && publisherSurface ? (
+        <PublisherStatusPanel publisherSurface={publisherSurface} />
+      ) : null}
     </>
   );
 }

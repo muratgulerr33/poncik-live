@@ -43,15 +43,33 @@ export function AuthShell({
   const [mode, setMode] = useState<"login" | "user-register" | "publisher-register">(
     "login"
   );
+  const isPublisherSession = currentSession?.roleType === "publisher";
+  const heroDescription = isPublisherSession
+    ? null
+    : AUTH_COPY.description;
 
   return (
     <main className={styles.page}>
       <AuthRouteShell>
         <div className={styles.shell}>
-          <header className={styles.hero}>
-            <p className={`t-label ${styles.eyebrow}`}>{AUTH_COPY.eyebrow}</p>
-            <h1 className="t-display">{AUTH_COPY.title}</h1>
-            <p className={`t-body ${styles.description}`}>{AUTH_COPY.description}</p>
+          <header
+            className={`${styles.hero} ${
+              isPublisherSession ? styles.heroCompact : ""
+            }`.trim()}
+          >
+            <p className={`t-label ${styles.eyebrow}`}>
+              {isPublisherSession
+                ? AUTH_COPY.publisherHeroEyebrow
+                : AUTH_COPY.eyebrow}
+            </p>
+            <h1 className="t-display">
+              {isPublisherSession
+                ? AUTH_COPY.publisherHeroTitle
+                : AUTH_COPY.title}
+            </h1>
+            {heroDescription ? (
+              <p className={`t-body ${styles.description}`}>{heroDescription}</p>
+            ) : null}
           </header>
 
           <section className={styles.card}>
