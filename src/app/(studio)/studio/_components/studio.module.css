@@ -29,6 +29,10 @@
   );
 }
 
+.sceneApproved .shell {
+  gap: 0.65rem;
+}
+
 .card {
   width: min(100%, 38rem);
   padding: 1.5rem;
@@ -99,7 +103,8 @@
   text-overflow: ellipsis;
 }
 
-.statusIndicator {
+.statusIndicator,
+.previewStatusBadge {
   padding: 0.35rem 0.75rem;
   border: 1px solid color-mix(in oklch, var(--border) 80%, transparent);
   border-radius: 999px;
@@ -109,12 +114,26 @@
   white-space: nowrap;
 }
 
-.statusIndicator[data-tone="live"] {
+.previewStatusBadge {
+  position: absolute;
+  top: 0.72rem;
+  left: 0.72rem;
+  z-index: 1;
+  pointer-events: none;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 20px color-mix(in oklch, var(--foreground) 9%, transparent);
+  padding: 0.3rem 0.66rem;
+  font-size: 0.84rem;
+}
+
+.statusIndicator[data-tone="live"],
+.previewStatusBadge[data-tone="live"] {
   border-color: color-mix(in oklch, var(--primary) 34%, var(--border));
   color: color-mix(in oklch, var(--primary) 66%, var(--foreground));
 }
 
-.statusIndicator[data-tone="degraded"] {
+.statusIndicator[data-tone="degraded"],
+.previewStatusBadge[data-tone="degraded"] {
   border-color: color-mix(in oklch, var(--destructive) 22%, var(--border));
   color: color-mix(in oklch, var(--destructive) 54%, var(--foreground));
 }
@@ -136,6 +155,10 @@
   position: relative;
   width: min(100%, 60rem);
   margin: 0 auto;
+}
+
+.sceneApproved .prepScene {
+  gap: 0.7rem;
 }
 
 .prepIntro {
@@ -172,6 +195,10 @@
   align-items: start;
 }
 
+.sceneApproved .previewScene[data-state="preview_ready"] {
+  gap: 0.68rem;
+}
+
 .previewStageStack,
 .sceneSupportStack {
   display: grid;
@@ -186,6 +213,27 @@
 .previewCard {
   display: grid;
   gap: 0.8rem;
+}
+
+.sceneApproved .previewCard[data-state="preview_ready"] {
+  gap: 0.66rem;
+}
+
+.sceneApproved .chrome {
+  min-height: 2.85rem;
+}
+
+.sceneApproved .leadingCluster {
+  gap: 0.6rem;
+}
+
+.sceneApproved .closeButton {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.sceneApproved .usernameLabel {
+  font-size: 0.9rem;
 }
 
 .previewLabel {
@@ -273,13 +321,30 @@
   margin-top: 0.15rem;
 }
 
+.sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
+  width: 100%;
+  gap: 0.38rem;
+  margin-top: 0;
+  padding-bottom: 0;
+}
+
 .lifecycleActionRow {
   margin-top: 0;
+}
+
+.sceneApproved .lifecycleActionRow {
+  width: 100%;
+  justify-content: center;
 }
 
 .lifecyclePrimaryAction {
   width: min(100%, 18rem);
   min-height: 3.15rem;
+}
+
+.sceneApproved .lifecyclePrimaryAction {
+  width: min(100%, 20rem);
+  min-height: 3rem;
 }
 
 .lifecycleMessage {
@@ -341,6 +406,10 @@
     );
   }
 
+  .sceneApproved .shell {
+    gap: 0.45rem;
+  }
+
   .chrome,
   .previewMetaRow,
   .actionRow {
@@ -349,6 +418,26 @@
 
   .chrome {
     align-items: flex-start;
+  }
+
+  .sceneApproved .chrome {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+  }
+
+  .sceneApproved .leadingCluster {
+    gap: 0.5rem;
+  }
+
+  .sceneApproved .closeButton {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .sceneApproved .usernameLabel {
+    font-size: 0.88rem;
   }
 
   .previewScene {
@@ -368,6 +457,26 @@
 
   .previewFrame {
     min-height: clamp(18.5rem, calc(100dvh - 13.5rem), 31rem);
+  }
+
+  .sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
+    min-height: clamp(20rem, calc(100svh - 10.75rem), 33rem);
+    min-height: clamp(20rem, calc(100dvh - 10.75rem), 33rem);
+  }
+
+  .sceneApproved .lifecycleActionRow {
+    align-items: center;
+  }
+
+  .sceneApproved .lifecyclePrimaryAction {
+    width: min(100%, 20rem);
+  }
+
+  .previewStatusBadge {
+    top: 0.62rem;
+    left: 0.62rem;
+    padding: 0.28rem 0.6rem;
+    font-size: 0.79rem;
   }
 }
 

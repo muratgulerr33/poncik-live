@@ -21,11 +21,15 @@ type StudioPreviewPanelProps = {
     kind: "idle" | "live" | "degraded";
   };
   onExitControlChange?: (state: StudioExitControlState) => void;
+  statusLabel: string;
+  statusTone: "idle" | "live" | "degraded";
 };
 
 export function StudioPreviewPanel({
   lifecycle,
-  onExitControlChange
+  onExitControlChange,
+  statusLabel,
+  statusTone
 }: StudioPreviewPanelProps) {
   const {
     canRetry,
@@ -80,6 +84,12 @@ export function StudioPreviewPanel({
           )}
 
           <div className={styles.previewFrame}>
+            <span
+              className={styles.previewStatusBadge}
+              data-tone={statusTone}
+            >
+              {statusLabel}
+            </span>
             <video
               className={
                 previewState === "preview_ready"

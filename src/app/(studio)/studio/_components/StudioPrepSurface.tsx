@@ -92,14 +92,14 @@ export function StudioPrepSurface({
     <StudioRouteShell
       closeDisabled={isExitPending || exitControl.isStopping}
       onRequestClose={handleRequestClose}
-      statusLabel={statusLabel}
-      statusTone={statusTone}
       username={username}
     >
       <section className={styles.prepScene}>
         <StudioPreviewPanel
           lifecycle={lifecycle}
           onExitControlChange={setExitControl}
+          statusLabel={statusLabel}
+          statusTone={statusTone}
         />
       </section>
 

@@ -49,8 +49,8 @@ export const STUDIO_COPY = {
   exitConfirmTitle: "Canlıyı durdur?",
   exitConfirmConfirmLabel: "Evet",
   exitConfirmCancelLabel: "Hayır",
-  idleLifecycleLabel: "Henüz canlı değil",
-  liveLifecycleLabel: "Şu anda canlı",
+  idleLifecycleLabel: "Hazır",
+  liveLifecycleLabel: "Canlı",
   degradedLifecycleLabel: "Durum senkronu sınırlı",
   startBroadcastError:
     "Yayın şu anda başlatılamıyor. Onaylı publisher oturumu ile tekrar dene.",
