@@ -196,7 +196,7 @@
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] {
-  gap: 0.68rem;
+  gap: 0.4rem;
 }
 
 .previewStageStack,
@@ -216,7 +216,7 @@
 }
 
 .sceneApproved .previewCard[data-state="preview_ready"] {
-  gap: 0.66rem;
+  gap: 0.36rem;
 }
 
 .sceneApproved .chrome {
@@ -259,6 +259,12 @@
       color-mix(in oklch, var(--surface-2) 82%, black),
       color-mix(in oklch, var(--background) 60%, black)
     );
+}
+
+.sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
+  border-color: color-mix(in oklch, var(--border) 42%, transparent);
+  border-radius: calc(var(--radius) + 0.45rem);
+  box-shadow: 0 20px 36px color-mix(in oklch, var(--foreground) 8%, transparent);
 }
 
 .previewVideo,
@@ -323,16 +329,17 @@
 
 .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
   width: 100%;
-  gap: 0.38rem;
+  gap: 0.14rem;
   margin-top: 0;
   padding-bottom: 0;
+  justify-items: center;
 }
 
 .lifecycleActionRow {
   margin-top: 0;
 }
 
-.sceneApproved .lifecycleActionRow {
+.sceneApproved .previewScene[data-state="preview_ready"] .lifecycleActionRow {
   width: 100%;
   justify-content: center;
 }
@@ -342,9 +349,9 @@
   min-height: 3.15rem;
 }
 
-.sceneApproved .lifecyclePrimaryAction {
-  width: min(100%, 20rem);
-  min-height: 3rem;
+.sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
+  width: min(100%, 23rem);
+  min-height: 3.2rem;
 }
 
 .lifecycleMessage {
@@ -460,16 +467,20 @@
   }
 
   .sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
-    min-height: clamp(20rem, calc(100svh - 10.75rem), 33rem);
-    min-height: clamp(20rem, calc(100dvh - 10.75rem), 33rem);
+    min-height: clamp(22rem, calc(100svh - 8.35rem), 36.5rem);
+    min-height: clamp(22rem, calc(100dvh - 8.35rem), 36.5rem);
   }
 
-  .sceneApproved .lifecycleActionRow {
+  .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
+    gap: 0.14rem;
+  }
+
+  .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleActionRow {
     align-items: center;
   }
 
-  .sceneApproved .lifecyclePrimaryAction {
-    width: min(100%, 20rem);
+  .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
+    width: min(100%, 23rem);
   }
 
   .previewStatusBadge {
