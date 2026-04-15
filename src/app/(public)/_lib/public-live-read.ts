@@ -1,21 +1,39 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, notInArray } from "drizzle-orm";
 
 import { getDb } from "@/db/client";
-import { accounts, broadcasts } from "@/db/schema";
+import {
+  accounts,
+  broadcasts,
+  coverImages,
+  publisherApplications,
+  publisherSettings
+} from "@/db/schema";
 
 const LIVE_BROADCAST_STATUS = "live";
 const PUBLISHER_ROLE = "publisher";
+const APPROVED_APPLICATION_STATUS = "approved";
 
 export type DiscoveryEntry = {
   id: string;
   username: string;
   href: string;
+  coverImageId: string | null;
+  coverImageStorageKey: string | null;
+};
+
+export type ApprovedOfflineDiscoveryEntry = {
+  id: string;
+  username: string;
+  href: string | null;
+  coverImageId: string | null;
+  coverImageStorageKey: string | null;
 };
 
 export type DiscoveryResult =
   | {
       kind: "ok";
       entries: DiscoveryEntry[];
+      approvedOfflineEntries: ApprovedOfflineDiscoveryEntry[];
     }
   | {
       kind: "error";
@@ -42,52 +60,91 @@ export async function readDiscoveryEntries(): Promise<DiscoveryResult> {
     const db = getDb();
     const liveRows = await db
       .select({
-        publisherAccountId: broadcasts.publisherAccountId
+        publisherAccountId: broadcasts.publisherAccountId,
+        username: accounts.username,
+        coverImageId: publisherSettings.coverImageId,
+        coverImageStorageKey: coverImages.storageKey
       })
       .from(broadcasts)
-      .where(eq(broadcasts.status, LIVE_BROADCAST_STATUS))
-      .orderBy(desc(broadcasts.updatedAt));
-
-    const orderedPublisherIds = Array.from(
-      new Set(liveRows.map((row) => row.publisherAccountId))
-    );
-
-    if (orderedPublisherIds.length === 0) {
-      return {
-        kind: "ok",
-        entries: []
-      };
-    }
-
-    const publisherRows = await db
-      .select({
-        id: accounts.id,
-        username: accounts.username
-      })
-      .from(accounts)
+      .innerJoin(accounts, eq(accounts.id, broadcasts.publisherAccountId))
+      .leftJoin(
+        publisherSettings,
+        eq(publisherSettings.accountId, accounts.id)
+      )
+      .leftJoin(coverImages, eq(coverImages.id, publisherSettings.coverImageId))
       .where(
         and(
-          inArray(accounts.id, orderedPublisherIds),
+          eq(broadcasts.status, LIVE_BROADCAST_STATUS),
           eq(accounts.roleType, PUBLISHER_ROLE)
         )
-      );
+      )
+      .orderBy(desc(broadcasts.updatedAt));
 
-    const publishersById = new Map(
-      publisherRows.map((row) => [row.id, row.username])
-    );
+    const liveEntries: DiscoveryEntry[] = [];
+    const livePublisherIds = new Set<string>();
 
-    const entries = orderedPublisherIds
-      .map((publisherId) => publishersById.get(publisherId))
-      .filter((username): username is string => Boolean(username))
-      .map((username) => ({
-        id: username,
-        username,
-        href: `/live/${username}`
-      }));
+    for (const row of liveRows) {
+      if (livePublisherIds.has(row.publisherAccountId)) {
+        continue;
+      }
+
+      livePublisherIds.add(row.publisherAccountId);
+      liveEntries.push({
+        id: row.username,
+        username: row.username,
+        href: `/live/${row.username}`,
+        coverImageId: row.coverImageId,
+        coverImageStorageKey: row.coverImageStorageKey
+      });
+    }
+
+    const approvedOfflineRows = await db
+      .select({
+        id: accounts.id,
+        username: accounts.username,
+        coverImageId: publisherSettings.coverImageId,
+        coverImageStorageKey: coverImages.storageKey
+      })
+      .from(accounts)
+      .innerJoin(
+        publisherApplications,
+        eq(publisherApplications.accountId, accounts.id)
+      )
+      .leftJoin(
+        publisherSettings,
+        eq(publisherSettings.accountId, accounts.id)
+      )
+      .leftJoin(coverImages, eq(coverImages.id, publisherSettings.coverImageId))
+      .where(
+        livePublisherIds.size === 0
+          ? and(
+              eq(accounts.roleType, PUBLISHER_ROLE),
+              eq(
+                publisherApplications.status,
+                APPROVED_APPLICATION_STATUS
+              )
+            )
+          : and(
+              eq(accounts.roleType, PUBLISHER_ROLE),
+              eq(
+                publisherApplications.status,
+                APPROVED_APPLICATION_STATUS
+              ),
+              notInArray(accounts.id, Array.from(livePublisherIds))
+            )
+      )
+      .orderBy(asc(accounts.username));
 
     return {
       kind: "ok",
-      entries
+      entries: liveEntries,
+      approvedOfflineEntries: approvedOfflineRows.map((row) => ({
+        id: row.id,
+        username: row.username,
+        href: null,
+        coverImageId: row.coverImageId,
+        coverImageStorageKey: row.coverImageStorageKey
+      }))
     };
   } catch {
     return {

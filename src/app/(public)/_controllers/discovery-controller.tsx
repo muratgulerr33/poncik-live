@@ -32,7 +32,9 @@ export async function DiscoveryController() {
     );
   }
 
-  if (result.entries.length === 0) {
+  const liveEntries = result.entries;
+
+  if (liveEntries.length === 0) {
     return (
       <DiscoveryRouteShell session={session}>
         <DiscoveryEmptyState />
@@ -44,7 +46,7 @@ export async function DiscoveryController() {
   return (
     <DiscoveryRouteShell session={session}>
       <div className={styles.grid}>
-        {result.entries.map((entry) => (
+        {liveEntries.map((entry) => (
           <DiscoveryCard key={entry.id} entry={entry} />
         ))}
       </div>
