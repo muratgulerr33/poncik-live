@@ -5,6 +5,7 @@ type AuthPageProps = Readonly<{
   searchParams: Promise<{
     next?: string;
     registered?: string;
+    status?: string;
   }>;
 }>;
 
@@ -12,7 +13,8 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
   const resolvedSearchParams = await searchParams;
   const view = await getAuthCoreView({
     next: resolvedSearchParams.next,
-    registered: resolvedSearchParams.registered
+    registered: resolvedSearchParams.registered,
+    status: resolvedSearchParams.status
   });
 
   return (

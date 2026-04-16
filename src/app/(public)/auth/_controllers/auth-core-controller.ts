@@ -1,21 +1,44 @@
 import { readPublisherCoverCatalog } from "../_adapters/auth-cover-selection-boundary";
-import { readPublisherApplicationStatus } from "../_adapters/auth-publisher-application-boundary";
-import { readPendingPublisherApplications } from "../_adapters/auth-publisher-application-boundary";
+import {
+  readPublisherApplicationStatus,
+  readPublisherApplicationsByStatus
+} from "../_adapters/auth-publisher-application-boundary";
 import { readCurrentSession } from "../_adapters/auth-session-adapter";
 import { resolveAuthContinuation } from "../_lib/auth-continuation";
 import { AUTH_COPY } from "../_lib/auth-copy";
-import { type AdminSurfaceView, type PublisherSurfaceView } from "./auth-surface-view";
+import {
+  type AdminApprovalStatusFilter,
+  type AdminSurfaceView,
+  type PublisherSurfaceView
+} from "./auth-surface-view";
 
 type AuthCoreControllerInput = Readonly<{
   next: string | null | undefined;
   registered: string | null | undefined;
+  status: string | null | undefined;
 }>;
+
+function normalizeAdminStatusFilter(
+  status: string | null | undefined
+): AdminApprovalStatusFilter {
+  if (
+    status === "pending_review" ||
+    status === "approved" ||
+    status === "rejected" ||
+    status === "all"
+  ) {
+    return status;
+  }
+
+  return "pending_review";
+}
 
 export async function getAuthCoreView(input: AuthCoreControllerInput) {
   const sessionState = await readCurrentSession();
   const continuation = resolveAuthContinuation(input.next);
   const currentSession =
     sessionState.kind === "authenticated" ? sessionState.session : null;
+  const selectedAdminFilter = normalizeAdminStatusFilter(input.status);
   let publisherSurface: PublisherSurfaceView = null;
   let adminSurface: AdminSurfaceView = null;
   let primaryAction: {
@@ -27,14 +50,16 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
   };
 
   if (currentSession?.roleType === "admin") {
-    const pendingQueue = await readPendingPublisherApplications();
+    const filteredQueue = await readPublisherApplicationsByStatus(selectedAdminFilter);
 
-    if (pendingQueue.kind === "found") {
+    if (filteredQueue.kind === "found") {
       adminSurface =
-        pendingQueue.items.length > 0
+        filteredQueue.items.length > 0
           ? {
               kind: "queue",
-              items: pendingQueue.items.map((item) => ({
+              selectedFilter: selectedAdminFilter,
+              isReadOnly: selectedAdminFilter !== "pending_review",
+              items: filteredQueue.items.map((item) => ({
                 ...item,
                 createdAtLabel: item.createdAt.toLocaleDateString("tr-TR", {
                   day: "2-digit",
@@ -44,11 +69,13 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
               }))
             }
           : {
-              kind: "empty"
+              kind: "empty",
+              selectedFilter: selectedAdminFilter
             };
     } else {
       adminSurface = {
-        kind: "degraded"
+        kind: "degraded",
+        selectedFilter: selectedAdminFilter
       };
     }
 

@@ -61,14 +61,30 @@ export const AUTH_COPY = {
   adminApprovalTitle: "Başvuru onayı",
   adminApprovalBody:
     "Bekleyen yayıncı başvurularını buradan dar şekilde inceleyebilirsin.",
+  adminFilterPendingLabel: "Bekleyen",
+  adminFilterApprovedLabel: "Onaylanan",
+  adminFilterRejectedLabel: "Reddedilen",
+  adminFilterAllLabel: "Tümü",
   adminApprovalEmptyTitle: "Bekleyen başvuru yok",
   adminApprovalEmptyBody:
     "Şu anda işlem bekleyen yayıncı başvurusu görünmüyor.",
+  adminApprovalApprovedEmptyTitle: "Onaylanan başvuru yok",
+  adminApprovalApprovedEmptyBody:
+    "Şu anda onaylanmış yayıncı başvurusu görünmüyor.",
+  adminApprovalRejectedEmptyTitle: "Reddedilen başvuru yok",
+  adminApprovalRejectedEmptyBody:
+    "Şu anda reddedilmiş yayıncı başvurusu görünmüyor.",
+  adminApprovalAllEmptyTitle: "Başvuru görünmüyor",
+  adminApprovalAllEmptyBody:
+    "Şu anda listelenecek yayıncı başvurusu görünmüyor.",
   adminApprovalDegradedTitle: "Başvuru kuyruğu şu anda açılamıyor",
   adminApprovalDegradedBody:
     "Bekleyen başvurular şu anda okunamıyor. Daha sonra tekrar deneyebilirsin.",
   adminApproveLabel: "Onayla",
   adminRejectLabel: "Reddet",
+  adminStatusPendingLabel: "Beklemede",
+  adminStatusApprovedLabel: "Onaylandı",
+  adminStatusRejectedLabel: "Reddedildi",
   adminApproveSuccessLabel: "Onay bekleyen başvuru",
   adminReviewMetaPrefix: "Başvuru tarihi",
   adminApproveErrorBody:

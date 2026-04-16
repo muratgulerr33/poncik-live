@@ -1,3 +1,9 @@
+export type AdminApprovalStatusFilter =
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "all";
+
 export type PublisherCoverCatalogItem = {
   id: string;
   storageKey: string;
@@ -37,6 +43,8 @@ export type PublisherSurfaceView =
 export type AdminSurfaceView =
   | {
       kind: "queue";
+      selectedFilter: AdminApprovalStatusFilter;
+      isReadOnly: boolean;
       items: {
         id: string;
         accountId: string;
@@ -44,13 +52,16 @@ export type AdminSurfaceView =
         phone: string;
         email: string;
         username: string;
+        status: "pending_review" | "approved" | "rejected";
         createdAtLabel: string;
       }[];
     }
   | {
       kind: "empty";
+      selectedFilter: AdminApprovalStatusFilter;
     }
   | {
       kind: "degraded";
+      selectedFilter: AdminApprovalStatusFilter;
     }
   | null;

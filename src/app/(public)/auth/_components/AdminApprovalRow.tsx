@@ -8,6 +8,7 @@ import {
   approvePublisherApplicationAction,
   rejectPublisherApplicationAction
 } from "../_actions/approval-actions";
+import { type AdminApprovalStatusFilter } from "../_controllers/auth-surface-view";
 import { INITIAL_AUTH_ACTION_STATE } from "../_lib/auth-action-state";
 import { AUTH_COPY } from "../_lib/auth-copy";
 
@@ -15,17 +16,36 @@ import { AuthNotice } from "./AuthNotice";
 import styles from "./auth.module.css";
 
 type AdminApprovalRowProps = Readonly<{
+  isReadOnly: boolean;
   item: {
     id: string;
     fullName: string;
     phone: string;
     email: string;
     username: string;
+    status: "pending_review" | "approved" | "rejected";
     createdAtLabel: string;
   };
+  selectedFilter: AdminApprovalStatusFilter;
 }>;
 
-export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
+function getStatusLabel(status: "pending_review" | "approved" | "rejected") {
+  if (status === "approved") {
+    return AUTH_COPY.adminStatusApprovedLabel;
+  }
+
+  if (status === "rejected") {
+    return AUTH_COPY.adminStatusRejectedLabel;
+  }
+
+  return AUTH_COPY.adminStatusPendingLabel;
+}
+
+export function AdminApprovalRow({
+  isReadOnly,
+  item,
+  selectedFilter
+}: AdminApprovalRowProps) {
   const router = useRouter();
   const approveSubmittedRef = useRef(false);
   const rejectSubmittedRef = useRef(false);
@@ -72,7 +92,14 @@ export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
 
   return (
     <div className={styles.notice}>
-      <p className={`t-label ${styles.noticeTitle}`}>{item.fullName}</p>
+      <div className={styles.adminRowHeader}>
+        <p className={`t-label ${styles.noticeTitle}`}>{item.fullName}</p>
+        {selectedFilter === "all" ? (
+          <span className={`t-caption ${styles.adminStatusBadge}`}>
+            {getStatusLabel(item.status)}
+          </span>
+        ) : null}
+      </div>
       <p className={`t-body ${styles.noticeBody}`}>@{item.username}</p>
       <p className={`t-caption ${styles.meta}`}>{item.email}</p>
       <p className={`t-caption ${styles.meta}`}>{item.phone}</p>
@@ -93,40 +120,42 @@ export function AdminApprovalRow({ item }: AdminApprovalRowProps) {
           tone="error"
         />
       ) : null}
-      <div className={styles.actionRow}>
-        <form
-          className={styles.actionForm}
-          action={approveAction}
-          onSubmit={() => {
-            approveSubmittedRef.current = true;
-            rejectSubmittedRef.current = false;
-          }}
-        >
-          <button
-            type="submit"
-            className="ui-action ui-action-primary"
-            disabled={isApproving || isRejecting}
+      {isReadOnly ? null : (
+        <div className={styles.actionRow}>
+          <form
+            className={styles.actionForm}
+            action={approveAction}
+            onSubmit={() => {
+              approveSubmittedRef.current = true;
+              rejectSubmittedRef.current = false;
+            }}
           >
-            {AUTH_COPY.adminApproveLabel}
-          </button>
-        </form>
-        <form
-          className={styles.actionForm}
-          action={rejectAction}
-          onSubmit={() => {
-            rejectSubmittedRef.current = true;
-            approveSubmittedRef.current = false;
-          }}
-        >
-          <button
-            type="submit"
-            className="ui-action ui-action-secondary"
-            disabled={isApproving || isRejecting}
+            <button
+              type="submit"
+              className="ui-action ui-action-primary"
+              disabled={isApproving || isRejecting}
+            >
+              {AUTH_COPY.adminApproveLabel}
+            </button>
+          </form>
+          <form
+            className={styles.actionForm}
+            action={rejectAction}
+            onSubmit={() => {
+              rejectSubmittedRef.current = true;
+              approveSubmittedRef.current = false;
+            }}
           >
-            {AUTH_COPY.adminRejectLabel}
-          </button>
-        </form>
-      </div>
+            <button
+              type="submit"
+              className="ui-action ui-action-secondary"
+              disabled={isApproving || isRejecting}
+            >
+              {AUTH_COPY.adminRejectLabel}
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

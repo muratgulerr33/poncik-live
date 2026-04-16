@@ -1,7 +1,8 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/db/client";
 import { accounts, publisherApplications } from "@/db/schema";
+import { type AdminApprovalStatusFilter } from "../_controllers/auth-surface-view";
 
 export type PublisherApplicationReadResult =
   | {
@@ -22,8 +23,11 @@ export type PendingPublisherApplication = {
   phone: string;
   email: string;
   username: string;
+  status: "pending_review" | "approved" | "rejected";
   createdAt: Date;
 };
+
+type AdminApprovalRecordStatus = PendingPublisherApplication["status"];
 
 export type PendingPublisherQueueResult =
   | {
@@ -66,10 +70,12 @@ export async function readPublisherApplicationStatus(
   }
 }
 
-export async function readPendingPublisherApplications(): Promise<PendingPublisherQueueResult> {
+export async function readPublisherApplicationsByStatus(
+  statusFilter: AdminApprovalStatusFilter
+): Promise<PendingPublisherQueueResult> {
   try {
     const db = getDb();
-    const rows = await db
+    const baseQuery = db
       .select({
         id: publisherApplications.id,
         accountId: publisherApplications.accountId,
@@ -77,15 +83,50 @@ export async function readPendingPublisherApplications(): Promise<PendingPublish
         phone: publisherApplications.phone,
         email: accounts.email,
         username: accounts.username,
+        status: publisherApplications.status,
         createdAt: publisherApplications.createdAt
       })
       .from(publisherApplications)
-      .innerJoin(accounts, eq(accounts.id, publisherApplications.accountId))
-      .where(eq(publisherApplications.status, "pending_review"));
+      .innerJoin(accounts, eq(accounts.id, publisherApplications.accountId));
+
+    const rows =
+      statusFilter === "pending_review"
+        ? await baseQuery
+            .where(eq(publisherApplications.status, "pending_review"))
+            .orderBy(desc(publisherApplications.createdAt))
+        : statusFilter === "approved"
+          ? await baseQuery
+              .where(eq(publisherApplications.status, "approved"))
+              .orderBy(
+                sql`${publisherApplications.reviewedAt} desc nulls last`,
+                desc(publisherApplications.createdAt)
+              )
+          : statusFilter === "rejected"
+            ? await baseQuery
+                .where(eq(publisherApplications.status, "rejected"))
+                .orderBy(
+                  sql`${publisherApplications.reviewedAt} desc nulls last`,
+                  desc(publisherApplications.createdAt)
+                )
+            : await baseQuery
+                .where(
+                  inArray(publisherApplications.status, [
+                    "pending_review",
+                    "approved",
+                    "rejected"
+                  ])
+                )
+                .orderBy(
+                  desc(publisherApplications.updatedAt),
+                  desc(publisherApplications.createdAt)
+                );
 
     return {
       kind: "found",
-      items: rows
+      items: rows.map((row) => ({
+        ...row,
+        status: row.status as AdminApprovalRecordStatus
+      }))
     };
   } catch {
     return {
