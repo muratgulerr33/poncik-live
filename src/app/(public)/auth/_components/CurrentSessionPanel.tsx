@@ -40,6 +40,7 @@ export function CurrentSessionPanel({
   );
   const isPublisherSession =
     currentSession.roleType === "publisher" && publisherSurface !== null;
+  const showGenericSessionBlock = !isPublisherSession && !adminSurface;
 
   return (
     <>
@@ -62,16 +63,22 @@ export function CurrentSessionPanel({
           {publisherSurface ? (
             <PublisherStatusPanel publisherSurface={publisherSurface} />
           ) : null}
-          <h2 className={`t-h2 ${styles.panelTitle}`}>{AUTH_COPY.sessionTitle}</h2>
-          <p className={`t-body ${styles.panelDescription}`}>
-            {AUTH_COPY.sessionDescription}
-          </p>
-          <AuthNotice
-            title={`@${currentSession.username}`}
-            body={AUTH_COPY.sessionActiveBody}
-            tone="info"
-            meta={currentSession.email}
-          />
+          {showGenericSessionBlock ? (
+            <>
+              <h2 className={`t-h2 ${styles.panelTitle}`}>{AUTH_COPY.sessionTitle}</h2>
+              {AUTH_COPY.sessionDescription ? (
+                <p className={`t-body ${styles.panelDescription}`}>
+                  {AUTH_COPY.sessionDescription}
+                </p>
+              ) : null}
+              <AuthNotice
+                title={`@${currentSession.username}`}
+                body={AUTH_COPY.sessionActiveBody}
+                tone="info"
+                meta={currentSession.email}
+              />
+            </>
+          ) : null}
         </>
       )}
       {signOutState.status === "error" && signOutState.message ? (

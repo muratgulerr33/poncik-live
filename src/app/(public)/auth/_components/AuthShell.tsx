@@ -46,9 +46,9 @@ export function AuthShell({
     "login"
   );
   const isPublisherSession = currentSession?.roleType === "publisher";
-  const heroDescription = isPublisherSession
-    ? null
-    : AUTH_COPY.description;
+  const isSignedInNonPublisher = Boolean(currentSession && !isPublisherSession);
+  const showHero = !isSignedInNonPublisher;
+  const heroDescription = isPublisherSession ? null : AUTH_COPY.description;
   const menuItems = useMemo<AuthRouteMenuItem[]>(() => {
     if (!currentSession) {
       return [
@@ -154,25 +154,27 @@ export function AuthShell({
     <main className={styles.page}>
       <AuthRouteShell menuItems={menuItems}>
         <div className={styles.shell}>
-          <header
-            className={`${styles.hero} ${
-              isPublisherSession ? styles.heroCompact : ""
-            }`.trim()}
-          >
-            <p className={`t-label ${styles.eyebrow}`}>
-              {isPublisherSession
-                ? AUTH_COPY.publisherHeroEyebrow
-                : AUTH_COPY.eyebrow}
-            </p>
-            <h1 className="t-display">
-              {isPublisherSession
-                ? AUTH_COPY.publisherHeroTitle
-                : AUTH_COPY.title}
-            </h1>
-            {heroDescription ? (
-              <p className={`t-body ${styles.description}`}>{heroDescription}</p>
-            ) : null}
-          </header>
+          {showHero ? (
+            <header
+              className={`${styles.hero} ${
+                isPublisherSession ? styles.heroCompact : ""
+              }`.trim()}
+            >
+              <p className={`t-label ${styles.eyebrow}`}>
+                {isPublisherSession
+                  ? AUTH_COPY.publisherHeroEyebrow
+                  : AUTH_COPY.eyebrow}
+              </p>
+              <h1 className="t-display">
+                {isPublisherSession
+                  ? AUTH_COPY.publisherHeroTitle
+                  : AUTH_COPY.title}
+              </h1>
+              {heroDescription ? (
+                <p className={`t-body ${styles.description}`}>{heroDescription}</p>
+              ) : null}
+            </header>
+          ) : null}
 
           <section className={styles.card}>
             {degradedMessage ? (

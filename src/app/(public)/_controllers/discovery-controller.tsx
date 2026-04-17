@@ -170,7 +170,7 @@ export async function DiscoveryController() {
         )}
 
         {offlineEntries.length > 0 ? (
-          <DiscoverySection title="Diğer yayıncılar">
+          <DiscoverySection title="Tüm yayıncılar">
             <div className={styles.grid}>
               {offlineEntries.map((entry) => (
                 <DiscoveryCard

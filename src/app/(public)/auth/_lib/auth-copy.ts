@@ -1,21 +1,19 @@
 export const AUTH_COPY = {
   eyebrow: "Hesap",
-  title: "Giriş yap veya hesabını oluştur.",
-  description:
-    "Giriş yapabilir veya yeni hesabını oluşturabilirsin.",
+  title: "Giriş yap veya kayıt ol.",
+  description: "Hesabınla devam et ya da yeni hesap oluştur.",
   publisherHeroEyebrow: "Yayıncı hesabı",
   publisherHeroTitle: "Yayıncı hesabın",
   loginTitle: "Giriş yap",
-  loginDescription: "Kullanıcı adın veya e-postan ile devam et.",
+  loginDescription: "Kullanıcı adın veya e-postanla giriş yap.",
   userRegisterTitle: "Kullanıcı hesabı oluştur",
-  userRegisterDescription: "Yeni hesabını birkaç adımda oluştur.",
+  userRegisterDescription: "Yeni kullanıcı hesabını kısa bir form ile oluştur.",
   publisherRegisterTitle: "Yayıncı hesabı oluştur",
   publisherRegisterDescription: "Başvurunu tek formda tamamla.",
   publisherSessionLabel: "Açık hesap",
-  sessionTitle: "Aktif oturum bulundu",
-  sessionDescription:
-    "İstersen kaldığın yerden devam et veya bu cihazdaki oturumu kapat.",
-  sessionActiveBody: "Bu cihazda hesabınla giriş yapılmış görünüyor.",
+  sessionTitle: "Hesabım",
+  sessionDescription: "",
+  sessionActiveBody: "Bu cihazda hesabın açık.",
   publisherPendingContinuityTitle: "Başvurun alındı",
   publisherPendingTitle: "Başvurun alındı",
   publisherPendingBody:
@@ -58,28 +56,22 @@ export const AUTH_COPY = {
     "Kapak ayarın şu anda güvenli biçimde güncellenemiyor. Destekle paylaşılacak veri tutarsızlığı var.",
   publisherCoverUnavailableBody:
     "Kapak seçimi şu anda kaydedilemiyor. Daha sonra tekrar deneyebilirsin.",
-  adminApprovalTitle: "Başvuru onayı",
-  adminApprovalBody:
-    "Bekleyen yayıncı başvurularını buradan dar şekilde inceleyebilirsin.",
+  adminApprovalTitle: "Yayıncı başvuruları",
+  adminApprovalBody: "Başvuruları buradan incele.",
   adminFilterPendingLabel: "Bekleyen",
   adminFilterApprovedLabel: "Onaylanan",
   adminFilterRejectedLabel: "Reddedilen",
   adminFilterAllLabel: "Tümü",
   adminApprovalEmptyTitle: "Bekleyen başvuru yok",
-  adminApprovalEmptyBody:
-    "Şu anda işlem bekleyen yayıncı başvurusu görünmüyor.",
+  adminApprovalEmptyBody: "İşlem bekleyen başvuru görünmüyor.",
   adminApprovalApprovedEmptyTitle: "Onaylanan başvuru yok",
-  adminApprovalApprovedEmptyBody:
-    "Şu anda onaylanmış yayıncı başvurusu görünmüyor.",
+  adminApprovalApprovedEmptyBody: "Onaylanmış başvuru görünmüyor.",
   adminApprovalRejectedEmptyTitle: "Reddedilen başvuru yok",
-  adminApprovalRejectedEmptyBody:
-    "Şu anda reddedilmiş yayıncı başvurusu görünmüyor.",
+  adminApprovalRejectedEmptyBody: "Reddedilmiş başvuru görünmüyor.",
   adminApprovalAllEmptyTitle: "Başvuru görünmüyor",
-  adminApprovalAllEmptyBody:
-    "Şu anda listelenecek yayıncı başvurusu görünmüyor.",
-  adminApprovalDegradedTitle: "Başvuru kuyruğu şu anda açılamıyor",
-  adminApprovalDegradedBody:
-    "Bekleyen başvurular şu anda okunamıyor. Daha sonra tekrar deneyebilirsin.",
+  adminApprovalAllEmptyBody: "Listelenecek başvuru görünmüyor.",
+  adminApprovalDegradedTitle: "Başvuru kuyruğu açılamıyor",
+  adminApprovalDegradedBody: "Başvurular şu anda okunamıyor. Daha sonra tekrar dene.",
   adminApproveLabel: "Onayla",
   adminRejectLabel: "Reddet",
   adminStatusPendingLabel: "Beklemede",

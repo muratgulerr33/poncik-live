@@ -15,12 +15,9 @@ export function DiscoveryShell({ chrome, children }: DiscoveryShellProps) {
       <div className={styles.shellLayout}>
         <div className={styles.contentColumn}>
           <header className={styles.hero}>
-            <p className={`t-label ${styles.eyebrow}`}>Public discovery</p>
-            <h1 className="t-display">Şu anda yayında olan yayınları keşfet.</h1>
-            <p className={`t-body ${styles.description}`}>
-              Tek aksiyonla yayın izleme yüzeyine geç. Ayrı profil adımı yok;
-              izlemek için doğrudan yayına gir.
-            </p>
+            <p className={`t-label ${styles.eyebrow}`}>Keşfet</p>
+            <h1 className="t-display">Şu anda yayında olanlar</h1>
+            <p className={`t-body ${styles.description}`}>Aktif olan yayınları izle.</p>
           </header>
           <section className={styles.section}>{children}</section>
         </div>
