@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useState } from "react";
 
 import { type AdminSurfaceView } from "../_controllers/auth-surface-view";
@@ -8,6 +9,7 @@ import { AUTH_COPY } from "../_lib/auth-copy";
 
 import { AuthModeToggle } from "./AuthModeToggle";
 import { AuthNotice } from "./AuthNotice";
+import { type AuthRouteMenuItem } from "./auth-route-shell";
 import { AuthRouteShell } from "./auth-route-shell";
 import { CurrentSessionPanel } from "./CurrentSessionPanel";
 import { PublisherRegisterForm } from "./PublisherRegisterForm";
@@ -47,10 +49,110 @@ export function AuthShell({
   const heroDescription = isPublisherSession
     ? null
     : AUTH_COPY.description;
+  const menuItems = useMemo<AuthRouteMenuItem[]>(() => {
+    if (!currentSession) {
+      return [
+        {
+          type: "link",
+          label: "Keşfet",
+          href: "/"
+        },
+        {
+          type: "link",
+          label: "Giriş yap",
+          href: "/auth",
+          isCurrent: true
+        },
+        {
+          type: "link",
+          label: "Kayıt ol",
+          href: "/auth"
+        },
+        {
+          type: "link",
+          label: "Sen de yayıncı ol",
+          href: "/auth"
+        },
+        {
+          type: "action",
+          label: "Canlı Destek",
+          actionId: "support"
+        }
+      ];
+    }
+
+    if (currentSession.roleType === "admin") {
+      return [
+        {
+          type: "link",
+          label: "Operasyon",
+          href: "/auth",
+          isCurrent: true
+        },
+        {
+          type: "disabled",
+          label: "Ödemeler"
+        },
+        {
+          type: "disabled",
+          label: "Raporlar"
+        }
+      ];
+    }
+
+    if (currentSession.roleType === "user") {
+      return [
+        {
+          type: "link",
+          label: "Keşfet",
+          href: "/"
+        },
+        {
+          type: "link",
+          label: "Hesabım",
+          href: "/auth",
+          isCurrent: true
+        },
+        {
+          type: "action",
+          label: "Canlı Destek",
+          actionId: "support"
+        }
+      ];
+    }
+
+    return [
+      {
+        type: "link",
+        label: "Keşfet",
+        href: "/"
+      },
+      ...(publisherSurface?.kind === "approved"
+        ? [
+            {
+              type: "link" as const,
+              label: "Canlı Yayın",
+              href: primaryAction.href
+            }
+          ]
+        : []),
+      {
+        type: "link",
+        label: "Hesabım",
+        href: "/auth",
+        isCurrent: true
+      },
+      {
+        type: "action",
+        label: "Canlı Destek",
+        actionId: "support"
+      }
+    ];
+  }, [currentSession, primaryAction.href, publisherSurface]);
 
   return (
     <main className={styles.page}>
-      <AuthRouteShell>
+      <AuthRouteShell menuItems={menuItems}>
         <div className={styles.shell}>
           <header
             className={`${styles.hero} ${

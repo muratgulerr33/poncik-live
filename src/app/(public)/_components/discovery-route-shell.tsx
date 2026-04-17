@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Menu, UserRound, X } from "lucide-react";
 import { useEffect, useId, useState, type ReactNode } from "react";
 
 import { DiscoveryShell } from "./discovery-shell";
+import { TawkSupportBoundary } from "./tawk-support-boundary";
 import styles from "./discovery.module.css";
 
 type DiscoveryShellSession =
@@ -17,29 +17,43 @@ type DiscoveryShellSession =
       kind: "anonymous" | "degraded";
     };
 
+export type DiscoveryRouteMenuItem =
+  | {
+      type: "link";
+      label: string;
+      href: string;
+      isCurrent?: boolean;
+    }
+  | {
+      type: "action";
+      label: string;
+      actionId: "support";
+      isCurrent?: boolean;
+    }
+  | {
+      type: "disabled";
+      label: string;
+      isCurrent?: boolean;
+    };
+
 type DiscoveryRouteShellProps = Readonly<{
   children: ReactNode;
+  menuItems: DiscoveryRouteMenuItem[];
   session: DiscoveryShellSession;
 }>;
 
-const NAV_ITEMS = [
-  {
-    href: "/",
-    label: "Keşif"
-  },
-  {
-    href: "/auth",
-    label: "Hesap"
-  }
-] as const;
-
 export function DiscoveryRouteShell({
   children,
+  menuItems,
   session
 }: DiscoveryRouteShellProps) {
-  const pathname = usePathname();
   const drawerId = useId();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [supportOpenSignal, setSupportOpenSignal] = useState(0);
+  const [isSupportOpening, setIsSupportOpening] = useState(false);
+  const hasSupportAction = menuItems.some(
+    (item) => item.type === "action" && item.actionId === "support"
+  );
 
   useEffect(() => {
     if (!isDrawerOpen) {
@@ -78,6 +92,12 @@ export function DiscoveryRouteShell({
 
   function closeDrawer() {
     setIsDrawerOpen(false);
+  }
+
+  function handleSupportRequest() {
+    setIsSupportOpening(true);
+    setIsDrawerOpen(false);
+    setSupportOpenSignal((current) => current + 1);
   }
 
   const chrome = (
@@ -151,25 +171,59 @@ export function DiscoveryRouteShell({
         </div>
 
         <nav className={styles.drawerNav}>
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-
-            return (
+          {menuItems.map((item) => {
+            if (item.type === "link") {
+              return (
               <Link
-                key={item.href}
+                key={`${item.type}:${item.label}`}
                 href={item.href}
                 className={`${styles.drawerLink} ${
-                  isActive ? styles.drawerLinkActive : ""
+                  item.isCurrent ? styles.drawerLinkActive : ""
                 }`.trim()}
-                aria-current={isActive ? "page" : undefined}
+                aria-current={item.isCurrent ? "page" : undefined}
                 onClick={closeDrawer}
               >
                 <span className="t-label">{item.label}</span>
               </Link>
+              );
+            }
+
+            if (item.type === "action") {
+              return (
+                <button
+                  key={`${item.type}:${item.label}`}
+                  type="button"
+                  className={styles.drawerAction}
+                  disabled={isSupportOpening}
+                  onClick={handleSupportRequest}
+                >
+                  <span className="t-label">{item.label}</span>
+                </button>
+              );
+            }
+
+            return (
+              <div
+                key={`${item.type}:${item.label}`}
+                className={styles.drawerDisabled}
+                aria-disabled="true"
+              >
+                <span className="t-label">{item.label}</span>
+              </div>
             );
           })}
         </nav>
       </aside>
+
+      {hasSupportAction ? (
+        <TawkSupportBoundary
+          enabled={true}
+          openSignal={supportOpenSignal}
+          onPhaseChange={(phase) => {
+            setIsSupportOpening(phase === "opening");
+          }}
+        />
+      ) : null}
     </>
   );
 }

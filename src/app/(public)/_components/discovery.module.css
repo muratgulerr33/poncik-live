@@ -396,14 +396,49 @@
   background: color-mix(in oklch, var(--surface-1) 92%, transparent);
 }
 
+.drawerAction,
+.drawerDisabled {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--control-min-height);
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in oklch, var(--border) 84%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--surface-1) 92%, transparent);
+  color: var(--foreground);
+}
+
+.drawerAction {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.drawerAction:disabled {
+  cursor: default;
+  opacity: 0.78;
+}
+
+.drawerDisabled {
+  color: var(--muted-foreground);
+  opacity: 0.72;
+}
+
 .drawerLinkActive {
   border-color: color-mix(in oklch, var(--primary) 38%, var(--border));
   background: color-mix(in oklch, var(--primary) 14%, var(--surface-1));
 }
 
+.drawerAction:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+
 .accountSlot:active,
 .chromeToggle:active,
-.drawerClose:active {
+.drawerClose:active,
+.drawerAction:active {
   transform: scale(0.97);
 }
 
@@ -417,7 +452,8 @@
 @media (any-pointer: fine) {
   .accountSlot:hover,
   .chromeToggle:hover,
-  .drawerClose:hover {
+  .drawerClose:hover,
+  .drawerAction:hover {
     background: color-mix(in oklch, var(--surface-2) 90%, transparent);
     border-color: color-mix(in oklch, var(--ring) 38%, var(--border));
   }
@@ -426,7 +462,8 @@
 @media (any-pointer: coarse) {
   .accountSlot:hover,
   .chromeToggle:hover,
-  .drawerClose:hover {
+  .drawerClose:hover,
+  .drawerAction:hover {
     background: color-mix(in oklch, var(--surface-1) 92%, transparent);
     border-color: color-mix(in oklch, var(--border) 88%, transparent);
   }
