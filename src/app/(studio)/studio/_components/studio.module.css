@@ -103,8 +103,7 @@
   text-overflow: ellipsis;
 }
 
-.statusIndicator,
-.previewStatusBadge {
+.statusIndicator {
   padding: 0.35rem 0.75rem;
   border: 1px solid color-mix(in oklch, var(--border) 80%, transparent);
   border-radius: 999px;
@@ -114,26 +113,12 @@
   white-space: nowrap;
 }
 
-.previewStatusBadge {
-  position: absolute;
-  top: 0.72rem;
-  left: 0.72rem;
-  z-index: 1;
-  pointer-events: none;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 8px 20px color-mix(in oklch, var(--foreground) 9%, transparent);
-  padding: 0.3rem 0.66rem;
-  font-size: 0.84rem;
-}
-
-.statusIndicator[data-tone="live"],
-.previewStatusBadge[data-tone="live"] {
+.statusIndicator[data-tone="live"] {
   border-color: color-mix(in oklch, var(--primary) 34%, var(--border));
   color: color-mix(in oklch, var(--primary) 66%, var(--foreground));
 }
 
-.statusIndicator[data-tone="degraded"],
-.previewStatusBadge[data-tone="degraded"] {
+.statusIndicator[data-tone="degraded"] {
   border-color: color-mix(in oklch, var(--destructive) 22%, var(--border));
   color: color-mix(in oklch, var(--destructive) 54%, var(--foreground));
 }
@@ -220,6 +205,12 @@
 }
 
 .sceneApproved .chrome {
+  padding: 0.35rem 0.4rem 0.35rem 0.35rem;
+  border: 1px solid color-mix(in oklch, var(--border) 74%, transparent);
+  border-radius: calc(var(--radius) + 999px);
+  background: color-mix(in oklch, var(--surface-1) 72%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 28px color-mix(in oklch, var(--foreground) 10%, transparent);
   min-height: 2.85rem;
 }
 
@@ -431,6 +422,7 @@
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.3rem 0.35rem 0.3rem 0.3rem;
     min-height: 2.5rem;
   }
 
@@ -481,13 +473,6 @@
 
   .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
     width: min(100%, 23rem);
-  }
-
-  .previewStatusBadge {
-    top: 0.62rem;
-    left: 0.62rem;
-    padding: 0.28rem 0.6rem;
-    font-size: 0.79rem;
   }
 }
 
