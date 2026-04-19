@@ -19,6 +19,9 @@
 
 .pageScene {
   display: grid;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
   min-height: 100vh;
   min-height: 100svh;
   min-height: 100dvh;
@@ -47,6 +50,7 @@
   display: grid;
   width: 100%;
   margin: 0;
+  height: 100%;
   min-height: 100%;
   overflow: clip;
 }
@@ -62,6 +66,7 @@
 .shell[data-layout="scene"] .shellScene {
   position: relative;
   display: grid;
+  height: 100%;
   min-height: inherit;
 }
 
@@ -166,6 +171,7 @@
 }
 
 .pageScene .sceneApproved {
+  height: 100%;
   min-height: 100%;
   align-items: stretch;
 }
@@ -185,6 +191,7 @@
 
 .sceneApproved .prepScene {
   width: 100%;
+  height: 100%;
   min-height: inherit;
   margin: 0;
   padding-top: 0;
@@ -227,9 +234,12 @@
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] {
+  height: 100%;
   min-height: 100%;
   gap: 0;
   align-items: stretch;
+  overflow: clip;
+  background: black;
 }
 
 .previewStageStack,
@@ -240,9 +250,13 @@
 
 .sceneApproved .previewScene[data-state="preview_ready"] .previewStageStack {
   width: 100%;
+  height: 100%;
   min-height: 100%;
   gap: 0;
   position: relative;
+  overflow: clip;
+  isolation: isolate;
+  background: black;
 }
 
 .sceneSupportStack {
@@ -274,21 +288,24 @@
 }
 
 .sceneApproved .previewStageStack[data-layout="scene"] .sceneMediaRoot {
+  height: 100%;
   min-height: 100%;
   align-self: stretch;
+  background: black;
 }
 
 .sceneApproved .previewStageStack[data-layout="scene"] .sceneActionSurface {
   width: 100%;
+  height: 100%;
   min-height: 100%;
   align-self: stretch;
   align-items: end;
   justify-items: center;
   padding:
-    max(0.35rem, calc(var(--safe-area-top) + 0.1rem))
-    max(0.5rem, calc(var(--safe-area-right) + 0.15rem))
-    max(0.45rem, calc(var(--safe-area-bottom) + 0.15rem))
-    max(0.5rem, calc(var(--safe-area-left) + 0.15rem));
+    max(0.2rem, calc(var(--safe-area-top) + 0.02rem))
+    max(0.4rem, calc(var(--safe-area-right) + 0.1rem))
+    max(0.25rem, calc(var(--safe-area-bottom) + 0.08rem))
+    max(0.4rem, calc(var(--safe-area-left) + 0.1rem));
   pointer-events: none;
   z-index: 2;
 }
@@ -321,10 +338,10 @@
   justify-content: space-between;
   gap: 0.9rem;
   padding:
-    max(0.35rem, calc(var(--safe-area-top) + 0.1rem))
-    max(0.5rem, calc(var(--safe-area-right) + 0.15rem))
+    max(0.2rem, calc(var(--safe-area-top) + 0.02rem))
+    max(0.4rem, calc(var(--safe-area-right) + 0.1rem))
     0
-    max(0.5rem, calc(var(--safe-area-left) + 0.15rem));
+    max(0.4rem, calc(var(--safe-area-left) + 0.1rem));
   border: 0;
   border-radius: 0;
   background: none;
@@ -387,8 +404,10 @@
 
 .sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
   width: 100%;
-  min-height: 100%;
+  min-height: 0;
   height: 100%;
+  place-items: stretch;
+  align-self: stretch;
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -397,7 +416,7 @@
 
 .sceneApproved .previewScene[data-state="preview_ready"] .sceneActionBudget {
   width: fit-content;
-  max-width: min(100%, 22rem);
+  max-width: min(100%, 18rem);
   justify-self: center;
   margin-top: 0;
   padding: 0;
@@ -473,7 +492,7 @@
 
 .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
   width: auto;
-  max-width: min(100%, 22rem);
+  max-width: min(100%, 18rem);
   gap: 0.14rem;
   margin-top: 0;
   padding-bottom: 0;
@@ -495,7 +514,7 @@
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
-  width: min(100%, 18rem);
+  width: min(100%, 16rem);
   min-height: 3.2rem;
 }
 
@@ -587,10 +606,10 @@
     align-items: flex-start;
     gap: 0.5rem;
     padding:
-      max(0.3rem, calc(var(--safe-area-top) + 0.05rem))
-      max(0.35rem, calc(var(--safe-area-right) + 0.08rem))
+      max(0.2rem, calc(var(--safe-area-top) + 0.02rem))
+      max(0.28rem, calc(var(--safe-area-right) + 0.04rem))
       0
-      max(0.35rem, calc(var(--safe-area-left) + 0.08rem));
+      max(0.28rem, calc(var(--safe-area-left) + 0.04rem));
   }
 
   .sceneApproved .chrome[data-layout="scene"] .leadingCluster {
@@ -635,16 +654,16 @@
 
   .sceneApproved .previewScene[data-state="preview_ready"] .sceneActionBudget {
     width: fit-content;
-    max-width: min(100%, 18rem);
+    max-width: min(100%, 15.5rem);
     padding: 0;
   }
 
   .sceneApproved .previewStageStack[data-layout="scene"] .sceneActionSurface {
     padding:
-      max(0.3rem, calc(var(--safe-area-top) + 0.05rem))
-      max(0.3rem, calc(var(--safe-area-right) + 0.06rem))
-      max(0.32rem, calc(var(--safe-area-bottom) + 0.06rem))
-      max(0.3rem, calc(var(--safe-area-left) + 0.06rem));
+      max(0.16rem, calc(var(--safe-area-top) + 0.02rem))
+      max(0.24rem, calc(var(--safe-area-right) + 0.03rem))
+      max(0.18rem, calc(var(--safe-area-bottom) + 0.03rem))
+      max(0.24rem, calc(var(--safe-area-left) + 0.03rem));
   }
 
   .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
@@ -656,7 +675,7 @@
   }
 
   .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
-    width: min(100%, 18rem);
+    width: min(100%, 15.5rem);
   }
 }
 
