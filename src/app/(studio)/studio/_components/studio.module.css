@@ -439,6 +439,11 @@
   object-position: center;
 }
 
+.previewVideo {
+  transform: none;
+  transform-origin: center;
+}
+
 .previewVideoInactive {
   opacity: 0;
   pointer-events: none;
@@ -676,6 +681,12 @@
 
   .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
     width: min(100%, 15.5rem);
+  }
+}
+
+@media (max-width: 640px) and (orientation: portrait) {
+  .sceneApproved .previewScene[data-state="preview_ready"] .previewVideo {
+    transform: scale(1.1);
   }
 }
 
