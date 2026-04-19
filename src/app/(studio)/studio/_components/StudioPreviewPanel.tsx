@@ -101,19 +101,21 @@ export function StudioPreviewPanel({
             <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
           )}
 
-          <StudioLifecycleActions
-            canStart={canStart}
-            canStop={canStop}
-            isStarting={isStarting}
-            isStopping={isStopping}
-            message={lifecycleMessage}
-            onStart={() => {
-              void startPublishing();
-            }}
-            onStop={() => {
-              void stopPublishing();
-            }}
-          />
+          <div className={isHealthyPreview ? styles.sceneActionBudget : undefined}>
+            <StudioLifecycleActions
+              canStart={canStart}
+              canStop={canStop}
+              isStarting={isStarting}
+              isStopping={isStopping}
+              message={lifecycleMessage}
+              onStart={() => {
+                void startPublishing();
+              }}
+              onStop={() => {
+                void stopPublishing();
+              }}
+            />
+          </div>
         </div>
       </div>
 
