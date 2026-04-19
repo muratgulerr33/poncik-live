@@ -26,9 +26,12 @@ function getLifecycleLabel(
 
 export function StudioShell({ view }: StudioShellProps) {
   const isApprovedPrep = view.kind === "approved_prep";
+  const pageClassName = isApprovedPrep
+    ? `${styles.page} ${styles.pageScene}`
+    : styles.page;
 
   return (
-    <main className={styles.page}>
+    <main className={pageClassName}>
       <StudioFreshness />
       <div className={isApprovedPrep ? styles.sceneApproved : styles.sceneGate}>
         {isApprovedPrep ? (

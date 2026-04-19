@@ -91,6 +91,7 @@ export function StudioPrepSurface({
   return (
     <StudioRouteShell
       closeDisabled={isExitPending || exitControl.isStopping}
+      layout="scene"
       onRequestClose={handleRequestClose}
       statusLabel={statusLabel}
       statusTone={statusTone}

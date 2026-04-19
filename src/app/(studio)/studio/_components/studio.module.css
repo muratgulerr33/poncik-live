@@ -17,10 +17,17 @@
     );
 }
 
-.shell {
+.pageScene {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 0.8rem;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: 0;
+  background: none;
+  overflow: clip;
+}
+
+.shell {
   width: min(100%, 96rem);
   margin: 0 auto;
   min-height: calc(
@@ -29,7 +36,36 @@
   );
 }
 
-.sceneApproved .shell {
+.shell[data-layout="page"] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.8rem;
+}
+
+.shell[data-layout="scene"] {
+  position: relative;
+  display: grid;
+  width: 100%;
+  margin: 0;
+  min-height: 100%;
+  overflow: clip;
+}
+
+.shellScene {
+  min-height: 0;
+}
+
+.shell[data-layout="page"] .shellScene {
+  display: grid;
+}
+
+.shell[data-layout="scene"] .shellScene {
+  position: relative;
+  display: grid;
+  min-height: inherit;
+}
+
+.sceneApproved .shell[data-layout="page"] {
   gap: 0.65rem;
 }
 
@@ -129,6 +165,11 @@
   min-height: 0;
 }
 
+.pageScene .sceneApproved {
+  min-height: 100%;
+  align-items: stretch;
+}
+
 .sceneGate {
   align-items: center;
 }
@@ -143,7 +184,12 @@
 }
 
 .sceneApproved .prepScene {
-  gap: 0.7rem;
+  width: 100%;
+  min-height: inherit;
+  margin: 0;
+  padding-top: 0;
+  gap: 0;
+  align-items: stretch;
 }
 
 .prepIntro {
@@ -181,8 +227,9 @@
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] {
-  gap: 0.18rem;
-  min-height: 0;
+  min-height: 100%;
+  gap: 0;
+  align-items: stretch;
 }
 
 .previewStageStack,
@@ -193,8 +240,9 @@
 
 .sceneApproved .previewScene[data-state="preview_ready"] .previewStageStack {
   width: 100%;
-  min-height: 0;
-  gap: 0.18rem;
+  min-height: 100%;
+  gap: 0;
+  position: relative;
 }
 
 .sceneSupportStack {
@@ -207,18 +255,53 @@
   gap: 0.8rem;
 }
 
-.sceneApproved .previewCard[data-state="preview_ready"] {
-  gap: 0.18rem;
+.sceneStage {
+  display: grid;
+}
+
+.sceneMediaRoot {
+  display: grid;
   min-height: 0;
-  align-content: stretch;
-  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.sceneActionSurface {
+  display: grid;
+}
+
+.previewStageStack[data-layout="scene"] .sceneMediaRoot,
+.previewStageStack[data-layout="scene"] .sceneActionSurface {
+  grid-area: 1 / 1;
+}
+
+.sceneApproved .previewStageStack[data-layout="scene"] .sceneMediaRoot {
+  min-height: 100%;
+  align-self: stretch;
+}
+
+.sceneApproved .previewStageStack[data-layout="scene"] .sceneActionSurface {
+  width: 100%;
+  min-height: 100%;
+  align-self: stretch;
+  align-items: end;
+  justify-items: center;
+  padding:
+    max(0.35rem, calc(var(--safe-area-top) + 0.1rem))
+    max(0.5rem, calc(var(--safe-area-right) + 0.15rem))
+    max(0.45rem, calc(var(--safe-area-bottom) + 0.15rem))
+    max(0.5rem, calc(var(--safe-area-left) + 0.15rem));
+  pointer-events: none;
+  z-index: 2;
 }
 
 .sceneActionBudget {
   width: 100%;
 }
 
-.sceneApproved .chrome {
+.sceneActionSurface > * {
+  pointer-events: auto;
+}
+
+.sceneApproved .chrome[data-layout="page"] {
   padding: 0.35rem 0.4rem 0.35rem 0.35rem;
   border: 1px solid color-mix(in oklch, var(--border) 74%, transparent);
   border-radius: calc(var(--radius) + 999px);
@@ -226,6 +309,42 @@
   backdrop-filter: blur(18px);
   box-shadow: 0 10px 28px color-mix(in oklch, var(--foreground) 10%, transparent);
   min-height: 2.85rem;
+}
+
+.sceneApproved .chrome[data-layout="scene"] {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 3;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding:
+    max(0.35rem, calc(var(--safe-area-top) + 0.1rem))
+    max(0.5rem, calc(var(--safe-area-right) + 0.15rem))
+    0
+    max(0.5rem, calc(var(--safe-area-left) + 0.15rem));
+  border: 0;
+  border-radius: 0;
+  background: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.sceneApproved .chrome[data-layout="scene"] > * {
+  pointer-events: auto;
+}
+
+.sceneApproved .chrome[data-layout="scene"] .leadingCluster {
+  padding: 0.35rem 0.55rem 0.35rem 0.35rem;
+  border: 1px solid color-mix(in oklch, var(--border) 74%, transparent);
+  border-radius: calc(var(--radius) + 999px);
+  background: color-mix(in oklch, var(--surface-1) 72%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 28px color-mix(in oklch, var(--foreground) 10%, transparent);
 }
 
 .sceneApproved .leadingCluster {
@@ -268,41 +387,28 @@
 
 .sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
   width: 100%;
-  min-height: clamp(24rem, calc(100svh - 7.65rem), 44rem);
-  min-height: clamp(24rem, calc(100dvh - 7.65rem), 44rem);
-  border-color: color-mix(in oklch, var(--border) 42%, transparent);
-  border-radius: calc(var(--radius) + 0.25rem);
-  box-shadow: 0 16px 30px color-mix(in oklch, var(--foreground) 7%, transparent);
+  min-height: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: black;
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] .sceneActionBudget {
-  width: min(100%, 28rem);
+  width: fit-content;
+  max-width: min(100%, 22rem);
   justify-self: center;
-  margin-top: -0.1rem;
-  padding: 0.7rem 0.95rem 0.6rem;
-  border: 1px solid color-mix(in oklch, var(--border) 66%, transparent);
-  border-radius: calc(var(--radius) + 0.25rem);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in oklch, var(--surface-1) 72%, transparent),
-      color-mix(in oklch, var(--surface-2) 66%, transparent)
-    );
-  box-shadow: 0 14px 26px color-mix(in oklch, var(--foreground) 8%, transparent);
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] .sceneActionBudget::before {
-  content: "";
-  display: block;
-  width: min(100%, 13rem);
-  height: 1px;
-  margin: 0 auto 0.72rem;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in oklch, var(--border) 84%, transparent),
-    transparent
-  );
+  content: none;
 }
 
 .previewVideo,
@@ -366,7 +472,8 @@
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
-  width: 100%;
+  width: auto;
+  max-width: min(100%, 22rem);
   gap: 0.14rem;
   margin-top: 0;
   padding-bottom: 0;
@@ -378,7 +485,7 @@
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleActionRow {
-  width: 100%;
+  width: auto;
   justify-content: center;
 }
 
@@ -388,7 +495,7 @@
 }
 
 .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
-  width: min(100%, 23rem);
+  width: min(100%, 18rem);
   min-height: 3.2rem;
 }
 
@@ -451,7 +558,7 @@
     );
   }
 
-  .sceneApproved .shell {
+  .sceneApproved .shell[data-layout="page"] {
     gap: 0.45rem;
   }
 
@@ -469,8 +576,25 @@
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.3rem 0.35rem 0.3rem 0.3rem;
     min-height: 2.5rem;
+  }
+
+  .sceneApproved .chrome[data-layout="page"] {
+    padding: 0.3rem 0.35rem 0.3rem 0.3rem;
+  }
+
+  .sceneApproved .chrome[data-layout="scene"] {
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding:
+      max(0.3rem, calc(var(--safe-area-top) + 0.05rem))
+      max(0.35rem, calc(var(--safe-area-right) + 0.08rem))
+      0
+      max(0.35rem, calc(var(--safe-area-left) + 0.08rem));
+  }
+
+  .sceneApproved .chrome[data-layout="scene"] .leadingCluster {
+    padding: 0.3rem 0.45rem 0.3rem 0.3rem;
   }
 
   .sceneApproved .leadingCluster {
@@ -506,13 +630,21 @@
   }
 
   .sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
-    min-height: clamp(24rem, calc(100svh - 6.9rem), 40rem);
-    min-height: clamp(24rem, calc(100dvh - 6.9rem), 40rem);
+    min-height: 100%;
   }
 
   .sceneApproved .previewScene[data-state="preview_ready"] .sceneActionBudget {
-    width: 100%;
-    padding: 0.65rem 0.75rem 0.55rem;
+    width: fit-content;
+    max-width: min(100%, 18rem);
+    padding: 0;
+  }
+
+  .sceneApproved .previewStageStack[data-layout="scene"] .sceneActionSurface {
+    padding:
+      max(0.3rem, calc(var(--safe-area-top) + 0.05rem))
+      max(0.3rem, calc(var(--safe-area-right) + 0.06rem))
+      max(0.32rem, calc(var(--safe-area-bottom) + 0.06rem))
+      max(0.3rem, calc(var(--safe-area-left) + 0.06rem));
   }
 
   .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
@@ -524,7 +656,7 @@
   }
 
   .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
-    width: min(100%, 23rem);
+    width: min(100%, 18rem);
   }
 }
 

@@ -51,6 +51,21 @@ export function StudioPreviewPanel({
   });
   const isHealthyPreview = previewState === "preview_ready";
   const shouldShowSupportStack = !isHealthyPreview || canRetry;
+  const lifecycleActions = (
+    <StudioLifecycleActions
+      canStart={canStart}
+      canStop={canStop}
+      isStarting={isStarting}
+      isStopping={isStopping}
+      message={lifecycleMessage}
+      onStart={() => {
+        void startPublishing();
+      }}
+      onStop={() => {
+        void stopPublishing();
+      }}
+    />
+  );
 
   useEffect(() => {
     if (!onExitControlChange) {
@@ -73,8 +88,14 @@ export function StudioPreviewPanel({
 
   return (
     <section className={styles.previewScene} data-state={previewState}>
-      <div className={styles.previewStageStack}>
-        <div className={styles.previewCard} data-state={previewState}>
+      <div
+        className={styles.previewStageStack}
+        data-layout={isHealthyPreview ? "scene" : "panel"}
+      >
+        <div
+          className={isHealthyPreview ? styles.sceneMediaRoot : styles.previewCard}
+          data-state={previewState}
+        >
           {isHealthyPreview ? null : (
             <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
           )}
@@ -100,23 +121,15 @@ export function StudioPreviewPanel({
           {isHealthyPreview ? null : (
             <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
           )}
-
-          <div className={isHealthyPreview ? styles.sceneActionBudget : undefined}>
-            <StudioLifecycleActions
-              canStart={canStart}
-              canStop={canStop}
-              isStarting={isStarting}
-              isStopping={isStopping}
-              message={lifecycleMessage}
-              onStart={() => {
-                void startPublishing();
-              }}
-              onStop={() => {
-                void stopPublishing();
-              }}
-            />
-          </div>
         </div>
+
+        {isHealthyPreview ? (
+          <div className={styles.sceneActionSurface}>
+            <div className={styles.sceneActionBudget}>{lifecycleActions}</div>
+          </div>
+        ) : (
+          lifecycleActions
+        )}
       </div>
 
       {shouldShowSupportStack ? (
