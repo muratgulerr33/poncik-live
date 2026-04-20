@@ -18,6 +18,7 @@ import {
 } from "../_adapters/studio-lifecycle-client-adapter";
 import { type StudioPreviewState } from "../_adapters/studio-preview-adapter";
 import { STUDIO_COPY } from "../_lib/studio-copy";
+import { useStudioPublishContinuity } from "./useStudioPublishContinuity";
 
 type UseStudioPublishFoundationArgs = {
   lifecycleKind: "idle" | "live" | "degraded";
@@ -27,6 +28,8 @@ type UseStudioPublishFoundationArgs = {
 
 type StudioLifecycleKind = UseStudioPublishFoundationArgs["lifecycleKind"];
 
+let latestStudioStartSuccessSequence = 0;
+
 export function useStudioPublishFoundation({
   lifecycleKind,
   previewState,
@@ -35,12 +38,17 @@ export function useStudioPublishFoundation({
   const router = useRouter();
   const disconnectCleanupRef = useRef<(() => void) | null>(null);
   const closeStopFiredRef = useRef(false);
+  const finishRefreshContinuityAttemptRef = useRef(() => {});
   const isLocallyLiveRef = useRef(false);
   const isStoppingRef = useRef(false);
+  const lifecycleKindRef = useRef<StudioLifecycleKind>(lifecycleKind);
   const roomRef = useRef<Room | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [isLocallyLive, setIsLocallyLive] = useState(false);
+  const [startSuccessSequence, setStartSuccessSequence] = useState(
+    () => latestStudioStartSuccessSequence
+  );
   const [lifecycleMessage, setLifecycleMessage] = useState<string | null>(null);
 
   const effectiveLifecycleKind: StudioLifecycleKind =
@@ -61,8 +69,89 @@ export function useStudioPublishFoundation({
     await disconnectStudioPublisherRoom(room);
   }, [clearRoomDisconnectBinding]);
 
+  const reconcileFailedRecovery = useCallback(async () => {
+    finishRefreshContinuityAttemptRef.current();
+    closeStopFiredRef.current = true;
+    await clearLocalPublisher();
+
+    if (lifecycleKindRef.current !== "live") {
+      router.refresh();
+      return;
+    }
+
+    const stopResult = await stopStudioBroadcastLifecycle();
+
+    if (stopResult.status === "error") {
+      setLifecycleMessage(stopResult.message);
+    }
+
+    router.refresh();
+  }, [clearLocalPublisher, router]);
+
+  const recoverRefreshContinuity = useCallback(async () => {
+    const previewStream = readPreviewStream();
+
+    if (!previewStream) {
+      await reconcileFailedRecovery();
+      return;
+    }
+
+    setLifecycleMessage(null);
+
+    const tokenResult = await fetchStudioPublisherToken();
+
+    if (tokenResult.kind !== "success") {
+      await reconcileFailedRecovery();
+      return;
+    }
+
+    const connectionResult = await connectStudioPublisherRoom(tokenResult.payload);
+
+    if (connectionResult.kind !== "success") {
+      await reconcileFailedRecovery();
+      return;
+    }
+
+    const didPublish = await publishStudioPreviewTracks(
+      connectionResult.room,
+      previewStream
+    );
+
+    if (!didPublish) {
+      await disconnectStudioPublisherRoom(connectionResult.room);
+      await reconcileFailedRecovery();
+      return;
+    }
+
+    clearRoomDisconnectBinding();
+    roomRef.current = connectionResult.room;
+    closeStopFiredRef.current = false;
+    isLocallyLiveRef.current = true;
+    setIsLocallyLive(true);
+    finishRefreshContinuityAttemptRef.current();
+  }, [clearRoomDisconnectBinding, readPreviewStream, reconcileFailedRecovery]);
+
+  const {
+    finishRefreshContinuityAttempt,
+    handlePageHideForRefreshContinuity,
+    maybeStartRefreshContinuityRecovery,
+    shouldBypassCloseStopForRefresh
+  } = useStudioPublishContinuity({
+    isLocallyLiveRef,
+    isStoppingRef,
+    lifecycleKind,
+    onReconcileFailedRecovery: reconcileFailedRecovery,
+    onRecoverContinuity: recoverRefreshContinuity,
+    previewState
+  });
+
+  useEffect(() => {
+    finishRefreshContinuityAttemptRef.current = finishRefreshContinuityAttempt;
+  }, [finishRefreshContinuityAttempt]);
+
   const triggerCloseStop = useCallback(() => {
     if (
+      shouldBypassCloseStopForRefresh() ||
       !isLocallyLiveRef.current ||
       isStoppingRef.current ||
       closeStopFiredRef.current
@@ -73,7 +162,7 @@ export function useStudioPublishFoundation({
     closeStopFiredRef.current = true;
     triggerStudioBroadcastCloseStop();
     return true;
-  }, []);
+  }, [shouldBypassCloseStopForRefresh]);
 
   const startPublishing = useCallback(async () => {
     if (previewState !== "preview_ready" || lifecycleKind === "live" || isStarting) {
@@ -132,6 +221,8 @@ export function useStudioPublishFoundation({
     closeStopFiredRef.current = false;
     isLocallyLiveRef.current = true;
     setIsLocallyLive(true);
+    latestStudioStartSuccessSequence += 1;
+    setStartSuccessSequence(latestStudioStartSuccessSequence);
     setIsStarting(false);
     router.refresh();
   }, [
@@ -171,7 +262,13 @@ export function useStudioPublishFoundation({
     isStoppingRef.current = false;
     router.refresh();
     return true;
-  }, [clearLocalPublisher, isLocallyLive, isStopping, lifecycleKind, router]);
+  }, [
+    clearLocalPublisher,
+    isLocallyLive,
+    isStopping,
+    lifecycleKind,
+    router
+  ]);
 
   useEffect(() => {
     const room = roomRef.current;
@@ -199,19 +296,31 @@ export function useStudioPublishFoundation({
         binding.cleanup();
       }
     };
-  }, [clearLocalPublisher, clearRoomDisconnectBinding, router, triggerCloseStop]);
+  }, [
+    clearLocalPublisher,
+    clearRoomDisconnectBinding,
+    isLocallyLive,
+    router,
+    triggerCloseStop
+  ]);
 
   useEffect(() => {
-    function handlePageHide() {
-      triggerCloseStop();
-    }
-
-    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pagehide", handlePageHideForRefreshContinuity);
 
     return () => {
-      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pagehide", handlePageHideForRefreshContinuity);
     };
-  }, [triggerCloseStop]);
+  }, [handlePageHideForRefreshContinuity]);
+
+  useEffect(() => {
+    lifecycleKindRef.current = lifecycleKind;
+  }, [lifecycleKind]);
+
+  useEffect(() => {
+    void maybeStartRefreshContinuityRecovery();
+  }, [
+    maybeStartRefreshContinuityRecovery
+  ]);
 
   useEffect(() => {
     return () => {
@@ -227,6 +336,7 @@ export function useStudioPublishFoundation({
     isStarting,
     isStopping,
     lifecycleMessage,
+    startSuccessSequence,
     startPublishing,
     stopPublishing
   };

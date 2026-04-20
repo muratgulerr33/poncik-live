@@ -282,8 +282,13 @@
   display: grid;
 }
 
+.sceneSuccessFeedbackLane {
+  display: grid;
+}
+
 .previewStageStack[data-layout="scene"] .sceneMediaRoot,
-.previewStageStack[data-layout="scene"] .sceneActionSurface {
+.previewStageStack[data-layout="scene"] .sceneActionSurface,
+.previewStageStack[data-layout="scene"] .sceneSuccessFeedbackLane {
   grid-area: 1 / 1;
 }
 
@@ -310,12 +315,71 @@
   z-index: 2;
 }
 
+.sceneApproved .previewStageStack[data-layout="scene"] .sceneSuccessFeedbackLane {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  align-self: stretch;
+  align-items: start;
+  justify-items: center;
+  padding:
+    max(3.55rem, calc(var(--safe-area-top) + 3.35rem))
+    max(0.65rem, calc(var(--safe-area-right) + 0.24rem))
+    0
+    max(0.65rem, calc(var(--safe-area-left) + 0.24rem));
+  pointer-events: none;
+  z-index: 2;
+}
+
 .sceneActionBudget {
   width: 100%;
 }
 
 .sceneActionSurface > * {
   pointer-events: auto;
+}
+
+.startFeedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  max-width: min(100%, 16rem);
+  padding: 0.72rem 0.95rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 22%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface-1) 82%, transparent);
+  color: color-mix(in oklch, var(--foreground) 92%, var(--surface-1));
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 28px color-mix(in oklch, var(--foreground) 10%, transparent);
+  animation: studioStartFeedbackIn 180ms ease-out;
+}
+
+.startFeedbackIndicator {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--primary) 76%, white 24%);
+  box-shadow: 0 0 0 0.28rem color-mix(in oklch, var(--primary) 14%, transparent);
+  flex: 0 0 auto;
+}
+
+.startFeedbackMessage {
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+@keyframes studioStartFeedbackIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .sceneApproved .chrome[data-layout="page"] {
@@ -671,6 +735,14 @@
       max(0.24rem, calc(var(--safe-area-left) + 0.03rem));
   }
 
+  .sceneApproved .previewStageStack[data-layout="scene"] .sceneSuccessFeedbackLane {
+    padding:
+      max(3rem, calc(var(--safe-area-top) + 2.82rem))
+      max(0.34rem, calc(var(--safe-area-right) + 0.06rem))
+      0
+      max(0.34rem, calc(var(--safe-area-left) + 0.06rem));
+  }
+
   .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
     gap: 0.14rem;
   }
@@ -681,6 +753,15 @@
 
   .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
     width: min(100%, 15.5rem);
+  }
+
+  .startFeedback {
+    max-width: min(100%, 14.75rem);
+    padding: 0.66rem 0.82rem;
+  }
+
+  .startFeedbackMessage {
+    font-size: 0.9rem;
   }
 }
 
