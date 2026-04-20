@@ -1,7 +1,7 @@
 "use client";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
-import styles from "./studio.module.css";
+import styles from "./studio-exit-confirm-dialog.module.css";
 
 type StudioExitConfirmDialogProps = {
   isPending: boolean;

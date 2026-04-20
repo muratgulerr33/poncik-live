@@ -74,16 +74,6 @@
   gap: 0.65rem;
 }
 
-.card {
-  width: min(100%, 38rem);
-  padding: 1.5rem;
-  border: 1px solid color-mix(in oklch, var(--border) 82%, transparent);
-  border-radius: calc(var(--radius) + 0.65rem);
-  background: color-mix(in oklch, var(--surface-2) 92%, black 8%);
-  box-shadow: 0 16px 40px color-mix(in oklch, var(--foreground) 8%, transparent);
-  justify-self: center;
-}
-
 .chrome {
   display: flex;
   align-items: center;
@@ -203,13 +193,11 @@
   max-width: 32rem;
 }
 
-.panelTitle,
-.noticeTitle {
+.panelTitle {
   margin: 0;
 }
 
 .panelDescription,
-.noticeBody,
 .previewBody {
   margin: 0.75rem 0 0;
   color: var(--muted-foreground);
@@ -337,49 +325,6 @@
 
 .sceneActionSurface > * {
   pointer-events: auto;
-}
-
-.startFeedback {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  width: fit-content;
-  max-width: min(100%, 16rem);
-  padding: 0.72rem 0.95rem;
-  border: 1px solid color-mix(in oklch, var(--primary) 22%, var(--border));
-  border-radius: 999px;
-  background: color-mix(in oklch, var(--surface-1) 82%, transparent);
-  color: color-mix(in oklch, var(--foreground) 92%, var(--surface-1));
-  backdrop-filter: blur(18px);
-  box-shadow: 0 10px 28px color-mix(in oklch, var(--foreground) 10%, transparent);
-  animation: studioStartFeedbackIn 180ms ease-out;
-}
-
-.startFeedbackIndicator {
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 999px;
-  background: color-mix(in oklch, var(--primary) 76%, white 24%);
-  box-shadow: 0 0 0 0.28rem color-mix(in oklch, var(--primary) 14%, transparent);
-  flex: 0 0 auto;
-}
-
-.startFeedbackMessage {
-  font-size: 0.94rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-@keyframes studioStartFeedbackIn {
-  from {
-    opacity: 0;
-    transform: translateY(-0.35rem) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .sceneApproved .chrome[data-layout="page"] {
@@ -542,17 +487,6 @@
   font-size: 0.88rem;
 }
 
-.notice {
-  padding: 1rem 1.05rem;
-  border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
-  border-radius: calc(var(--radius) + 0.15rem);
-  background: color-mix(in oklch, var(--surface-1) 92%, black 8%);
-}
-
-.notice[data-state="preview_ready"] {
-  border-color: color-mix(in oklch, var(--primary) 22%, var(--border));
-}
-
 .lifecycleStack {
   display: grid;
   gap: 0.55rem;
@@ -594,43 +528,6 @@
 .errorText {
   margin: 0;
   color: var(--destructive);
-}
-
-.dialogBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: grid;
-  place-items: center;
-  padding:
-    max(1rem, calc(var(--safe-area-top) + 1rem))
-    max(1rem, calc(var(--safe-area-right) + 1rem))
-    max(1rem, calc(var(--safe-area-bottom) + 1rem))
-    max(1rem, calc(var(--safe-area-left) + 1rem));
-  background: color-mix(in oklch, var(--background) 54%, black 46%);
-  backdrop-filter: blur(14px);
-}
-
-.dialogCard {
-  width: min(100%, 24rem);
-  display: grid;
-  gap: 1rem;
-  padding: 1.2rem;
-  border: 1px solid color-mix(in oklch, var(--border) 84%, transparent);
-  border-radius: calc(var(--radius) + 0.35rem);
-  background: color-mix(in oklch, var(--surface-2) 94%, var(--background));
-  box-shadow: 0 18px 44px color-mix(in oklch, var(--foreground) 18%, transparent);
-}
-
-.dialogTitle {
-  margin: 0;
-}
-
-.dialogActionRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.75rem;
 }
 
 @media (max-width: 640px) {
@@ -709,10 +606,6 @@
     width: 100%;
   }
 
-  .dialogActionRow > button {
-    width: 100%;
-  }
-
   .previewFrame {
     min-height: clamp(18.5rem, calc(100dvh - 13.5rem), 31rem);
   }
@@ -755,14 +648,6 @@
     width: min(100%, 15.5rem);
   }
 
-  .startFeedback {
-    max-width: min(100%, 14.75rem);
-    padding: 0.66rem 0.82rem;
-  }
-
-  .startFeedbackMessage {
-    font-size: 0.9rem;
-  }
 }
 
 @media (max-width: 640px) and (orientation: portrait) {

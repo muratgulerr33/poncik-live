@@ -1,0 +1,53 @@
+.startFeedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  max-width: min(100%, 16rem);
+  padding: 0.72rem 0.95rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 22%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface-1) 82%, transparent);
+  color: color-mix(in oklch, var(--foreground) 92%, var(--surface-1));
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 28px color-mix(in oklch, var(--foreground) 10%, transparent);
+  animation: studioStartFeedbackIn 180ms ease-out;
+}
+
+.startFeedbackIndicator {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--primary) 76%, white 24%);
+  box-shadow: 0 0 0 0.28rem color-mix(in oklch, var(--primary) 14%, transparent);
+  flex: 0 0 auto;
+}
+
+.startFeedbackMessage {
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+@keyframes studioStartFeedbackIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .startFeedback {
+    max-width: min(100%, 14.75rem);
+    padding: 0.66rem 0.82rem;
+  }
+
+  .startFeedbackMessage {
+    font-size: 0.9rem;
+  }
+}

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { type StudioPrepView } from "../_controllers/studio-prep-view";
 import { STUDIO_COPY } from "../_lib/studio-copy";
-import styles from "./studio.module.css";
+import styles from "./studio-gate-surface.module.css";
 
 type StudioGateSurfaceProps = {
   view: Exclude<StudioPrepView, { kind: "redirect_auth" | "approved_prep" }>;
@@ -54,7 +54,7 @@ export function StudioGateSurface({ view }: StudioGateSurfaceProps) {
       <h2 className={styles.panelTitle}>{copy.title}</h2>
       <p className={styles.panelDescription}>{copy.body}</p>
 
-      <div className={styles.actionRow}>
+      <div className={styles.gateActionRow}>
         <Link className="ui-action ui-action-secondary" href="/">
           {STUDIO_COPY.returnDiscoveryLabel}
         </Link>

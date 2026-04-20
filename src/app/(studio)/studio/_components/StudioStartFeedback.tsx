@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./studio.module.css";
+import styles from "./studio-start-feedback.module.css";
 
 type StudioStartFeedbackProps = {
   message: string;

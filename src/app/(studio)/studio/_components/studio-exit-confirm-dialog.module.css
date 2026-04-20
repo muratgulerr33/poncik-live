@@ -1,0 +1,42 @@
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding:
+    max(1rem, calc(var(--safe-area-top) + 1rem))
+    max(1rem, calc(var(--safe-area-right) + 1rem))
+    max(1rem, calc(var(--safe-area-bottom) + 1rem))
+    max(1rem, calc(var(--safe-area-left) + 1rem));
+  background: color-mix(in oklch, var(--background) 54%, black 46%);
+  backdrop-filter: blur(14px);
+}
+
+.dialogCard {
+  width: min(100%, 24rem);
+  display: grid;
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid color-mix(in oklch, var(--border) 84%, transparent);
+  border-radius: calc(var(--radius) + 0.35rem);
+  background: color-mix(in oklch, var(--surface-2) 94%, var(--background));
+  box-shadow: 0 18px 44px color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+
+.dialogTitle {
+  margin: 0;
+}
+
+.dialogActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .dialogActionRow > button {
+    width: 100%;
+  }
+}

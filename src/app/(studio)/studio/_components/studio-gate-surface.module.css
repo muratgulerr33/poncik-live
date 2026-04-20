@@ -1,0 +1,36 @@
+.card {
+  width: min(100%, 38rem);
+  padding: 1.5rem;
+  border: 1px solid color-mix(in oklch, var(--border) 82%, transparent);
+  border-radius: calc(var(--radius) + 0.65rem);
+  background: color-mix(in oklch, var(--surface-2) 92%, black 8%);
+  box-shadow: 0 16px 40px color-mix(in oklch, var(--foreground) 8%, transparent);
+  justify-self: center;
+}
+
+.panelTitle {
+  margin: 0;
+}
+
+.panelDescription {
+  margin: 0.75rem 0 0;
+  color: var(--muted-foreground);
+}
+
+.gateActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .gateActionRow {
+    flex-direction: column;
+  }
+
+  .gateActionRow > a,
+  .gateActionRow > button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,19 @@
+.notice {
+  padding: 1rem 1.05rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
+  border-radius: calc(var(--radius) + 0.15rem);
+  background: color-mix(in oklch, var(--surface-1) 92%, black 8%);
+}
+
+.notice[data-state="preview_ready"] {
+  border-color: color-mix(in oklch, var(--primary) 22%, var(--border));
+}
+
+.noticeTitle {
+  margin: 0;
+}
+
+.noticeBody {
+  margin: 0.75rem 0 0;
+  color: var(--muted-foreground);
+}

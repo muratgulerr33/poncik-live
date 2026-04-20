@@ -1,6 +1,6 @@
 import { type StudioPreviewState } from "../_adapters/studio-preview-adapter";
 import { STUDIO_COPY } from "../_lib/studio-copy";
-import styles from "./studio.module.css";
+import styles from "./studio-permission-notice.module.css";
 
 type StudioPermissionNoticeProps = {
   state: StudioPreviewState;
