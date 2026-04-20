@@ -8,8 +8,8 @@ import {
   type StudioExitControlState
 } from "./StudioPreviewPanel";
 import { StudioExitConfirmDialog } from "./studio-exit-confirm-dialog";
+import styles from "./studio-prep-surface.module.css";
 import { StudioRouteShell } from "./studio-route-shell";
-import styles from "./studio.module.css";
 
 type StudioPrepSurfaceProps = {
   lifecycle: {

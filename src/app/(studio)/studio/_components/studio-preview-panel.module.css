@@ -1,0 +1,348 @@
+.previewBody {
+  margin: 0.75rem 0 0;
+  color: var(--muted-foreground);
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.stackAction {
+  width: fit-content;
+}
+
+.previewScene {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.previewScene[data-surface="approved"][data-state="preview_ready"] {
+  height: 100%;
+  min-height: 100%;
+  gap: 0;
+  align-items: stretch;
+  overflow: clip;
+  background: black;
+}
+
+.previewStageStack,
+.sceneSupportStack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.previewScene[data-surface="approved"][data-state="preview_ready"] .previewStageStack {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  gap: 0;
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+  background: black;
+}
+
+.sceneSupportStack {
+  align-content: start;
+  width: min(100%, 28rem);
+}
+
+.previewCard {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.sceneMediaRoot {
+  display: grid;
+  min-height: 0;
+}
+
+.sceneActionSurface {
+  display: grid;
+}
+
+.sceneSuccessFeedbackLane {
+  display: grid;
+}
+
+.previewStageStack[data-layout="scene"] .sceneMediaRoot,
+.previewStageStack[data-layout="scene"] .sceneActionSurface,
+.previewStageStack[data-layout="scene"] .sceneSuccessFeedbackLane {
+  grid-area: 1 / 1;
+}
+
+.previewStageStack[data-surface="approved"][data-layout="scene"] .sceneMediaRoot {
+  height: 100%;
+  min-height: 100%;
+  align-self: stretch;
+  background: black;
+}
+
+.previewStageStack[data-surface="approved"][data-layout="scene"] .sceneActionSurface {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  align-self: stretch;
+  align-items: end;
+  justify-items: center;
+  padding:
+    max(0.2rem, calc(var(--safe-area-top) + 0.02rem))
+    max(0.4rem, calc(var(--safe-area-right) + 0.1rem))
+    max(0.25rem, calc(var(--safe-area-bottom) + 0.08rem))
+    max(0.4rem, calc(var(--safe-area-left) + 0.1rem));
+  pointer-events: none;
+  z-index: 2;
+}
+
+.previewStageStack[data-surface="approved"][data-layout="scene"] .sceneSuccessFeedbackLane {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  align-self: stretch;
+  align-items: start;
+  justify-items: center;
+  padding:
+    max(3.55rem, calc(var(--safe-area-top) + 3.35rem))
+    max(0.65rem, calc(var(--safe-area-right) + 0.24rem))
+    0
+    max(0.65rem, calc(var(--safe-area-left) + 0.24rem));
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sceneActionBudget {
+  width: 100%;
+}
+
+.sceneActionSurface > * {
+  pointer-events: auto;
+}
+
+.previewLabel {
+  margin: 0;
+  color: var(--primary);
+  font-size: 0.84rem;
+}
+
+.previewFrame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(20rem, calc(100svh - 11.5rem), 38rem);
+  min-height: clamp(20rem, calc(100dvh - 11.5rem), 38rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--border) 72%, transparent);
+  border-radius: calc(var(--radius) + 0.35rem);
+  box-shadow: 0 10px 26px color-mix(in oklch, var(--foreground) 7%, transparent);
+  background:
+    radial-gradient(circle at top, color-mix(in oklch, var(--primary) 12%, transparent), transparent 60%),
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--surface-2) 82%, black),
+      color-mix(in oklch, var(--background) 60%, black)
+    );
+}
+
+.previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  place-items: stretch;
+  align-self: stretch;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: black;
+}
+
+.previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget {
+  width: fit-content;
+  max-width: min(100%, 18rem);
+  justify-self: center;
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget::before {
+  content: none;
+}
+
+.previewVideo,
+.previewVideoInactive {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.previewVideo {
+  transform: none;
+  transform-origin: center;
+}
+
+.previewVideoInactive {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.previewPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem 1.25rem;
+  text-align: center;
+  color: var(--muted-foreground);
+  max-width: 24rem;
+  margin: 0 auto;
+}
+
+.lifecycleStack {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.15rem;
+}
+
+.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleStack {
+  width: auto;
+  max-width: min(100%, 18rem);
+  gap: 0.14rem;
+  margin-top: 0;
+  padding-bottom: 0;
+  justify-items: center;
+}
+
+.lifecycleActionRow {
+  margin-top: 0;
+}
+
+.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleActionRow {
+  width: auto;
+  justify-content: center;
+}
+
+.lifecyclePrimaryAction {
+  width: min(100%, 18rem);
+  min-height: 3.15rem;
+}
+
+.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecyclePrimaryAction {
+  width: min(100%, 16rem);
+  min-height: 3.2rem;
+}
+
+.lifecycleMessage {
+  max-width: 28rem;
+}
+
+.errorText {
+  margin: 0;
+  color: var(--destructive);
+}
+
+@media (max-width: 640px) {
+  .previewScene {
+    grid-template-columns: 1fr;
+  }
+
+  .actionRow {
+    flex-direction: column;
+  }
+
+  .actionRow > a,
+  .actionRow > button,
+  .stackAction,
+  .lifecyclePrimaryAction {
+    width: 100%;
+  }
+
+  .previewFrame {
+    min-height: clamp(18.5rem, calc(100dvh - 13.5rem), 31rem);
+  }
+
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
+    min-height: 100%;
+  }
+
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget {
+    width: fit-content;
+    max-width: min(100%, 15.5rem);
+    padding: 0;
+  }
+
+  .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneActionSurface {
+    padding:
+      max(0.16rem, calc(var(--safe-area-top) + 0.02rem))
+      max(0.24rem, calc(var(--safe-area-right) + 0.03rem))
+      max(0.18rem, calc(var(--safe-area-bottom) + 0.03rem))
+      max(0.24rem, calc(var(--safe-area-left) + 0.03rem));
+  }
+
+  .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneSuccessFeedbackLane {
+    padding:
+      max(3rem, calc(var(--safe-area-top) + 2.82rem))
+      max(0.34rem, calc(var(--safe-area-right) + 0.06rem))
+      0
+      max(0.34rem, calc(var(--safe-area-left) + 0.06rem));
+  }
+
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleStack {
+    gap: 0.14rem;
+  }
+
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleActionRow {
+    align-items: center;
+  }
+
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecyclePrimaryAction {
+    width: min(100%, 15.5rem);
+  }
+}
+
+@media (max-width: 640px) and (orientation: portrait) {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
+    transform: scale(1.1);
+  }
+}
+
+@media (min-width: 641px) and (orientation: landscape) {
+  .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneMediaRoot {
+    min-height: 0;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    justify-self: center;
+    align-self: center;
+    place-items: center;
+    background: transparent;
+  }
+
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
+@media (orientation: landscape) {
+  .previewFrame {
+    min-height: clamp(14rem, calc(100dvh - 8.75rem), 24rem);
+  }
+}

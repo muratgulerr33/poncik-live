@@ -6,9 +6,9 @@ import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
+import styles from "./studio-preview-panel.module.css";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
-import styles from "./studio.module.css";
 
 export type StudioExitControlState = {
   effectiveLifecycleKind: "idle" | "live" | "degraded";

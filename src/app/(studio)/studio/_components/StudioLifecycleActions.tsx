@@ -1,7 +1,7 @@
 "use client";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
-import styles from "./studio.module.css";
+import styles from "./studio-preview-panel.module.css";
 
 type StudioLifecycleActionsProps = {
   canStart: boolean;
