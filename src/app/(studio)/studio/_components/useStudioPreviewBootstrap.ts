@@ -16,7 +16,9 @@ export function useStudioPreviewBootstrap() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const attemptIdRef = useRef(0);
+  const initialBootstrapAttemptIdRef = useRef<number | null>(null);
   const isMountedRef = useRef(false);
+  const [isInitialBootstrapPending, setIsInitialBootstrapPending] = useState(true);
   const [previewState, setPreviewState] = useState<StudioPreviewState>("requesting");
 
   function isRetryableState(state: StudioPreviewState) {
@@ -40,14 +42,31 @@ export function useStudioPreviewBootstrap() {
     clearPreviewElement();
   }, [clearPreviewElement]);
 
-  const runPreviewAttempt = useCallback(async () => {
+  const settleInitialBootstrapPending = useCallback((attemptId: number) => {
+    if (initialBootstrapAttemptIdRef.current !== attemptId) {
+      return;
+    }
+
+    initialBootstrapAttemptIdRef.current = null;
+
+    if (isMountedRef.current) {
+      setIsInitialBootstrapPending(false);
+    }
+  }, []);
+
+  const runPreviewAttempt = useCallback(async (isInitialAttempt = false) => {
     attemptIdRef.current += 1;
     const attemptId = attemptIdRef.current;
     const capabilityState = readStudioBrowserCapabilityState();
 
+    if (isInitialAttempt) {
+      initialBootstrapAttemptIdRef.current = attemptId;
+    }
+
     cleanupStream();
 
     if (capabilityState !== "requestable") {
+      settleInitialBootstrapPending(attemptId);
       setPreviewState(capabilityState === "unsupported" ? "unsupported" : "degraded");
       return;
     }
@@ -59,6 +78,7 @@ export function useStudioPreviewBootstrap() {
         return;
       }
 
+      settleInitialBootstrapPending(attemptId);
       setPreviewState("timeout");
     }, PREVIEW_TIMEOUT_MS);
 
@@ -74,6 +94,7 @@ export function useStudioPreviewBootstrap() {
     }
 
     if (result.kind !== "success") {
+      settleInitialBootstrapPending(attemptId);
       setPreviewState(result.kind);
       return;
     }
@@ -82,6 +103,7 @@ export function useStudioPreviewBootstrap() {
 
     if (!videoElement) {
       stopStudioPreviewStream(result.stream);
+      settleInitialBootstrapPending(attemptId);
       setPreviewState("degraded");
       return;
     }
@@ -95,24 +117,27 @@ export function useStudioPreviewBootstrap() {
 
     if (!didAttach) {
       stopStudioPreviewStream(result.stream);
+      settleInitialBootstrapPending(attemptId);
       setPreviewState("degraded");
       return;
     }
 
     streamRef.current = result.stream;
+    settleInitialBootstrapPending(attemptId);
     setPreviewState("preview_ready");
-  }, [cleanupStream]);
+  }, [cleanupStream, settleInitialBootstrapPending]);
 
   useEffect(() => {
     isMountedRef.current = true;
     const timeoutId = window.setTimeout(() => {
-      void runPreviewAttempt();
+      void runPreviewAttempt(true);
     }, 0);
 
     return () => {
       window.clearTimeout(timeoutId);
       isMountedRef.current = false;
       attemptIdRef.current += 1;
+      initialBootstrapAttemptIdRef.current = null;
       cleanupStream();
     };
   }, [cleanupStream, runPreviewAttempt]);
@@ -120,6 +145,7 @@ export function useStudioPreviewBootstrap() {
   return {
     canRetry: isRetryableState(previewState),
     getPreviewStream: () => streamRef.current,
+    isInitialBootstrapPending,
     previewState,
     retryPreview: runPreviewAttempt,
     videoRef

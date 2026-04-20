@@ -92,6 +92,7 @@ export function StudioPreviewPanel({
   const {
     canRetry,
     getPreviewStream,
+    isInitialBootstrapPending,
     previewState,
     retryPreview,
     videoRef
@@ -113,13 +114,18 @@ export function StudioPreviewPanel({
   });
   const [initialStartSuccessSequence] = useState(startSuccessSequence);
   const isHealthyPreview = previewState === "preview_ready";
+  const isInitialRequestFlashSuppressed =
+    isInitialBootstrapPending && previewState === "requesting";
+  const usesSceneLayout = isHealthyPreview || isInitialRequestFlashSuppressed;
+  const shouldShowRequestFallback = !isHealthyPreview && !isInitialRequestFlashSuppressed;
   const isEntryControlVisible = effectiveLifecycleKind !== "live";
   const isEntryActionPending = isStarting || isSecondTriggerBlockActive;
   const shouldShowSuccessFeedback =
     isHealthyPreview &&
     hasVisibleStartSuccessFeedback &&
     visibleSuccessToken === startSuccessSequence;
-  const shouldShowSupportStack = !isHealthyPreview || canRetry;
+  const shouldShowSupportStack =
+    !isInitialRequestFlashSuppressed && (!isHealthyPreview || canRetry);
 
   const clearSecondTriggerBlockResetTimeout = useCallback(() => {
     if (!secondTriggerBlockResetTimeoutRef.current) {
@@ -273,7 +279,8 @@ export function StudioPreviewPanel({
     startSuccessSequence
   ]);
 
-  const lifecycleActions = isEntryControlVisible ? (
+  const lifecycleActions =
+    !isInitialRequestFlashSuppressed && isEntryControlVisible ? (
     <StudioLifecycleActions
       canStart={canStart}
       isStarting={isEntryActionPending}
@@ -316,17 +323,17 @@ export function StudioPreviewPanel({
       data-surface="approved"
     >
       <div
-        className={styles.previewStageStack}
-        data-layout={isHealthyPreview ? "scene" : "panel"}
+      className={styles.previewStageStack}
+        data-layout={usesSceneLayout ? "scene" : "panel"}
         data-surface="approved"
       >
         <div
-          className={isHealthyPreview ? styles.sceneMediaRoot : styles.previewCard}
+          className={usesSceneLayout ? styles.sceneMediaRoot : styles.previewCard}
           data-state={previewState}
         >
-          {isHealthyPreview ? null : (
+          {shouldShowRequestFallback ? (
             <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
-          )}
+          ) : null}
 
           <div className={styles.previewFrame}>
             <video
@@ -339,16 +346,16 @@ export function StudioPreviewPanel({
               playsInline
               ref={videoRef}
             />
-            {previewState === "preview_ready" ? null : (
+            {shouldShowRequestFallback ? (
               <div className={styles.previewPlaceholder}>
                 {STUDIO_COPY.previewPlaceholder}
               </div>
-            )}
+            ) : null}
           </div>
 
-          {isHealthyPreview ? null : (
+          {shouldShowRequestFallback ? (
             <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
-          )}
+          ) : null}
         </div>
 
         {isHealthyPreview ? (
