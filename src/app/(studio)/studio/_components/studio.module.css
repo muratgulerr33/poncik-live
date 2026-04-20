@@ -55,6 +55,38 @@
   overflow: clip;
 }
 
+.shell[data-layout="scene"][data-surface="approved"] {
+  color-scheme: dark;
+  --studio-scene-bg: oklch(0.16 0.015 290);
+  --studio-scene-surface-1: oklch(0.2 0.015 290);
+  --studio-scene-surface-2: oklch(0.24 0.02 292);
+  --studio-scene-surface-3: oklch(0.28 0.022 292);
+  --studio-scene-fg: oklch(0.96 0.01 300);
+  --studio-scene-muted: oklch(0.74 0.02 300);
+  --studio-scene-border: oklch(0.33 0.015 295);
+  --studio-scene-primary: oklch(0.7 0.19 295);
+  --studio-scene-ring: oklch(0.72 0.16 295);
+  --studio-scene-destructive: oklch(0.67 0.2 24);
+  --background: var(--studio-scene-bg);
+  --foreground: var(--studio-scene-fg);
+  --muted-foreground: var(--studio-scene-muted);
+  --border: var(--studio-scene-border);
+  --surface-1: var(--studio-scene-surface-1);
+  --surface-2: var(--studio-scene-surface-2);
+  --surface-3: var(--studio-scene-surface-3);
+  --primary: var(--studio-scene-primary);
+  --ring: var(--studio-scene-ring);
+  --destructive: var(--studio-scene-destructive);
+  --action-primary-bg: var(--primary);
+  --action-primary-fg: oklch(0.985 0.01 300);
+  --action-primary-border: color-mix(in oklch, var(--primary) 45%, var(--surface-2));
+  --action-secondary-bg: var(--surface-1);
+  --action-secondary-fg: var(--foreground);
+  --action-secondary-border: color-mix(in oklch, var(--border) 80%, var(--surface-3));
+  background: var(--background);
+  color: var(--foreground);
+}
+
 .shellScene {
   min-height: 0;
 }
