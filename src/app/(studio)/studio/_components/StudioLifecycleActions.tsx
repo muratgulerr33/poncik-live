@@ -5,35 +5,21 @@ import styles from "./studio.module.css";
 
 type StudioLifecycleActionsProps = {
   canStart: boolean;
-  canStop: boolean;
   isStarting: boolean;
-  isStopping: boolean;
   message: string | null;
   onStart: () => void;
-  onStop: () => void;
 };
 
 export function StudioLifecycleActions({
   canStart,
-  canStop,
   isStarting,
-  isStopping,
   message,
-  onStart,
-  onStop
+  onStart
 }: StudioLifecycleActionsProps) {
-  const isPending = isStarting || isStopping;
-  const shouldShowStopAction = canStop || isStopping;
-  const actionLabel = shouldShowStopAction
-    ? isStopping
-      ? STUDIO_COPY.stoppingBroadcastLabel
-      : STUDIO_COPY.stopBroadcastLabel
-    : isStarting
-      ? STUDIO_COPY.startingBroadcastLabel
-      : STUDIO_COPY.startBroadcastLabel;
-  const isDisabled = shouldShowStopAction
-    ? !canStop || isPending
-    : !canStart || isPending;
+  const actionLabel = isStarting
+    ? STUDIO_COPY.startingBroadcastLabel
+    : STUDIO_COPY.startBroadcastLabel;
+  const isDisabled = !canStart || isStarting;
 
   return (
     <div className={styles.lifecycleStack}>
@@ -41,7 +27,7 @@ export function StudioLifecycleActions({
         <button
           className={`ui-action ui-action-primary ${styles.lifecyclePrimaryAction}`}
           disabled={isDisabled}
-          onClick={shouldShowStopAction ? onStop : onStart}
+          onClick={onStart}
           type="button"
         >
           {actionLabel}

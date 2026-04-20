@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
@@ -23,10 +23,72 @@ type StudioPreviewPanelProps = {
   onExitControlChange?: (state: StudioExitControlState) => void;
 };
 
+type SecondTriggerBlockSnapshot = {
+  hasSeenStartProgress: boolean;
+  isActive: boolean;
+};
+
+function createSecondTriggerBlockStore() {
+  let snapshot: SecondTriggerBlockSnapshot = {
+    hasSeenStartProgress: false,
+    isActive: false
+  };
+  const listeners = new Set<() => void>();
+
+  const emitChange = () => {
+    for (const listener of listeners) {
+      listener();
+    }
+  };
+
+  return {
+    activate() {
+      snapshot = {
+        hasSeenStartProgress: false,
+        isActive: true
+      };
+      emitChange();
+    },
+    deactivate() {
+      if (!snapshot.isActive) {
+        return;
+      }
+
+      snapshot = {
+        hasSeenStartProgress: false,
+        isActive: false
+      };
+      emitChange();
+    },
+    getSnapshot() {
+      return snapshot;
+    },
+    markStartProgressSeen() {
+      if (!snapshot.isActive || snapshot.hasSeenStartProgress) {
+        return;
+      }
+
+      snapshot = {
+        ...snapshot,
+        hasSeenStartProgress: true
+      };
+      emitChange();
+    },
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+
+      return () => {
+        listeners.delete(listener);
+      };
+    }
+  };
+}
+
 export function StudioPreviewPanel({
   lifecycle,
   onExitControlChange
 }: StudioPreviewPanelProps) {
+  const [secondTriggerBlockStore] = useState(createSecondTriggerBlockStore);
   const {
     canRetry,
     getPreviewStream,
@@ -37,7 +99,6 @@ export function StudioPreviewPanel({
     useStudioPreviewBootstrap();
   const {
     canStart,
-    canStop,
     effectiveLifecycleKind,
     isStarting,
     isStopping,
@@ -49,23 +110,52 @@ export function StudioPreviewPanel({
     previewState,
     readPreviewStream: getPreviewStream
   });
+  const secondTriggerBlockSnapshot = useSyncExternalStore(
+    secondTriggerBlockStore.subscribe,
+    secondTriggerBlockStore.getSnapshot
+  );
   const isHealthyPreview = previewState === "preview_ready";
+  const isEntryControlVisible = effectiveLifecycleKind !== "live";
+  const isSecondTriggerBlockActive = secondTriggerBlockSnapshot.isActive;
+  const isEntryActionPending = isStarting || isSecondTriggerBlockActive;
   const shouldShowSupportStack = !isHealthyPreview || canRetry;
-  const lifecycleActions = (
+
+  useEffect(() => {
+    if (isSecondTriggerBlockActive && (isStarting || effectiveLifecycleKind === "live")) {
+      secondTriggerBlockStore.markStartProgressSeen();
+    }
+
+    if (
+      isSecondTriggerBlockActive &&
+      secondTriggerBlockSnapshot.hasSeenStartProgress &&
+      !isStarting &&
+      effectiveLifecycleKind !== "live"
+    ) {
+      secondTriggerBlockStore.deactivate();
+    }
+  }, [
+    effectiveLifecycleKind,
+    isSecondTriggerBlockActive,
+    isStarting,
+    secondTriggerBlockSnapshot.hasSeenStartProgress,
+    secondTriggerBlockStore
+  ]);
+
+  const lifecycleActions = isEntryControlVisible ? (
     <StudioLifecycleActions
       canStart={canStart}
-      canStop={canStop}
-      isStarting={isStarting}
-      isStopping={isStopping}
+      isStarting={isEntryActionPending}
       message={lifecycleMessage}
       onStart={() => {
+        if (isSecondTriggerBlockActive) {
+          return;
+        }
+
+        secondTriggerBlockStore.activate();
         void startPublishing();
       }}
-      onStop={() => {
-        void stopPublishing();
-      }}
     />
-  );
+  ) : null;
 
   useEffect(() => {
     if (!onExitControlChange) {
