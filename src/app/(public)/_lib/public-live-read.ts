@@ -8,6 +8,7 @@ import {
   publisherApplications,
   publisherSettings
 } from "@/db/schema";
+import { createStudioBroadcastLivenessReconciler } from "@/app/(studio)/studio/_adapters/studio-broadcast-liveness-adapter";
 
 const LIVE_BROADCAST_STATUS = "live";
 const PUBLISHER_ROLE = "publisher";
@@ -58,9 +59,12 @@ export type WatchViewModel =
 export async function readDiscoveryEntries(): Promise<DiscoveryResult> {
   try {
     const db = getDb();
+    const reconcileLiveBroadcast = createStudioBroadcastLivenessReconciler();
     const liveRows = await db
       .select({
+        broadcastId: broadcasts.id,
         publisherAccountId: broadcasts.publisherAccountId,
+        updatedAt: broadcasts.updatedAt,
         username: accounts.username,
         coverImageId: publisherSettings.coverImageId,
         coverImageStorageKey: coverImages.storageKey
@@ -85,6 +89,17 @@ export async function readDiscoveryEntries(): Promise<DiscoveryResult> {
 
     for (const row of liveRows) {
       if (livePublisherIds.has(row.publisherAccountId)) {
+        continue;
+      }
+
+      const reconcileResult = await reconcileLiveBroadcast({
+        broadcastId: row.broadcastId,
+        publisherAccountId: row.publisherAccountId,
+        updatedAt: row.updatedAt,
+        username: row.username
+      });
+
+      if (reconcileResult.kind !== "keep_live") {
         continue;
       }
 
@@ -156,6 +171,7 @@ export async function readDiscoveryEntries(): Promise<DiscoveryResult> {
 export async function readWatchView(username: string): Promise<WatchViewModel> {
   try {
     const db = getDb();
+    const reconcileLiveBroadcast = createStudioBroadcastLivenessReconciler();
     const broadcasterRows = await db
       .select({
         id: accounts.id,
@@ -182,7 +198,9 @@ export async function readWatchView(username: string): Promise<WatchViewModel> {
 
     const latestBroadcastRows = await db
       .select({
-        status: broadcasts.status
+        id: broadcasts.id,
+        status: broadcasts.status,
+        updatedAt: broadcasts.updatedAt
       })
       .from(broadcasts)
       .where(eq(broadcasts.publisherAccountId, broadcaster.id))
@@ -200,6 +218,20 @@ export async function readWatchView(username: string): Promise<WatchViewModel> {
     }
 
     if (latestBroadcast.status === LIVE_BROADCAST_STATUS) {
+      const reconcileResult = await reconcileLiveBroadcast({
+        broadcastId: latestBroadcast.id,
+        publisherAccountId: broadcaster.id,
+        updatedAt: latestBroadcast.updatedAt,
+        username: broadcaster.username
+      });
+
+      if (reconcileResult.kind !== "keep_live") {
+        return {
+          kind: "ended",
+          username: broadcaster.username
+        };
+      }
+
       return {
         broadcasterAccountId: broadcaster.id,
         kind: "live",

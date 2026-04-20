@@ -1,7 +1,9 @@
 import { and, desc, eq } from "drizzle-orm";
 
 import { getDb } from "@/db/client";
-import { broadcasts } from "@/db/schema";
+import { accounts, broadcasts } from "@/db/schema";
+
+import { createStudioBroadcastLivenessReconciler } from "./studio-broadcast-liveness-adapter";
 
 const LIVE_STATUS = "live";
 const ENDED_STATUS = "ended";
@@ -23,11 +25,15 @@ export async function readCurrentActiveBroadcast(
 ): Promise<CurrentStudioBroadcastState> {
   try {
     const db = getDb();
+    const reconcileLiveBroadcast = createStudioBroadcastLivenessReconciler();
     const rows = await db
       .select({
-        id: broadcasts.id
+        id: broadcasts.id,
+        updatedAt: broadcasts.updatedAt,
+        username: accounts.username
       })
       .from(broadcasts)
+      .innerJoin(accounts, eq(accounts.id, broadcasts.publisherAccountId))
       .where(
         and(
           eq(broadcasts.publisherAccountId, accountId),
@@ -45,6 +51,19 @@ export async function readCurrentActiveBroadcast(
       };
     }
 
+    const reconcileResult = await reconcileLiveBroadcast({
+      broadcastId: row.id,
+      publisherAccountId: accountId,
+      updatedAt: row.updatedAt,
+      username: row.username
+    });
+
+    if (reconcileResult.kind !== "keep_live") {
+      return {
+        kind: "idle"
+      };
+    }
+
     return {
       kind: "live",
       broadcastId: row.id
@@ -54,6 +73,50 @@ export async function readCurrentActiveBroadcast(
       kind: "degraded"
     };
   }
+}
+
+export async function markBroadcastCloseCandidateForPublisher(accountId: string) {
+  return touchCurrentLiveBroadcastForPublisher(accountId);
+}
+
+async function touchCurrentLiveBroadcastForPublisher(accountId: string) {
+  const db = getDb();
+
+  return db.transaction(async (tx) => {
+    const activeRows = await tx
+      .select({
+        id: broadcasts.id
+      })
+      .from(broadcasts)
+      .where(
+        and(
+          eq(broadcasts.publisherAccountId, accountId),
+          eq(broadcasts.status, LIVE_STATUS)
+        )
+      )
+      .orderBy(desc(broadcasts.updatedAt))
+      .limit(1);
+
+    const activeRow = activeRows[0];
+
+    if (!activeRow) {
+      return {
+        kind: "noop" as const
+      };
+    }
+
+    await tx
+      .update(broadcasts)
+      .set({
+        updatedAt: new Date()
+      })
+      .where(eq(broadcasts.id, activeRow.id));
+
+    return {
+      kind: "touched" as const,
+      broadcastId: activeRow.id
+    };
+  });
 }
 
 export async function startBroadcastForPublisher(accountId: string) {
