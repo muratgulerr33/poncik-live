@@ -14,6 +14,7 @@ type StudioRouteShellProps = Readonly<{
   onRequestClose?: () => void;
   statusLabel?: string;
   statusTone?: "idle" | "live" | "degraded";
+  surface?: "default" | "approved";
   username?: string;
 }>;
 
@@ -25,12 +26,14 @@ export function StudioRouteShell({
   onRequestClose,
   statusLabel,
   statusTone,
+  surface = "default",
   username
 }: StudioRouteShellProps) {
   const chrome = (
     <header
       className={styles.chrome}
       data-layout={layout}
+      data-surface={surface}
       aria-label="Studyo ust denetimleri"
     >
       <div className={styles.leadingCluster}>
@@ -70,7 +73,11 @@ export function StudioRouteShell({
   );
 
   return (
-    <section className={styles.shell} data-layout={layout}>
+    <section
+      className={styles.shell}
+      data-layout={layout}
+      data-surface={surface}
+    >
       {layout === "scene" ? null : chrome}
       <div className={styles.shellScene} data-layout={layout}>
         {children}

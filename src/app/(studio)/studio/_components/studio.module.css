@@ -179,7 +179,7 @@
   margin: 0 auto;
 }
 
-.sceneApproved .prepScene {
+.prepScene[data-surface="approved"] {
   width: 100%;
   height: 100%;
   min-height: inherit;
@@ -221,7 +221,7 @@
   align-items: start;
 }
 
-.sceneApproved .previewScene[data-state="preview_ready"] {
+.previewScene[data-surface="approved"][data-state="preview_ready"] {
   height: 100%;
   min-height: 100%;
   gap: 0;
@@ -236,7 +236,7 @@
   gap: 0.75rem;
 }
 
-.sceneApproved .previewScene[data-state="preview_ready"] .previewStageStack {
+.previewScene[data-surface="approved"][data-state="preview_ready"] .previewStageStack {
   width: 100%;
   height: 100%;
   min-height: 100%;
@@ -280,14 +280,14 @@
   grid-area: 1 / 1;
 }
 
-.sceneApproved .previewStageStack[data-layout="scene"] .sceneMediaRoot {
+.previewStageStack[data-surface="approved"][data-layout="scene"] .sceneMediaRoot {
   height: 100%;
   min-height: 100%;
   align-self: stretch;
   background: black;
 }
 
-.sceneApproved .previewStageStack[data-layout="scene"] .sceneActionSurface {
+.previewStageStack[data-surface="approved"][data-layout="scene"] .sceneActionSurface {
   width: 100%;
   height: 100%;
   min-height: 100%;
@@ -303,7 +303,7 @@
   z-index: 2;
 }
 
-.sceneApproved .previewStageStack[data-layout="scene"] .sceneSuccessFeedbackLane {
+.previewStageStack[data-surface="approved"][data-layout="scene"] .sceneSuccessFeedbackLane {
   width: 100%;
   height: 100%;
   min-height: 100%;
@@ -337,7 +337,7 @@
   min-height: 2.85rem;
 }
 
-.sceneApproved .chrome[data-layout="scene"] {
+.chrome[data-surface="approved"][data-layout="scene"] {
   position: absolute;
   inset: 0 0 auto;
   z-index: 3;
@@ -360,11 +360,11 @@
   pointer-events: none;
 }
 
-.sceneApproved .chrome[data-layout="scene"] > * {
+.chrome[data-surface="approved"][data-layout="scene"] > * {
   pointer-events: auto;
 }
 
-.sceneApproved .chrome[data-layout="scene"] .leadingCluster {
+.chrome[data-surface="approved"][data-layout="scene"] .leadingCluster {
   padding: 0.35rem 0.55rem 0.35rem 0.35rem;
   border: 1px solid color-mix(in oklch, var(--border) 74%, transparent);
   border-radius: calc(var(--radius) + 999px);
@@ -373,16 +373,16 @@
   box-shadow: 0 10px 28px color-mix(in oklch, var(--foreground) 10%, transparent);
 }
 
-.sceneApproved .leadingCluster {
+.chrome[data-surface="approved"][data-layout="scene"] .leadingCluster {
   gap: 0.6rem;
 }
 
-.sceneApproved .closeButton {
+.chrome[data-surface="approved"][data-layout="scene"] .closeButton {
   width: 2.5rem;
   height: 2.5rem;
 }
 
-.sceneApproved .usernameLabel {
+.chrome[data-surface="approved"][data-layout="scene"] .usernameLabel {
   font-size: 0.9rem;
 }
 
@@ -411,7 +411,7 @@
     );
 }
 
-.sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
+.previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
   width: 100%;
   min-height: 0;
   height: 100%;
@@ -423,7 +423,7 @@
   background: black;
 }
 
-.sceneApproved .previewScene[data-state="preview_ready"] .sceneActionBudget {
+.previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget {
   width: fit-content;
   max-width: min(100%, 18rem);
   justify-self: center;
@@ -435,7 +435,7 @@
   box-shadow: none;
 }
 
-.sceneApproved .previewScene[data-state="preview_ready"] .sceneActionBudget::before {
+.previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget::before {
   content: none;
 }
 
@@ -493,7 +493,7 @@
   margin-top: 0.15rem;
 }
 
-.sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
+.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleStack {
   width: auto;
   max-width: min(100%, 18rem);
   gap: 0.14rem;
@@ -506,7 +506,7 @@
   margin-top: 0;
 }
 
-.sceneApproved .previewScene[data-state="preview_ready"] .lifecycleActionRow {
+.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleActionRow {
   width: auto;
   justify-content: center;
 }
@@ -516,7 +516,7 @@
   min-height: 3.15rem;
 }
 
-.sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
+.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecyclePrimaryAction {
   width: min(100%, 16rem);
   min-height: 3.2rem;
 }
@@ -557,7 +557,7 @@
     align-items: flex-start;
   }
 
-  .sceneApproved .chrome {
+  .chrome[data-surface="approved"][data-layout="scene"] {
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;
@@ -568,7 +568,7 @@
     padding: 0.3rem 0.35rem 0.3rem 0.3rem;
   }
 
-  .sceneApproved .chrome[data-layout="scene"] {
+  .chrome[data-surface="approved"][data-layout="scene"] {
     align-items: flex-start;
     gap: 0.5rem;
     padding:
@@ -578,20 +578,20 @@
       max(0.28rem, calc(var(--safe-area-left) + 0.04rem));
   }
 
-  .sceneApproved .chrome[data-layout="scene"] .leadingCluster {
+  .chrome[data-surface="approved"][data-layout="scene"] .leadingCluster {
     padding: 0.3rem 0.45rem 0.3rem 0.3rem;
   }
 
-  .sceneApproved .leadingCluster {
+  .chrome[data-surface="approved"][data-layout="scene"] .leadingCluster {
     gap: 0.5rem;
   }
 
-  .sceneApproved .closeButton {
+  .chrome[data-surface="approved"][data-layout="scene"] .closeButton {
     width: 2.35rem;
     height: 2.35rem;
   }
 
-  .sceneApproved .usernameLabel {
+  .chrome[data-surface="approved"][data-layout="scene"] .usernameLabel {
     font-size: 0.88rem;
   }
 
@@ -610,17 +610,17 @@
     min-height: clamp(18.5rem, calc(100dvh - 13.5rem), 31rem);
   }
 
-  .sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
     min-height: 100%;
   }
 
-  .sceneApproved .previewScene[data-state="preview_ready"] .sceneActionBudget {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget {
     width: fit-content;
     max-width: min(100%, 15.5rem);
     padding: 0;
   }
 
-  .sceneApproved .previewStageStack[data-layout="scene"] .sceneActionSurface {
+  .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneActionSurface {
     padding:
       max(0.16rem, calc(var(--safe-area-top) + 0.02rem))
       max(0.24rem, calc(var(--safe-area-right) + 0.03rem))
@@ -628,7 +628,7 @@
       max(0.24rem, calc(var(--safe-area-left) + 0.03rem));
   }
 
-  .sceneApproved .previewStageStack[data-layout="scene"] .sceneSuccessFeedbackLane {
+  .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneSuccessFeedbackLane {
     padding:
       max(3rem, calc(var(--safe-area-top) + 2.82rem))
       max(0.34rem, calc(var(--safe-area-right) + 0.06rem))
@@ -636,34 +636,34 @@
       max(0.34rem, calc(var(--safe-area-left) + 0.06rem));
   }
 
-  .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleStack {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleStack {
     gap: 0.14rem;
   }
 
-  .sceneApproved .previewScene[data-state="preview_ready"] .lifecycleActionRow {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleActionRow {
     align-items: center;
   }
 
-  .sceneApproved .previewScene[data-state="preview_ready"] .lifecyclePrimaryAction {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecyclePrimaryAction {
     width: min(100%, 15.5rem);
   }
 
 }
 
 @media (max-width: 640px) and (orientation: portrait) {
-  .sceneApproved .previewScene[data-state="preview_ready"] .previewVideo {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
     transform: scale(1.1);
   }
 }
 
 @media (min-width: 641px) and (orientation: landscape) {
-  .sceneApproved .previewStageStack[data-layout="scene"] .sceneMediaRoot {
+  .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneMediaRoot {
     min-height: 0;
     align-items: center;
     justify-items: center;
   }
 
-  .sceneApproved .previewScene[data-state="preview_ready"] .previewFrame {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
     width: auto;
     height: auto;
     max-width: 100%;
@@ -674,7 +674,7 @@
     background: transparent;
   }
 
-  .sceneApproved .previewScene[data-state="preview_ready"] .previewVideo {
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
     width: auto;
     height: auto;
     max-width: 100%;

@@ -95,9 +95,10 @@ export function StudioPrepSurface({
       onRequestClose={handleRequestClose}
       statusLabel={statusLabel}
       statusTone={statusTone}
+      surface="approved"
       username={username}
     >
-      <section className={styles.prepScene}>
+      <section className={styles.prepScene} data-surface="approved">
         <StudioPreviewPanel
           lifecycle={lifecycle}
           onExitControlChange={setExitControl}

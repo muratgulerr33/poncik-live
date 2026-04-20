@@ -310,10 +310,15 @@ export function StudioPreviewPanel({
   ]);
 
   return (
-    <section className={styles.previewScene} data-state={previewState}>
+    <section
+      className={styles.previewScene}
+      data-state={previewState}
+      data-surface="approved"
+    >
       <div
         className={styles.previewStageStack}
         data-layout={isHealthyPreview ? "scene" : "panel"}
+        data-surface="approved"
       >
         <div
           className={isHealthyPreview ? styles.sceneMediaRoot : styles.previewCard}
