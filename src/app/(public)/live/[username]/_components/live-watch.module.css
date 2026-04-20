@@ -1,4 +1,23 @@
 .page {
+  color-scheme: dark;
+  --live-scene-bg: oklch(0.16 0.015 290);
+  --live-scene-surface-1: oklch(0.2 0.015 290);
+  --live-scene-surface-2: oklch(0.24 0.02 292);
+  --live-scene-surface-3: oklch(0.28 0.022 292);
+  --live-scene-fg: oklch(0.96 0.01 300);
+  --live-scene-muted: oklch(0.74 0.02 300);
+  --live-scene-border: oklch(0.33 0.015 295);
+  --live-scene-primary: oklch(0.7 0.19 295);
+  --live-scene-ring: oklch(0.72 0.16 295);
+  --background: var(--live-scene-bg);
+  --foreground: var(--live-scene-fg);
+  --muted-foreground: var(--live-scene-muted);
+  --border: var(--live-scene-border);
+  --surface-1: var(--live-scene-surface-1);
+  --surface-2: var(--live-scene-surface-2);
+  --surface-3: var(--live-scene-surface-3);
+  --primary: var(--live-scene-primary);
+  --ring: var(--live-scene-ring);
   min-height: 100vh;
   min-height: 100svh;
   min-height: 100dvh;
@@ -15,6 +34,7 @@
       color-mix(in oklch, var(--surface-3) 88%, black),
       color-mix(in oklch, var(--background) 54%, black) 100%
     );
+  color: var(--foreground);
 }
 
 .shell {
