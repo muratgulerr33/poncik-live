@@ -281,21 +281,21 @@ export function StudioPreviewPanel({
 
   const lifecycleActions =
     !isInitialRequestFlashSuppressed && isEntryControlVisible ? (
-    <StudioLifecycleActions
-      canStart={canStart}
-      isStarting={isEntryActionPending}
-      message={lifecycleMessage}
-      onStart={() => {
-        if (isSecondTriggerBlockActive) {
-          return;
-        }
+      <StudioLifecycleActions
+        canStart={canStart}
+        isStarting={isEntryActionPending}
+        message={lifecycleMessage}
+        onStart={() => {
+          if (isSecondTriggerBlockActive) {
+            return;
+          }
 
-        hasSecondTriggerBlockSeenStartProgressRef.current = false;
-        setIsSecondTriggerBlockActive(true);
-        void startPublishing();
-      }}
-    />
-  ) : null;
+          hasSecondTriggerBlockSeenStartProgressRef.current = false;
+          setIsSecondTriggerBlockActive(true);
+          void startPublishing();
+        }}
+      />
+    ) : null;
 
   useEffect(() => {
     if (!onExitControlChange) {
@@ -319,11 +319,13 @@ export function StudioPreviewPanel({
   return (
     <section
       className={styles.previewScene}
+      data-host-contract={isInitialRequestFlashSuppressed ? "initial-scene" : undefined}
       data-state={previewState}
       data-surface="approved"
     >
       <div
-      className={styles.previewStageStack}
+        className={styles.previewStageStack}
+        data-host-contract={isInitialRequestFlashSuppressed ? "initial-scene" : undefined}
         data-layout={usesSceneLayout ? "scene" : "panel"}
         data-surface="approved"
       >
