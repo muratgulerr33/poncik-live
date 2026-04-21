@@ -4,6 +4,7 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { StudioTopChrome } from "./StudioTopChrome";
 import styles from "./studio.module.css";
 
 type StudioRouteShellProps = Readonly<{
@@ -25,6 +26,7 @@ export function StudioRouteShell({
   surface = "default",
   username
 }: StudioRouteShellProps) {
+  const isApprovedSceneChrome = layout === "scene" && surface === "approved";
   const chrome = (
     <header
       className={styles.chrome}
@@ -68,7 +70,15 @@ export function StudioRouteShell({
       {layout === "scene" ? null : chrome}
       <div className={styles.shellScene} data-layout={layout}>
         {children}
-        {layout === "scene" ? chrome : null}
+        {isApprovedSceneChrome && onRequestClose ? (
+          <StudioTopChrome
+            closeDisabled={closeDisabled}
+            onRequestClose={onRequestClose}
+            username={username}
+          />
+        ) : layout === "scene" ? (
+          chrome
+        ) : null}
       </div>
     </section>
   );
