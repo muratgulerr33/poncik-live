@@ -4,9 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
+import type { StudioLiveMicControl } from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
 import styles from "./studio-preview-panel.module.css";
+import { useStudioLiveMicUtilitySurface } from "./useStudioLiveMicUtilitySurface";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
 
@@ -22,6 +24,7 @@ type StudioPreviewPanelProps = {
     kind: "idle" | "live" | "degraded";
   };
   onExitControlChange?: (state: StudioExitControlState) => void;
+  onLiveMicControlChange?: (liveMicControl: StudioLiveMicControl | null) => void;
 };
 
 type StartSuccessFeedbackSnapshot = {
@@ -75,7 +78,8 @@ function scheduleStartSuccessFeedbackDeferredClear() {
 
 export function StudioPreviewPanel({
   lifecycle,
-  onExitControlChange
+  onExitControlChange,
+  onLiveMicControlChange
 }: StudioPreviewPanelProps) {
   const [isSecondTriggerBlockActive, setIsSecondTriggerBlockActive] = useState(false);
   const [hasVisibleStartSuccessFeedback, setHasVisibleStartSuccessFeedback] =
@@ -101,6 +105,7 @@ export function StudioPreviewPanel({
   const {
     canStart,
     effectiveLifecycleKind,
+    getPublisherRoom,
     isStarting,
     isStopping,
     lifecycleMessage,
@@ -111,6 +116,10 @@ export function StudioPreviewPanel({
     lifecycleKind: lifecycle.kind,
     previewState,
     readPreviewStream: getPreviewStream
+  });
+  const { liveMicControl } = useStudioLiveMicUtilitySurface({
+    effectiveLifecycleKind,
+    getPublisherRoom
   });
   const [initialStartSuccessSequence] = useState(startSuccessSequence);
   const isHealthyPreview = previewState === "preview_ready";
@@ -315,6 +324,24 @@ export function StudioPreviewPanel({
     onExitControlChange,
     stopPublishing
   ]);
+
+  useEffect(() => {
+    if (!onLiveMicControlChange) {
+      return;
+    }
+
+    onLiveMicControlChange(liveMicControl);
+  }, [liveMicControl, onLiveMicControlChange]);
+
+  useEffect(() => {
+    if (!onLiveMicControlChange) {
+      return;
+    }
+
+    return () => {
+      onLiveMicControlChange(null);
+    };
+  }, [onLiveMicControlChange]);
 
   return (
     <section

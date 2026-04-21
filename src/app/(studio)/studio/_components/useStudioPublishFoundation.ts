@@ -56,6 +56,8 @@ export function useStudioPublishFoundation({
     disconnectCleanupRef.current = null;
   }, []);
 
+  const getPublisherRoom = useCallback(() => roomRef.current, []);
+
   const clearLocalPublisher = useCallback(async () => {
     const room = roomRef.current;
 
@@ -231,6 +233,7 @@ export function useStudioPublishFoundation({
     canStart: previewState === "preview_ready" && effectiveLifecycleKind !== "live" && !isStarting,
     canStop: effectiveLifecycleKind === "live" && !isStopping,
     effectiveLifecycleKind,
+    getPublisherRoom,
     isStarting,
     isStopping,
     lifecycleMessage,

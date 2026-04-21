@@ -51,7 +51,15 @@
   gap: 0.42rem;
 }
 
-.closeButton {
+.trailingCluster {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.closeButton,
+.utilityButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -75,18 +83,30 @@
   cursor: pointer;
 }
 
-.closeButton:focus-visible {
+.utilityButton {
+  flex-shrink: 0;
+}
+
+.utilityButton[data-state="muted"] {
+  background: color-mix(in oklch, var(--surface-1) 6%, transparent);
+  color: color-mix(in oklch, var(--foreground) 68%, var(--surface-1));
+}
+
+.closeButton:focus-visible,
+.utilityButton:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 4px;
 }
 
-.closeButton:disabled {
+.closeButton:disabled,
+.utilityButton:disabled {
   cursor: wait;
   opacity: 0.7;
   transform: none;
 }
 
-.closeButton:active {
+.closeButton:active,
+.utilityButton:active {
   transform: scale(0.97);
 }
 
@@ -122,7 +142,8 @@
     gap: 0.38rem;
   }
 
-  .closeButton {
+  .closeButton,
+  .utilityButton {
     min-inline-size: 2.2rem;
     min-block-size: 2.2rem;
     width: 2.2rem;
@@ -136,7 +157,8 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .closeButton:hover {
+  .closeButton:hover,
+  .utilityButton:hover {
     background: color-mix(in oklch, var(--surface-1) 94%, transparent);
     border-color: color-mix(in oklch, var(--primary) 24%, var(--border));
   }
