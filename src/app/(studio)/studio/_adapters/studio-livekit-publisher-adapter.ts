@@ -2,6 +2,9 @@
 
 import { Room, RoomEvent, Track } from "livekit-client";
 
+const CAMERA_SWITCH_SETTLE_TIMEOUT_MS = 1200;
+const CAMERA_SWITCH_SETTLE_POLL_INTERVAL_MS = 50;
+
 type PublisherTokenResponse = {
   server_url: string;
   participant_token: string;
@@ -24,6 +27,61 @@ type StudioPublisherConnectionResult =
   | {
       kind: "degraded";
     };
+
+type StudioPublisherTrackSnapshot = Readonly<{
+  activeDeviceId: string | null;
+  facingMode: string | null;
+  groupId: string | null;
+  label: string | null;
+  mediaStreamTrack: MediaStreamTrack;
+}>;
+
+function normalizeFacingMode(value: MediaTrackSettings["facingMode"]) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+
+  return null;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+async function readPublisherTrackSnapshot(videoTrack: {
+  getDeviceId: (fallback?: boolean) => Promise<string | undefined>;
+  mediaStreamTrack: MediaStreamTrack;
+}): Promise<StudioPublisherTrackSnapshot> {
+  const mediaStreamTrack = videoTrack.mediaStreamTrack;
+  const settings = mediaStreamTrack.getSettings();
+
+  return {
+    activeDeviceId: (await videoTrack.getDeviceId(false)) ?? settings.deviceId ?? null,
+    facingMode: normalizeFacingMode(settings.facingMode),
+    groupId: settings.groupId ?? null,
+    label: mediaStreamTrack.label || null,
+    mediaStreamTrack
+  };
+}
+
+function hasTrackIdentityShifted(
+  previousSnapshot: StudioPublisherTrackSnapshot,
+  nextSnapshot: StudioPublisherTrackSnapshot
+) {
+  return (
+    previousSnapshot.mediaStreamTrack !== nextSnapshot.mediaStreamTrack ||
+    previousSnapshot.mediaStreamTrack.id !== nextSnapshot.mediaStreamTrack.id ||
+    previousSnapshot.groupId !== nextSnapshot.groupId ||
+    previousSnapshot.facingMode !== nextSnapshot.facingMode ||
+    previousSnapshot.label !== nextSnapshot.label
+  );
+}
 
 export async function fetchStudioPublisherToken(): Promise<StudioPublisherTokenFetchResult> {
   try {
@@ -130,8 +188,7 @@ export async function switchStudioPublisherCameraDevice(
     return null;
   }
 
-  const previousTrack = videoTrack.mediaStreamTrack;
-  const previousTrackId = previousTrack.id;
+  const previousSnapshot = await readPublisherTrackSnapshot(videoTrack);
 
   let didSwitch = false;
 
@@ -141,24 +198,28 @@ export async function switchStudioPublisherCameraDevice(
     return null;
   }
 
-  const switchedTrack = videoTrack.mediaStreamTrack;
-  const activeDeviceId =
-    (await videoTrack.getDeviceId(false)) ??
-    switchedTrack.getSettings().deviceId ??
-    null;
-  const didReadbackMatch = activeDeviceId === deviceId;
-  const didTrackReferenceChange = switchedTrack !== previousTrack;
-  const didTrackIdChange = switchedTrack.id !== previousTrackId;
-  const isReturnedTrackReady = switchedTrack.readyState === "live";
-
-  if (
-    !isReturnedTrackReady ||
-    (!didSwitch && !didReadbackMatch && !didTrackReferenceChange && !didTrackIdChange)
-  ) {
+  if (!didSwitch) {
     return null;
   }
 
-  return switchedTrack;
+  const deadline = Date.now() + CAMERA_SWITCH_SETTLE_TIMEOUT_MS;
+
+  while (true) {
+    const nextSnapshot = await readPublisherTrackSnapshot(videoTrack);
+    const didReadbackMatch = nextSnapshot.activeDeviceId === deviceId;
+    const didTrackIdentityShift = hasTrackIdentityShifted(previousSnapshot, nextSnapshot);
+    const isReturnedTrackReady = nextSnapshot.mediaStreamTrack.readyState === "live";
+
+    if (isReturnedTrackReady && (didReadbackMatch || didTrackIdentityShift)) {
+      return nextSnapshot.mediaStreamTrack;
+    }
+
+    if (Date.now() >= deadline) {
+      return null;
+    }
+
+    await sleep(CAMERA_SWITCH_SETTLE_POLL_INTERVAL_MS);
+  }
 }
 
 export async function disconnectStudioPublisherRoom(room: Room | null) {
