@@ -364,6 +364,10 @@
     padding-block-start: max(0.875rem, calc(var(--safe-area-top) + 0.7rem));
   }
 
+  .page.pageScene {
+    padding-block-start: 0;
+  }
+
   .shell {
     gap: 0.65rem;
     min-height: calc(
