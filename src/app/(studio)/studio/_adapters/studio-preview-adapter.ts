@@ -162,24 +162,6 @@ export async function readStudioViableCameraDevices({
 
     seenDeviceIds.add(device.deviceId);
 
-    if (device.deviceId === activeDeviceId) {
-      viableDevices.push({
-        deviceId: device.deviceId,
-        groupId: device.groupId,
-        label: device.label
-      });
-      continue;
-    }
-
-    const result = await requestStudioTargetedCameraStream({
-      deviceId: device.deviceId
-    });
-
-    if (result.kind !== "success") {
-      continue;
-    }
-
-    stopStudioPreviewStream(result.stream);
     viableDevices.push({
       deviceId: device.deviceId,
       groupId: device.groupId,
@@ -187,7 +169,21 @@ export async function readStudioViableCameraDevices({
     });
   }
 
-  return viableDevices;
+  if (!activeDeviceId) {
+    return viableDevices;
+  }
+
+  return viableDevices.sort((left, right) => {
+    if (left.deviceId === activeDeviceId) {
+      return -1;
+    }
+
+    if (right.deviceId === activeDeviceId) {
+      return 1;
+    }
+
+    return 0;
+  });
 }
 
 export async function attachStudioPreviewStream(
