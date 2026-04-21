@@ -130,21 +130,35 @@ export async function switchStudioPublisherCameraDevice(
     return null;
   }
 
-  const didSwitch = await videoTrack.setDeviceId(deviceId);
+  const previousTrack = videoTrack.mediaStreamTrack;
+  const previousTrackId = previousTrack.id;
 
-  if (!didSwitch) {
+  let didSwitch = false;
+
+  try {
+    didSwitch = await videoTrack.setDeviceId(deviceId);
+  } catch {
     return null;
   }
 
+  const switchedTrack = videoTrack.mediaStreamTrack;
   const activeDeviceId =
     (await videoTrack.getDeviceId(false)) ??
-    videoTrack.mediaStreamTrack.getSettings().deviceId;
+    switchedTrack.getSettings().deviceId ??
+    null;
+  const didReadbackMatch = activeDeviceId === deviceId;
+  const didTrackReferenceChange = switchedTrack !== previousTrack;
+  const didTrackIdChange = switchedTrack.id !== previousTrackId;
+  const isReturnedTrackReady = switchedTrack.readyState === "live";
 
-  if (activeDeviceId !== deviceId) {
+  if (
+    !isReturnedTrackReady ||
+    (!didSwitch && !didReadbackMatch && !didTrackReferenceChange && !didTrackIdChange)
+  ) {
     return null;
   }
 
-  return videoTrack.mediaStreamTrack;
+  return switchedTrack;
 }
 
 export async function disconnectStudioPublisherRoom(room: Room | null) {
