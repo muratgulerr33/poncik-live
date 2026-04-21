@@ -2,7 +2,7 @@
 
 import { Room, RoomEvent, Track } from "livekit-client";
 
-const CAMERA_SWITCH_SETTLE_TIMEOUT_MS = 1200;
+const CAMERA_SWITCH_EVIDENCE_TIMEOUT_MS = 400;
 const CAMERA_SWITCH_SETTLE_POLL_INTERVAL_MS = 50;
 
 type PublisherTokenResponse = {
@@ -70,11 +70,13 @@ async function readPublisherTrackSnapshot(videoTrack: {
   };
 }
 
-function hasTrackIdentityShifted(
+function hasPositiveCameraSwitchEvidence(
+  targetDeviceId: string,
   previousSnapshot: StudioPublisherTrackSnapshot,
   nextSnapshot: StudioPublisherTrackSnapshot
 ) {
   return (
+    nextSnapshot.activeDeviceId === targetDeviceId ||
     previousSnapshot.mediaStreamTrack !== nextSnapshot.mediaStreamTrack ||
     previousSnapshot.mediaStreamTrack.id !== nextSnapshot.mediaStreamTrack.id ||
     previousSnapshot.groupId !== nextSnapshot.groupId ||
@@ -202,15 +204,18 @@ export async function switchStudioPublisherCameraDevice(
     return null;
   }
 
-  const deadline = Date.now() + CAMERA_SWITCH_SETTLE_TIMEOUT_MS;
+  const deadline = Date.now() + CAMERA_SWITCH_EVIDENCE_TIMEOUT_MS;
 
   while (true) {
     const nextSnapshot = await readPublisherTrackSnapshot(videoTrack);
-    const didReadbackMatch = nextSnapshot.activeDeviceId === deviceId;
-    const didTrackIdentityShift = hasTrackIdentityShifted(previousSnapshot, nextSnapshot);
     const isReturnedTrackReady = nextSnapshot.mediaStreamTrack.readyState === "live";
+    const hasPositiveEvidence = hasPositiveCameraSwitchEvidence(
+      deviceId,
+      previousSnapshot,
+      nextSnapshot
+    );
 
-    if (isReturnedTrackReady && (didReadbackMatch || didTrackIdentityShift)) {
+    if (isReturnedTrackReady && hasPositiveEvidence) {
       return nextSnapshot.mediaStreamTrack;
     }
 
