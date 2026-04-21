@@ -12,8 +12,6 @@ type StudioRouteShellProps = Readonly<{
   closeHref?: string;
   layout?: "page" | "scene";
   onRequestClose?: () => void;
-  statusLabel?: string;
-  statusTone?: "idle" | "live" | "degraded";
   surface?: "default" | "approved";
   username?: string;
 }>;
@@ -24,8 +22,6 @@ export function StudioRouteShell({
   closeHref = "/",
   layout = "page",
   onRequestClose,
-  statusLabel,
-  statusTone,
   surface = "default",
   username
 }: StudioRouteShellProps) {
@@ -60,15 +56,6 @@ export function StudioRouteShell({
           <p className={`t-label ${styles.usernameLabel}`}>@{username}</p>
         ) : null}
       </div>
-
-      {statusLabel ? (
-        <span
-          className={styles.statusIndicator}
-          data-tone={statusTone ?? "idle"}
-        >
-          {statusLabel}
-        </span>
-      ) : null}
     </header>
   );
 

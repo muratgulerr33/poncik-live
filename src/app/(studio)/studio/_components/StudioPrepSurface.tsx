@@ -16,8 +16,6 @@ type StudioPrepSurfaceProps = {
     kind: "idle" | "live" | "degraded";
     broadcastId?: string;
   };
-  statusLabel: string;
-  statusTone: "idle" | "live" | "degraded";
   username: string;
 };
 
@@ -30,8 +28,6 @@ const DEFAULT_EXIT_CONTROL: StudioExitControlState = {
 
 export function StudioPrepSurface({
   lifecycle,
-  statusLabel,
-  statusTone,
   username
 }: StudioPrepSurfaceProps) {
   const router = useRouter();
@@ -93,8 +89,6 @@ export function StudioPrepSurface({
       closeDisabled={isExitPending || exitControl.isStopping}
       layout="scene"
       onRequestClose={handleRequestClose}
-      statusLabel={statusLabel}
-      statusTone={statusTone}
       surface="approved"
       username={username}
     >
