@@ -42,6 +42,35 @@ export function useStudioPreviewBootstrap() {
     clearPreviewElement();
   }, [clearPreviewElement]);
 
+  const replacePreviewStream = useCallback(
+    async (nextStream: MediaStream) => {
+      const videoElement = videoRef.current;
+
+      if (!videoElement || nextStream.getVideoTracks().length === 0) {
+        return false;
+      }
+
+      const didAttach = await attachStudioPreviewStream(videoElement, nextStream);
+
+      if (!didAttach) {
+        return false;
+      }
+
+      const previousStream = streamRef.current;
+      const retainedTracks = new Set(nextStream.getTracks());
+
+      previousStream?.getTracks().forEach((track) => {
+        if (!retainedTracks.has(track)) {
+          track.stop();
+        }
+      });
+
+      streamRef.current = nextStream;
+      return true;
+    },
+    []
+  );
+
   const settleInitialBootstrapPending = useCallback((attemptId: number) => {
     if (initialBootstrapAttemptIdRef.current !== attemptId) {
       return;
@@ -147,6 +176,7 @@ export function useStudioPreviewBootstrap() {
     getPreviewStream: () => streamRef.current,
     isInitialBootstrapPending,
     previewState,
+    replacePreviewStream,
     retryPreview: runPreviewAttempt,
     videoRef
   };

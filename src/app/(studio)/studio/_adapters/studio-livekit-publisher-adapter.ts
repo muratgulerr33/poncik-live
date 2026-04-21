@@ -119,6 +119,34 @@ export async function publishStudioPreviewTracks(room: Room, stream: MediaStream
   }
 }
 
+export async function switchStudioPublisherCameraDevice(
+  room: Room,
+  deviceId: string
+) {
+  const publication = room.localParticipant.getTrackPublication(Track.Source.Camera);
+  const videoTrack = publication?.videoTrack;
+
+  if (!videoTrack) {
+    return null;
+  }
+
+  const didSwitch = await videoTrack.setDeviceId(deviceId);
+
+  if (!didSwitch) {
+    return null;
+  }
+
+  const activeDeviceId =
+    (await videoTrack.getDeviceId(false)) ??
+    videoTrack.mediaStreamTrack.getSettings().deviceId;
+
+  if (activeDeviceId !== deviceId) {
+    return null;
+  }
+
+  return videoTrack.mediaStreamTrack;
+}
+
 export async function disconnectStudioPublisherRoom(room: Room | null) {
   if (!room) {
     return;

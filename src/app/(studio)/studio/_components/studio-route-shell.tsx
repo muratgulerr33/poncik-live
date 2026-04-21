@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import {
   StudioTopChrome,
+  type StudioLiveCameraSwitchControl,
   type StudioLiveMicControl
 } from "./StudioTopChrome";
 import styles from "./studio.module.css";
@@ -15,6 +16,7 @@ type StudioRouteShellProps = Readonly<{
   closeDisabled?: boolean;
   closeHref?: string;
   layout?: "page" | "scene";
+  liveCameraSwitchControl?: StudioLiveCameraSwitchControl | null;
   liveMicControl?: StudioLiveMicControl | null;
   onRequestClose?: () => void;
   surface?: "default" | "approved";
@@ -26,6 +28,7 @@ export function StudioRouteShell({
   closeDisabled = false,
   closeHref = "/",
   layout = "page",
+  liveCameraSwitchControl = null,
   liveMicControl = null,
   onRequestClose,
   surface = "default",
@@ -78,6 +81,7 @@ export function StudioRouteShell({
         {isApprovedSceneChrome && onRequestClose ? (
           <StudioTopChrome
             closeDisabled={closeDisabled}
+            liveCameraSwitchControl={liveCameraSwitchControl}
             liveMicControl={liveMicControl}
             onRequestClose={onRequestClose}
             username={username}
