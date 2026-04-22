@@ -7,7 +7,10 @@ import {
   StudioPreviewPanel,
   type StudioExitControlState
 } from "./StudioPreviewPanel";
-import type { StudioLiveMicControl } from "./StudioTopChrome";
+import type {
+  StudioLiveCameraControl,
+  StudioLiveMicControl
+} from "./StudioTopChrome";
 import { StudioExitConfirmDialog } from "./studio-exit-confirm-dialog";
 import styles from "./studio-prep-surface.module.css";
 import { StudioRouteShell } from "./studio-route-shell";
@@ -27,6 +30,24 @@ const DEFAULT_EXIT_CONTROL: StudioExitControlState = {
   requestStopForExit: async () => false
 };
 
+function areLiveCameraControlsEqual(
+  previousControl: StudioLiveCameraControl | null,
+  nextControl: StudioLiveCameraControl | null
+) {
+  if (previousControl === nextControl) {
+    return true;
+  }
+
+  if (!previousControl || !nextControl) {
+    return false;
+  }
+
+  return (
+    previousControl.isPending === nextControl.isPending &&
+    previousControl.onSwitch === nextControl.onSwitch
+  );
+}
+
 export function StudioPrepSurface({
   lifecycle,
   username
@@ -38,8 +59,21 @@ export function StudioPrepSurface({
   });
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [isExitPending, setIsExitPending] = useState(false);
+  const [liveCameraControl, setLiveCameraControl] =
+    useState<StudioLiveCameraControl | null>(null);
   const [liveMicControl, setLiveMicControl] = useState<StudioLiveMicControl | null>(
     null
+  );
+
+  const handleLiveCameraControlChange = useCallback(
+    (nextControl: StudioLiveCameraControl | null) => {
+      setLiveCameraControl((previousControl) =>
+        areLiveCameraControlsEqual(previousControl, nextControl)
+          ? previousControl
+          : nextControl
+      );
+    },
+    []
   );
 
   const handleRequestClose = useCallback(() => {
@@ -92,6 +126,7 @@ export function StudioPrepSurface({
     <StudioRouteShell
       closeDisabled={isExitPending || exitControl.isStopping}
       layout="scene"
+      liveCameraControl={liveCameraControl}
       liveMicControl={liveMicControl}
       onRequestClose={handleRequestClose}
       surface="approved"
@@ -101,6 +136,7 @@ export function StudioPrepSurface({
         <StudioPreviewPanel
           lifecycle={lifecycle}
           onExitControlChange={setExitControl}
+          onLiveCameraControlChange={handleLiveCameraControlChange}
           onLiveMicControlChange={setLiveMicControl}
         />
       </section>

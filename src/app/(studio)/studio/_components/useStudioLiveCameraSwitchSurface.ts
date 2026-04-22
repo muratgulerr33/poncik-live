@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from "react";
 import type { StudioPublisherLiveVideoSwitchAttemptResult } from "../_adapters/studio-livekit-publisher-adapter";
 
 type UseStudioLiveCameraSwitchSurfaceArgs = Readonly<{
+  catchUpPreviewAfterSwitch: () => Promise<boolean>;
   switchActiveLiveVideo: (
     deviceId: string
   ) => Promise<StudioPublisherLiveVideoSwitchAttemptResult>;
@@ -14,9 +15,13 @@ export type StudioLiveCameraSwitchResult =
   | StudioPublisherLiveVideoSwitchAttemptResult
   | {
       kind: "busy";
+    }
+  | {
+      kind: "preview_failed";
     };
 
 export function useStudioLiveCameraSwitchSurface({
+  catchUpPreviewAfterSwitch,
   switchActiveLiveVideo
 }: UseStudioLiveCameraSwitchSurfaceArgs) {
   const isPendingRef = useRef(false);
@@ -34,13 +39,29 @@ export function useStudioLiveCameraSwitchSurface({
       setIsPending(true);
 
       try {
-        return await switchActiveLiveVideo(deviceId);
+        const switchResult = await switchActiveLiveVideo(deviceId);
+
+        if (switchResult.kind !== "success") {
+          return switchResult;
+        }
+
+        const didCatchUpPreview = await catchUpPreviewAfterSwitch();
+
+        if (!didCatchUpPreview) {
+          return {
+            kind: "preview_failed"
+          };
+        }
+
+        return {
+          kind: "success"
+        };
       } finally {
         isPendingRef.current = false;
         setIsPending(false);
       }
     },
-    [switchActiveLiveVideo]
+    [catchUpPreviewAfterSwitch, switchActiveLiveVideo]
   );
 
   return {

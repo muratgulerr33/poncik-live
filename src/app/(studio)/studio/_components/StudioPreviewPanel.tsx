@@ -1,13 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { LocalTrackPublication } from "livekit-client";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
-import type { StudioLiveMicControl } from "./StudioTopChrome";
+import type {
+  StudioLiveCameraControl,
+  StudioLiveMicControl
+} from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
 import styles from "./studio-preview-panel.module.css";
+import {
+  useStudioLiveCameraSwitchSurface,
+  type StudioLiveCameraSwitchResult
+} from "./useStudioLiveCameraSwitchSurface";
 import { useStudioLiveMicUtilitySurface } from "./useStudioLiveMicUtilitySurface";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
@@ -24,6 +32,9 @@ type StudioPreviewPanelProps = {
     kind: "idle" | "live" | "degraded";
   };
   onExitControlChange?: (state: StudioExitControlState) => void;
+  onLiveCameraControlChange?: (
+    liveCameraControl: StudioLiveCameraControl | null
+  ) => void;
   onLiveMicControlChange?: (liveMicControl: StudioLiveMicControl | null) => void;
 };
 
@@ -76,16 +87,135 @@ function scheduleStartSuccessFeedbackDeferredClear() {
   }, 0);
 }
 
+type StudioPreviewPanelCameraSwitchResult =
+  | StudioLiveCameraSwitchResult
+  | {
+      kind: "guarded";
+    };
+
+type LiveCameraControlRelaySnapshot = Readonly<{
+  isPending: boolean;
+  onSwitch: StudioLiveCameraControl["onSwitch"];
+}>;
+
+function readTrackDeviceId(track: MediaStreamTrack | null | undefined) {
+  const deviceId = track?.getSettings().deviceId;
+
+  return typeof deviceId === "string" && deviceId.length > 0 ? deviceId : null;
+}
+
+function readCurrentLiveCameraAnchor(publication: LocalTrackPublication | null) {
+  const sourceTrackDeviceId = publication?.videoTrack?.getSourceTrackSettings().deviceId;
+
+  if (typeof sourceTrackDeviceId === "string" && sourceTrackDeviceId.length > 0) {
+    return sourceTrackDeviceId;
+  }
+
+  return readTrackDeviceId(publication?.videoTrack?.mediaStreamTrack);
+}
+
+function readCurrentPreviewCameraAnchor(stream: MediaStream | null) {
+  return readTrackDeviceId(stream?.getVideoTracks()[0]);
+}
+
+function areEligibleCameraDeviceIdsEqual(
+  previousDeviceIds: readonly string[],
+  nextDeviceIds: readonly string[]
+) {
+  if (previousDeviceIds.length !== nextDeviceIds.length) {
+    return false;
+  }
+
+  return previousDeviceIds.every((deviceId, index) => deviceId === nextDeviceIds[index]);
+}
+
+function toLiveCameraControlRelaySnapshot(
+  liveCameraControl: StudioLiveCameraControl | null
+): LiveCameraControlRelaySnapshot | null {
+  if (!liveCameraControl) {
+    return null;
+  }
+
+  return {
+    isPending: liveCameraControl.isPending,
+    onSwitch: liveCameraControl.onSwitch
+  };
+}
+
+function areLiveCameraControlRelaySnapshotsEqual(
+  previousSnapshot: LiveCameraControlRelaySnapshot | null,
+  nextSnapshot: LiveCameraControlRelaySnapshot | null
+) {
+  if (previousSnapshot === nextSnapshot) {
+    return true;
+  }
+
+  if (!previousSnapshot || !nextSnapshot) {
+    return false;
+  }
+
+  return (
+    previousSnapshot.isPending === nextSnapshot.isPending &&
+    previousSnapshot.onSwitch === nextSnapshot.onSwitch
+  );
+}
+
+function getNextEligibleCameraDeviceId(
+  eligibleCameraDeviceIds: readonly string[],
+  currentAnchorDeviceId: string | null
+) {
+  if (!currentAnchorDeviceId || eligibleCameraDeviceIds.length < 2) {
+    return null;
+  }
+
+  const currentDeviceIndex = eligibleCameraDeviceIds.findIndex(
+    (deviceId) => deviceId === currentAnchorDeviceId
+  );
+
+  if (currentDeviceIndex < 0) {
+    return null;
+  }
+
+  return (
+    eligibleCameraDeviceIds[
+      (currentDeviceIndex + 1) % eligibleCameraDeviceIds.length
+    ] ?? null
+  );
+}
+
+async function readEligibleCameraDeviceIds() {
+  if (
+    typeof window === "undefined" ||
+    !("mediaDevices" in navigator) ||
+    typeof navigator.mediaDevices?.enumerateDevices !== "function"
+  ) {
+    return [];
+  }
+
+  const devices = await navigator.mediaDevices.enumerateDevices();
+
+  return devices
+    .filter(
+      (device) => device.kind === "videoinput" && typeof device.deviceId === "string"
+    )
+    .map((device) => device.deviceId)
+    .filter((deviceId) => deviceId.length > 0);
+}
+
 export function StudioPreviewPanel({
   lifecycle,
   onExitControlChange,
+  onLiveCameraControlChange,
   onLiveMicControlChange
 }: StudioPreviewPanelProps) {
   const [isSecondTriggerBlockActive, setIsSecondTriggerBlockActive] = useState(false);
   const [hasVisibleStartSuccessFeedback, setHasVisibleStartSuccessFeedback] =
     useState(false);
   const [visibleSuccessToken, setVisibleSuccessToken] = useState(0);
+  const [eligibleCameraDeviceIds, setEligibleCameraDeviceIds] = useState<string[]>([]);
   const hasSecondTriggerBlockSeenStartProgressRef = useRef(false);
+  const lastRelayedLiveCameraControlSnapshotRef =
+    useRef<LiveCameraControlRelaySnapshot | null>(null);
   const lastConsumedStartSuccessSequenceRef = useRef(0);
   const secondTriggerBlockResetTimeoutRef =
     useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -98,6 +228,7 @@ export function StudioPreviewPanel({
     getPreviewStream,
     isInitialBootstrapPending,
     previewState,
+    replacePreviewVideoTrack,
     retryPreview,
     videoRef
   } =
@@ -109,9 +240,11 @@ export function StudioPreviewPanel({
     isStarting,
     isStopping,
     lifecycleMessage,
+    readActiveLiveVideoPublication,
     startSuccessSequence,
     startPublishing,
-    stopPublishing
+    stopPublishing,
+    switchActiveLiveVideo
   } = useStudioPublishFoundation({
     lifecycleKind: lifecycle.kind,
     previewState,
@@ -120,6 +253,23 @@ export function StudioPreviewPanel({
   const { liveMicControl } = useStudioLiveMicUtilitySurface({
     effectiveLifecycleKind,
     getPublisherRoom
+  });
+  const catchUpPreviewAfterSwitch = useCallback(async () => {
+    const nextVideoTrack =
+      readActiveLiveVideoPublication()?.videoTrack?.mediaStreamTrack ?? null;
+
+    if (!nextVideoTrack) {
+      return false;
+    }
+
+    return replacePreviewVideoTrack(nextVideoTrack);
+  }, [readActiveLiveVideoPublication, replacePreviewVideoTrack]);
+  const {
+    isPending: isLiveCameraSwitchPending,
+    switchCamera
+  } = useStudioLiveCameraSwitchSurface({
+    catchUpPreviewAfterSwitch,
+    switchActiveLiveVideo
   });
   const [initialStartSuccessSequence] = useState(startSuccessSequence);
   const isHealthyPreview = previewState === "preview_ready";
@@ -135,6 +285,18 @@ export function StudioPreviewPanel({
     visibleSuccessToken === startSuccessSequence;
   const shouldShowSupportStack =
     !isInitialRequestFlashSuppressed && (!isHealthyPreview || canRetry);
+  const liveEligibleCameraDeviceIds = useMemo(
+    () => (effectiveLifecycleKind === "live" ? eligibleCameraDeviceIds : []),
+    [effectiveLifecycleKind, eligibleCameraDeviceIds]
+  );
+  const currentAnchorDeviceId =
+    readCurrentLiveCameraAnchor(readActiveLiveVideoPublication()) ??
+    readCurrentPreviewCameraAnchor(getPreviewStream());
+  const canRenderLiveCameraControl =
+    effectiveLifecycleKind === "live" &&
+    liveEligibleCameraDeviceIds.length >= 2 &&
+    currentAnchorDeviceId !== null &&
+    liveEligibleCameraDeviceIds.includes(currentAnchorDeviceId);
 
   const clearSecondTriggerBlockResetTimeout = useCallback(() => {
     if (!secondTriggerBlockResetTimeoutRef.current) {
@@ -202,6 +364,19 @@ export function StudioPreviewPanel({
     },
     [clearStartSuccessFeedbackHideTimeout, hideStartSuccessFeedback]
   );
+
+  const syncEligibleCameraDeviceIds = useCallback(async () => {
+    const nextEligibleCameraDeviceIds = await readEligibleCameraDeviceIds();
+
+    setEligibleCameraDeviceIds((previousEligibleCameraDeviceIds) =>
+      areEligibleCameraDeviceIdsEqual(
+        previousEligibleCameraDeviceIds,
+        nextEligibleCameraDeviceIds
+      )
+        ? previousEligibleCameraDeviceIds
+        : nextEligibleCameraDeviceIds
+    );
+  }, []);
 
   useEffect(() => {
     if (isSecondTriggerBlockActive && (isStarting || effectiveLifecycleKind === "live")) {
@@ -288,6 +463,37 @@ export function StudioPreviewPanel({
     startSuccessSequence
   ]);
 
+  useEffect(() => {
+    if (effectiveLifecycleKind !== "live") {
+      return;
+    }
+
+    const syncTimeoutId = window.setTimeout(() => {
+      void syncEligibleCameraDeviceIds();
+    }, 0);
+
+    if (
+      typeof window === "undefined" ||
+      !("mediaDevices" in navigator) ||
+      typeof navigator.mediaDevices?.addEventListener !== "function"
+    ) {
+      return () => {
+        window.clearTimeout(syncTimeoutId);
+      };
+    }
+
+    function handleDeviceChange() {
+      void syncEligibleCameraDeviceIds();
+    }
+
+    navigator.mediaDevices.addEventListener("devicechange", handleDeviceChange);
+
+    return () => {
+      window.clearTimeout(syncTimeoutId);
+      navigator.mediaDevices.removeEventListener("devicechange", handleDeviceChange);
+    };
+  }, [effectiveLifecycleKind, syncEligibleCameraDeviceIds]);
+
   const lifecycleActions =
     !isInitialRequestFlashSuppressed && isEntryControlVisible ? (
       <StudioLifecycleActions
@@ -306,6 +512,47 @@ export function StudioPreviewPanel({
         presentation={isHealthyPreview ? "scene-native" : "fallback"}
       />
     ) : null;
+  const runLiveCameraSwitchAttempt = useCallback(
+    async (): Promise<StudioPreviewPanelCameraSwitchResult> => {
+      if (effectiveLifecycleKind !== "live" || liveEligibleCameraDeviceIds.length < 2) {
+        return {
+          kind: "guarded"
+        };
+      }
+
+      const nextDeviceId = getNextEligibleCameraDeviceId(
+        liveEligibleCameraDeviceIds,
+        currentAnchorDeviceId
+      );
+
+      if (!currentAnchorDeviceId || !nextDeviceId) {
+        return {
+          kind: "guarded"
+        };
+      }
+
+      return switchCamera(nextDeviceId);
+    },
+    [
+      currentAnchorDeviceId,
+      effectiveLifecycleKind,
+      liveEligibleCameraDeviceIds,
+      switchCamera
+    ]
+  );
+  const handleLiveCameraSwitch = useCallback(() => {
+    void runLiveCameraSwitchAttempt();
+  }, [runLiveCameraSwitchAttempt]);
+  const liveCameraControl = useMemo<StudioLiveCameraControl | null>(() => {
+    if (!canRenderLiveCameraControl) {
+      return null;
+    }
+
+    return {
+      isPending: isLiveCameraSwitchPending,
+      onSwitch: handleLiveCameraSwitch
+    };
+  }, [canRenderLiveCameraControl, handleLiveCameraSwitch, isLiveCameraSwitchPending]);
 
   useEffect(() => {
     if (!onExitControlChange) {
@@ -325,6 +572,37 @@ export function StudioPreviewPanel({
     onExitControlChange,
     stopPublishing
   ]);
+
+  useEffect(() => {
+    if (!onLiveCameraControlChange) {
+      return;
+    }
+
+    const nextRelaySnapshot = toLiveCameraControlRelaySnapshot(liveCameraControl);
+
+    if (
+      areLiveCameraControlRelaySnapshotsEqual(
+        lastRelayedLiveCameraControlSnapshotRef.current,
+        nextRelaySnapshot
+      )
+    ) {
+      return;
+    }
+
+    lastRelayedLiveCameraControlSnapshotRef.current = nextRelaySnapshot;
+    onLiveCameraControlChange(liveCameraControl);
+  }, [liveCameraControl, onLiveCameraControlChange]);
+
+  useEffect(() => {
+    if (!onLiveCameraControlChange) {
+      return;
+    }
+
+    return () => {
+      lastRelayedLiveCameraControlSnapshotRef.current = null;
+      onLiveCameraControlChange(null);
+    };
+  }, [onLiveCameraControlChange]);
 
   useEffect(() => {
     if (!onLiveMicControlChange) {
