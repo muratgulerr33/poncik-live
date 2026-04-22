@@ -25,15 +25,6 @@ type StudioPublisherConnectionResult =
       kind: "degraded";
     };
 
-type StudioPublisherCandidateCameraTrackAcquireResult =
-  | {
-      kind: "success";
-      track: MediaStreamTrack;
-    }
-  | {
-      kind: "blocked" | "unsupported" | "degraded";
-    };
-
 export type StudioPublisherLiveVideoSwitchAttemptResult =
   | {
       kind: "success";
@@ -151,72 +142,65 @@ export function readStudioPublisherCameraPublication(
   return publication;
 }
 
-export async function acquireStudioPublisherCandidateCameraTrack(
-  deviceId: string
-): Promise<StudioPublisherCandidateCameraTrackAcquireResult> {
-  try {
-    if (
-      typeof window === "undefined" ||
-      !("mediaDevices" in navigator) ||
-      typeof navigator.mediaDevices?.getUserMedia !== "function"
-    ) {
-      return {
-        kind: "unsupported"
-      };
-    }
+function readStudioPublisherCameraOwner(room: Room | null) {
+  return readStudioPublisherCameraPublication(room)?.videoTrack ?? null;
+}
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        deviceId: {
-          exact: deviceId
-        }
-      }
-    });
-    const track = stream.getVideoTracks()[0];
+function readStudioPublisherFacingMode(
+  facingMode: MediaTrackSettings["facingMode"]
+): "user" | "environment" | null {
+  return facingMode === "user" || facingMode === "environment" ? facingMode : null;
+}
 
-    if (!track) {
-      stream.getTracks().forEach((mediaTrack) => mediaTrack.stop());
-      return {
-        kind: "degraded"
-      };
-    }
+function resolveStudioPublisherRestartFacingMode(
+  deviceId: string,
+  currentVideoTrack: NonNullable<ReturnType<typeof readStudioPublisherCameraOwner>>
+) {
+  const sourceTrackSettings = currentVideoTrack.getSourceTrackSettings();
 
+  if (sourceTrackSettings.deviceId !== deviceId) {
+    return null;
+  }
+
+  return readStudioPublisherFacingMode(sourceTrackSettings.facingMode);
+}
+
+function mapStudioPublisherLiveVideoSwitchError(
+  error: unknown
+): Exclude<StudioPublisherLiveVideoSwitchAttemptResult, { kind: "success" | "no_active_live_video" }> {
+  if (
+    error instanceof DOMException &&
+    ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
+  ) {
     return {
-      kind: "success",
-      track
-    };
-  } catch (error) {
-    if (
-      error instanceof DOMException &&
-      ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
-    ) {
-      return {
-        kind: "blocked"
-      };
-    }
-
-    if (
-      error instanceof DOMException &&
-      ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
-    ) {
-      return {
-        kind: "unsupported"
-      };
-    }
-
-    return {
-      kind: "degraded"
+      kind: "blocked"
     };
   }
+
+  if (
+    error instanceof DOMException &&
+    [
+      "NotFoundError",
+      "OverconstrainedError",
+      "SecurityError",
+      "NotSupportedError"
+    ].includes(error.name)
+  ) {
+    return {
+      kind: "unsupported"
+    };
+  }
+
+  return {
+    kind: "degraded"
+  };
 }
 
 export async function switchStudioPublisherLiveVideo(
   room: Room | null,
   deviceId: string
 ): Promise<StudioPublisherLiveVideoSwitchAttemptResult> {
-  const publication = readStudioPublisherCameraPublication(room);
-  const currentVideoTrack = publication?.videoTrack;
+  const currentVideoTrack = readStudioPublisherCameraOwner(room);
 
   if (!currentVideoTrack) {
     return {
@@ -224,24 +208,34 @@ export async function switchStudioPublisherLiveVideo(
     };
   }
 
-  const candidateTrackResult = await acquireStudioPublisherCandidateCameraTrack(deviceId);
-
-  if (candidateTrackResult.kind !== "success") {
-    return candidateTrackResult;
-  }
-
-  const { track } = candidateTrackResult;
+  const restartFacingMode = resolveStudioPublisherRestartFacingMode(
+    deviceId,
+    currentVideoTrack
+  );
 
   try {
-    await currentVideoTrack.replaceTrack(track, false);
+    if (restartFacingMode) {
+      await currentVideoTrack.restartTrack({
+        facingMode: restartFacingMode
+      });
+      return {
+        kind: "success"
+      };
+    }
+
+    const didSwitch = await currentVideoTrack.setDeviceId(deviceId);
+
+    if (!didSwitch) {
+      return {
+        kind: "degraded"
+      };
+    }
+
     return {
       kind: "success"
     };
-  } catch {
-    track.stop();
-    return {
-      kind: "degraded"
-    };
+  } catch (error) {
+    return mapStudioPublisherLiveVideoSwitchError(error);
   }
 }
 
