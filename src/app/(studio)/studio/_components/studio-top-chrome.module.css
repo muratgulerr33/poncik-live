@@ -55,6 +55,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 0.38rem;
   min-width: 0;
 }
 

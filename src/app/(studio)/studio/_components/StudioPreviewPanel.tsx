@@ -4,10 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
-import type { StudioLiveMicControl } from "./StudioTopChrome";
+import type {
+  StudioLiveCameraControl,
+  StudioLiveMicControl
+} from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
 import styles from "./studio-preview-panel.module.css";
+import { useStudioLiveCameraSwitchSurface } from "./useStudioLiveCameraSwitchSurface";
 import { useStudioLiveMicUtilitySurface } from "./useStudioLiveMicUtilitySurface";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
@@ -23,6 +27,9 @@ type StudioPreviewPanelProps = {
   lifecycle: {
     kind: "idle" | "live" | "degraded";
   };
+  onLiveCameraControlChange?: (
+    liveCameraControl: StudioLiveCameraControl | null
+  ) => void;
   onExitControlChange?: (state: StudioExitControlState) => void;
   onLiveMicControlChange?: (liveMicControl: StudioLiveMicControl | null) => void;
 };
@@ -76,8 +83,45 @@ function scheduleStartSuccessFeedbackDeferredClear() {
   }, 0);
 }
 
+type LiveCameraControlRelaySnapshot = Readonly<{
+  isPending: boolean;
+  onSwitch: StudioLiveCameraControl["onSwitch"];
+}>;
+
+function toLiveCameraControlRelaySnapshot(
+  liveCameraControl: StudioLiveCameraControl | null
+): LiveCameraControlRelaySnapshot | null {
+  if (!liveCameraControl) {
+    return null;
+  }
+
+  return {
+    isPending: liveCameraControl.isPending,
+    onSwitch: liveCameraControl.onSwitch
+  };
+}
+
+function areLiveCameraControlRelaySnapshotsEqual(
+  previousSnapshot: LiveCameraControlRelaySnapshot | null,
+  nextSnapshot: LiveCameraControlRelaySnapshot | null
+) {
+  if (previousSnapshot === nextSnapshot) {
+    return true;
+  }
+
+  if (!previousSnapshot || !nextSnapshot) {
+    return false;
+  }
+
+  return (
+    previousSnapshot.isPending === nextSnapshot.isPending &&
+    previousSnapshot.onSwitch === nextSnapshot.onSwitch
+  );
+}
+
 export function StudioPreviewPanel({
   lifecycle,
+  onLiveCameraControlChange,
   onExitControlChange,
   onLiveMicControlChange
 }: StudioPreviewPanelProps) {
@@ -86,6 +130,8 @@ export function StudioPreviewPanel({
     useState(false);
   const [visibleSuccessToken, setVisibleSuccessToken] = useState(0);
   const hasSecondTriggerBlockSeenStartProgressRef = useRef(false);
+  const lastRelayedLiveCameraControlSnapshotRef =
+    useRef<LiveCameraControlRelaySnapshot | null>(null);
   const lastConsumedStartSuccessSequenceRef = useRef(0);
   const secondTriggerBlockResetTimeoutRef =
     useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -109,6 +155,8 @@ export function StudioPreviewPanel({
     isStarting,
     isStopping,
     lifecycleMessage,
+    readActiveLiveVideoPublication,
+    switchActiveLiveVideo,
     startSuccessSequence,
     startPublishing,
     stopPublishing
@@ -120,6 +168,13 @@ export function StudioPreviewPanel({
   const { liveMicControl } = useStudioLiveMicUtilitySurface({
     effectiveLifecycleKind,
     getPublisherRoom
+  });
+  const { liveCameraControl } = useStudioLiveCameraSwitchSurface({
+    effectiveLifecycleKind,
+    readActiveLiveVideoPublication,
+    readPreviewStream: getPreviewStream,
+    readPreviewVideoElement: () => videoRef.current,
+    switchActiveLiveVideo
   });
   const [initialStartSuccessSequence] = useState(startSuccessSequence);
   const isHealthyPreview = previewState === "preview_ready";
@@ -325,6 +380,37 @@ export function StudioPreviewPanel({
     onExitControlChange,
     stopPublishing
   ]);
+
+  useEffect(() => {
+    if (!onLiveCameraControlChange) {
+      return;
+    }
+
+    const nextRelaySnapshot = toLiveCameraControlRelaySnapshot(liveCameraControl);
+
+    if (
+      areLiveCameraControlRelaySnapshotsEqual(
+        lastRelayedLiveCameraControlSnapshotRef.current,
+        nextRelaySnapshot
+      )
+    ) {
+      return;
+    }
+
+    lastRelayedLiveCameraControlSnapshotRef.current = nextRelaySnapshot;
+    onLiveCameraControlChange(liveCameraControl);
+  }, [liveCameraControl, onLiveCameraControlChange]);
+
+  useEffect(() => {
+    if (!onLiveCameraControlChange) {
+      return;
+    }
+
+    return () => {
+      lastRelayedLiveCameraControlSnapshotRef.current = null;
+      onLiveCameraControlChange(null);
+    };
+  }, [onLiveCameraControlChange]);
 
   useEffect(() => {
     if (!onLiveMicControlChange) {

@@ -7,7 +7,10 @@ import {
   StudioPreviewPanel,
   type StudioExitControlState
 } from "./StudioPreviewPanel";
-import type { StudioLiveMicControl } from "./StudioTopChrome";
+import type {
+  StudioLiveCameraControl,
+  StudioLiveMicControl
+} from "./StudioTopChrome";
 import { StudioExitConfirmDialog } from "./studio-exit-confirm-dialog";
 import styles from "./studio-prep-surface.module.css";
 import { StudioRouteShell } from "./studio-route-shell";
@@ -38,6 +41,8 @@ export function StudioPrepSurface({
   });
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [isExitPending, setIsExitPending] = useState(false);
+  const [liveCameraControl, setLiveCameraControl] =
+    useState<StudioLiveCameraControl | null>(null);
   const [liveMicControl, setLiveMicControl] = useState<StudioLiveMicControl | null>(
     null
   );
@@ -92,6 +97,7 @@ export function StudioPrepSurface({
     <StudioRouteShell
       closeDisabled={isExitPending || exitControl.isStopping}
       layout="scene"
+      liveCameraControl={liveCameraControl}
       liveMicControl={liveMicControl}
       onRequestClose={handleRequestClose}
       surface="approved"
@@ -100,6 +106,7 @@ export function StudioPrepSurface({
       <section className={styles.prepScene} data-surface="approved">
         <StudioPreviewPanel
           lifecycle={lifecycle}
+          onLiveCameraControlChange={setLiveCameraControl}
           onExitControlChange={setExitControl}
           onLiveMicControlChange={setLiveMicControl}
         />
