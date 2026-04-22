@@ -4,10 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RoomEvent, Track, type Room } from "livekit-client";
 
 import {
+  requestStudioTargetedCameraStream,
   readStudioViableCameraDevices,
+  stopStudioPreviewStream,
   type StudioViableCameraDevice
 } from "../_adapters/studio-preview-adapter";
-import { switchStudioPublisherCameraDevice } from "../_adapters/studio-livekit-publisher-adapter";
+import { replaceStudioPublisherCameraTrack } from "../_adapters/studio-livekit-publisher-adapter";
 import type { StudioLiveCameraSwitchControl } from "./StudioTopChrome";
 
 type StudioLiveCameraSwitchSurfaceArgs = Readonly<{
@@ -132,8 +134,9 @@ export function useStudioLiveCameraSwitchSurface({
 
     const previewStream = getPreviewStream();
     const room = getPublisherRoom();
+    const previousPreviewVideoTrack = previewStream?.getVideoTracks()[0] ?? null;
 
-    if (!previewStream || !room) {
+    if (!previewStream || !room || !previousPreviewVideoTrack) {
       return;
     }
 
@@ -154,24 +157,70 @@ export function useStudioLiveCameraSwitchSurface({
 
     setIsPending(true);
 
-    try {
-      const switchedVideoTrack = await switchStudioPublisherCameraDevice(
-        room,
-        nextCameraDevice.deviceId
-      );
+    let shouldSyncAuthoritativeState = true;
 
-      if (!switchedVideoTrack) {
+    try {
+      const targetedStreamResult = await requestStudioTargetedCameraStream({
+        deviceId: nextCameraDevice.deviceId
+      });
+
+      if (targetedStreamResult.kind !== "success") {
+        return;
+      }
+
+      const acquiredStream = targetedStreamResult.stream;
+      const acquiredVideoTrack = acquiredStream.getVideoTracks()[0] ?? null;
+
+      if (!acquiredVideoTrack) {
+        stopStudioPreviewStream(acquiredStream);
+        return;
+      }
+
+      const replaceResult = await replaceStudioPublisherCameraTrack(room, acquiredVideoTrack);
+
+      if (replaceResult.kind !== "success") {
+        stopStudioPreviewStream(acquiredStream);
         return;
       }
 
       const replacementStream = new MediaStream([
-        switchedVideoTrack,
+        replaceResult.mediaStreamTrack,
         ...previewStream.getAudioTracks()
       ]);
 
-      await replacePreviewStream(replacementStream);
+      const didReplacePreview = await replacePreviewStream(replacementStream);
+
+      if (didReplacePreview) {
+        return;
+      }
+
+      if (previousPreviewVideoTrack.readyState !== "live") {
+        shouldSyncAuthoritativeState = false;
+
+        throw new Error(
+          "Studio camera switch contract risk: preview replacement failed after live camera mutation and safe rollback is unavailable within the current boundary."
+        );
+      }
+
+      const rollbackResult = await replaceStudioPublisherCameraTrack(
+        room,
+        previousPreviewVideoTrack
+      );
+
+      if (rollbackResult.kind !== "success" || rollbackResult.mediaStreamTrack !== previousPreviewVideoTrack) {
+        shouldSyncAuthoritativeState = false;
+
+        throw new Error(
+          "Studio camera switch contract risk: preview replacement failed and safe rollback could not be proven within the current boundary."
+        );
+      }
+
+      stopStudioPreviewStream(acquiredStream);
     } finally {
-      await syncFromAuthoritativeLiveCameraPath();
+      if (shouldSyncAuthoritativeState) {
+        await syncFromAuthoritativeLiveCameraPath();
+      }
+
       setIsPending(false);
     }
   }, [

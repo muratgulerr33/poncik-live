@@ -36,6 +36,15 @@ type StudioPublisherTrackSnapshot = Readonly<{
   mediaStreamTrack: MediaStreamTrack;
 }>;
 
+export type StudioPublisherCameraTrackReplaceResult =
+  | {
+      kind: "success";
+      mediaStreamTrack: MediaStreamTrack;
+    }
+  | {
+      kind: "failed";
+    };
+
 function normalizeFacingMode(value: MediaTrackSettings["facingMode"]) {
   if (typeof value === "string") {
     return value;
@@ -224,6 +233,40 @@ export async function switchStudioPublisherCameraDevice(
     }
 
     await sleep(CAMERA_SWITCH_SETTLE_POLL_INTERVAL_MS);
+  }
+}
+
+export async function replaceStudioPublisherCameraTrack(
+  room: Room,
+  nextVideoTrack: MediaStreamTrack
+): Promise<StudioPublisherCameraTrackReplaceResult> {
+  const publication = room.localParticipant.getTrackPublication(Track.Source.Camera);
+  const videoTrack = publication?.videoTrack;
+
+  if (!videoTrack) {
+    return {
+      kind: "failed"
+    };
+  }
+
+  try {
+    const resultingVideoTrack = await videoTrack.replaceTrack(nextVideoTrack, true);
+    const mediaStreamTrack = resultingVideoTrack.mediaStreamTrack;
+
+    if (mediaStreamTrack.readyState !== "live") {
+      return {
+        kind: "failed"
+      };
+    }
+
+    return {
+      kind: "success",
+      mediaStreamTrack
+    };
+  } catch {
+    return {
+      kind: "failed"
+    };
   }
 }
 
