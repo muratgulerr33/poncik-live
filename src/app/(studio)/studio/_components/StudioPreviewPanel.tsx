@@ -303,6 +303,7 @@ export function StudioPreviewPanel({
           setIsSecondTriggerBlockActive(true);
           void startPublishing();
         }}
+        presentation={isHealthyPreview ? "scene-native" : "fallback"}
       />
     ) : null;
 

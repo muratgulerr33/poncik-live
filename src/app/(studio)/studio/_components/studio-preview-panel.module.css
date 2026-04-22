@@ -3,13 +3,6 @@
   color: var(--muted-foreground);
 }
 
-.actionRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-}
-
 .stackAction {
   width: fit-content;
 }
@@ -268,62 +261,12 @@
   margin: 0 auto;
 }
 
-.lifecycleStack {
-  display: grid;
-  gap: 0.55rem;
-  margin-top: 0.15rem;
-}
-
-.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleStack {
-  width: auto;
-  max-width: min(100%, 18rem);
-  gap: 0.14rem;
-  margin-top: 0;
-  padding-bottom: 0;
-  justify-items: center;
-}
-
-.lifecycleActionRow {
-  margin-top: 0;
-}
-
-.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleActionRow {
-  width: auto;
-  justify-content: center;
-}
-
-.lifecyclePrimaryAction {
-  width: min(100%, 18rem);
-  min-height: 3.15rem;
-}
-
-.previewScene[data-surface="approved"][data-state="preview_ready"] .lifecyclePrimaryAction {
-  width: min(100%, 16rem);
-  min-height: 3.2rem;
-}
-
-.lifecycleMessage {
-  max-width: 28rem;
-}
-
-.errorText {
-  margin: 0;
-  color: var(--destructive);
-}
-
 @media (max-width: 640px) {
   .previewScene {
     grid-template-columns: 1fr;
   }
 
-  .actionRow {
-    flex-direction: column;
-  }
-
-  .actionRow > a,
-  .actionRow > button,
-  .stackAction,
-  .lifecyclePrimaryAction {
+  .stackAction {
     width: 100%;
   }
 
@@ -359,18 +302,6 @@
       max(0.34rem, calc(var(--safe-area-right) + 0.06rem))
       0
       max(0.34rem, calc(var(--safe-area-left) + 0.06rem));
-  }
-
-  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleStack {
-    gap: 0.14rem;
-  }
-
-  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecycleActionRow {
-    align-items: center;
-  }
-
-  .previewScene[data-surface="approved"][data-state="preview_ready"] .lifecyclePrimaryAction {
-    width: min(100%, 15.5rem);
   }
 }
 

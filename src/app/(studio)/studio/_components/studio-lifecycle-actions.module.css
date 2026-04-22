@@ -1,0 +1,146 @@
+.lifecycleStack {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  max-width: min(100%, 18rem);
+  margin-top: 0.15rem;
+}
+
+.sceneNativeStack {
+  gap: 0.36rem;
+  margin-top: 0;
+  padding-bottom: clamp(0.55rem, calc(env(safe-area-inset-bottom) + 0.12rem), 1rem);
+}
+
+.sceneNativeControl {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(4.25rem, 11vw, 4.75rem);
+  height: clamp(4.25rem, 11vw, 4.75rem);
+  padding: 0;
+  border: 1px solid color-mix(in oklch, var(--border) 82%, var(--primary) 18%);
+  border-radius: 999px;
+  background:
+    radial-gradient(
+      circle at 34% 22%,
+      color-mix(in oklch, white 34%, var(--surface-1)) 0%,
+      color-mix(in oklch, white 12%, transparent) 40%,
+      transparent 66%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--surface-2) 88%, white 12%),
+      color-mix(in oklch, var(--surface-1) 76%, var(--surface-2))
+    );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, white 46%, transparent),
+    inset 0 -0.52rem 0.92rem -0.76rem color-mix(in oklch, black 18%, transparent),
+    0 0.55rem 1.1rem color-mix(in oklch, black 16%, transparent);
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.sceneNativeControl:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklch, var(--border) 74%, var(--primary) 26%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, white 52%, transparent),
+    inset 0 -0.5rem 0.9rem -0.74rem color-mix(in oklch, black 16%, transparent),
+    0 0.72rem 1.25rem color-mix(in oklch, black 18%, transparent);
+}
+
+.sceneNativeControl:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--primary) 64%, white 16%);
+  outline-offset: 3px;
+}
+
+.sceneNativeControl:disabled {
+  cursor: not-allowed;
+}
+
+.sceneNativeControlCore {
+  width: 0.78rem;
+  height: 0.78rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--primary) 62%, white 38%);
+  box-shadow:
+    0 0 0 0.4rem color-mix(in oklch, var(--primary) 14%, transparent),
+    0 0 0 1px color-mix(in oklch, white 34%, transparent);
+}
+
+.sceneNativeControlCore[data-pending="true"] {
+  width: 1.08rem;
+  height: 1.08rem;
+  background: transparent;
+  border: 2px solid color-mix(in oklch, white 32%, transparent);
+  border-top-color: color-mix(in oklch, var(--primary) 70%, white 30%);
+  border-right-color: color-mix(in oklch, var(--primary) 48%, white 20%);
+  box-shadow: none;
+  animation: studioLifecycleSpin 820ms linear infinite;
+}
+
+.sceneNativeLabel {
+  margin: 0;
+  width: 7.25rem;
+  max-width: 100%;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 0.77rem;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: color-mix(in oklch, var(--foreground) 94%, white);
+}
+
+.fallbackAction {
+  width: min(100%, 18rem);
+  min-height: 3.15rem;
+}
+
+.lifecycleMessage {
+  max-width: min(100%, 18rem);
+  margin: 0;
+  text-align: center;
+  color: var(--destructive);
+}
+
+@keyframes studioLifecycleSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .lifecycleStack {
+    width: min(100%, 15.5rem);
+    margin-inline: auto;
+  }
+
+  .sceneNativeStack {
+    width: fit-content;
+    max-width: min(100%, 15.5rem);
+  }
+
+  .sceneNativeControl {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .sceneNativeLabel {
+    width: 7.1rem;
+    font-size: 0.75rem;
+  }
+
+  .fallbackAction {
+    width: 100%;
+  }
+}
