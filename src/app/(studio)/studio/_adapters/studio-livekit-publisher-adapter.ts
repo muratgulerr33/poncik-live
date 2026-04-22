@@ -25,6 +25,26 @@ type StudioPublisherConnectionResult =
       kind: "degraded";
     };
 
+type StudioPublisherCandidateCameraTrackAcquireResult =
+  | {
+      kind: "success";
+      track: MediaStreamTrack;
+    }
+  | {
+      kind: "blocked" | "unsupported" | "degraded";
+    };
+
+export type StudioPublisherLiveVideoSwitchAttemptResult =
+  | {
+      kind: "success";
+    }
+  | {
+      kind: "no_active_live_video";
+    }
+  | {
+      kind: "blocked" | "unsupported" | "degraded";
+    };
+
 export async function fetchStudioPublisherToken(): Promise<StudioPublisherTokenFetchResult> {
   try {
     const response = await fetch("/api/livekit/publisher-token", {
@@ -129,6 +149,100 @@ export function readStudioPublisherCameraPublication(
   }
 
   return publication;
+}
+
+export async function acquireStudioPublisherCandidateCameraTrack(
+  deviceId: string
+): Promise<StudioPublisherCandidateCameraTrackAcquireResult> {
+  try {
+    if (
+      typeof window === "undefined" ||
+      !("mediaDevices" in navigator) ||
+      typeof navigator.mediaDevices?.getUserMedia !== "function"
+    ) {
+      return {
+        kind: "unsupported"
+      };
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        deviceId: {
+          exact: deviceId
+        }
+      }
+    });
+    const track = stream.getVideoTracks()[0];
+
+    if (!track) {
+      stream.getTracks().forEach((mediaTrack) => mediaTrack.stop());
+      return {
+        kind: "degraded"
+      };
+    }
+
+    return {
+      kind: "success",
+      track
+    };
+  } catch (error) {
+    if (
+      error instanceof DOMException &&
+      ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
+    ) {
+      return {
+        kind: "blocked"
+      };
+    }
+
+    if (
+      error instanceof DOMException &&
+      ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
+    ) {
+      return {
+        kind: "unsupported"
+      };
+    }
+
+    return {
+      kind: "degraded"
+    };
+  }
+}
+
+export async function switchStudioPublisherLiveVideo(
+  room: Room | null,
+  deviceId: string
+): Promise<StudioPublisherLiveVideoSwitchAttemptResult> {
+  const publication = readStudioPublisherCameraPublication(room);
+  const currentVideoTrack = publication?.videoTrack;
+
+  if (!currentVideoTrack) {
+    return {
+      kind: "no_active_live_video"
+    };
+  }
+
+  const candidateTrackResult = await acquireStudioPublisherCandidateCameraTrack(deviceId);
+
+  if (candidateTrackResult.kind !== "success") {
+    return candidateTrackResult;
+  }
+
+  const { track } = candidateTrackResult;
+
+  try {
+    await currentVideoTrack.replaceTrack(track, false);
+    return {
+      kind: "success"
+    };
+  } catch {
+    track.stop();
+    return {
+      kind: "degraded"
+    };
+  }
 }
 
 export async function disconnectStudioPublisherRoom(room: Room | null) {

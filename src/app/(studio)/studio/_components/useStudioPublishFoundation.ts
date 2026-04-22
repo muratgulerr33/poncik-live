@@ -10,7 +10,9 @@ import {
   disconnectStudioPublisherRoom,
   fetchStudioPublisherToken,
   publishStudioPreviewTracks,
-  readStudioPublisherCameraPublication
+  readStudioPublisherCameraPublication,
+  switchStudioPublisherLiveVideo,
+  type StudioPublisherLiveVideoSwitchAttemptResult
 } from "../_adapters/studio-livekit-publisher-adapter";
 import {
   startStudioBroadcastLifecycle,
@@ -61,6 +63,11 @@ export function useStudioPublishFoundation({
   const readActiveLiveVideoPublication = useCallback(
     (): LocalTrackPublication | null =>
       readStudioPublisherCameraPublication(roomRef.current),
+    []
+  );
+  const switchActiveLiveVideo = useCallback(
+    (deviceId: string): Promise<StudioPublisherLiveVideoSwitchAttemptResult> =>
+      switchStudioPublisherLiveVideo(roomRef.current, deviceId),
     []
   );
 
@@ -244,6 +251,7 @@ export function useStudioPublishFoundation({
     isStopping,
     lifecycleMessage,
     readActiveLiveVideoPublication,
+    switchActiveLiveVideo,
     startSuccessSequence,
     startPublishing,
     stopPublishing
