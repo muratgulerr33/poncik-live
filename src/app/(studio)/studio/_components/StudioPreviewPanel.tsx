@@ -4,14 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
-import type {
-  StudioLiveCameraSwitchControl,
-  StudioLiveMicControl
-} from "./StudioTopChrome";
+import type { StudioLiveMicControl } from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
 import styles from "./studio-preview-panel.module.css";
-import { useStudioLiveCameraSwitchSurface } from "./useStudioLiveCameraSwitchSurface";
 import { useStudioLiveMicUtilitySurface } from "./useStudioLiveMicUtilitySurface";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
@@ -28,9 +24,6 @@ type StudioPreviewPanelProps = {
     kind: "idle" | "live" | "degraded";
   };
   onExitControlChange?: (state: StudioExitControlState) => void;
-  onLiveCameraSwitchControlChange?: (
-    liveCameraSwitchControl: StudioLiveCameraSwitchControl | null
-  ) => void;
   onLiveMicControlChange?: (liveMicControl: StudioLiveMicControl | null) => void;
 };
 
@@ -86,7 +79,6 @@ function scheduleStartSuccessFeedbackDeferredClear() {
 export function StudioPreviewPanel({
   lifecycle,
   onExitControlChange,
-  onLiveCameraSwitchControlChange,
   onLiveMicControlChange
 }: StudioPreviewPanelProps) {
   const [isSecondTriggerBlockActive, setIsSecondTriggerBlockActive] = useState(false);
@@ -106,7 +98,6 @@ export function StudioPreviewPanel({
     getPreviewStream,
     isInitialBootstrapPending,
     previewState,
-    replacePreviewStream,
     retryPreview,
     videoRef
   } =
@@ -129,12 +120,6 @@ export function StudioPreviewPanel({
   const { liveMicControl } = useStudioLiveMicUtilitySurface({
     effectiveLifecycleKind,
     getPublisherRoom
-  });
-  const { liveCameraSwitchControl } = useStudioLiveCameraSwitchSurface({
-    effectiveLifecycleKind,
-    getPreviewStream,
-    getPublisherRoom,
-    replacePreviewStream
   });
   const [initialStartSuccessSequence] = useState(startSuccessSequence);
   const isHealthyPreview = previewState === "preview_ready";
@@ -357,24 +342,6 @@ export function StudioPreviewPanel({
       onLiveMicControlChange(null);
     };
   }, [onLiveMicControlChange]);
-
-  useEffect(() => {
-    if (!onLiveCameraSwitchControlChange) {
-      return;
-    }
-
-    onLiveCameraSwitchControlChange(liveCameraSwitchControl);
-  }, [liveCameraSwitchControl, onLiveCameraSwitchControlChange]);
-
-  useEffect(() => {
-    if (!onLiveCameraSwitchControlChange) {
-      return;
-    }
-
-    return () => {
-      onLiveCameraSwitchControlChange(null);
-    };
-  }, [onLiveCameraSwitchControlChange]);
 
   return (
     <section

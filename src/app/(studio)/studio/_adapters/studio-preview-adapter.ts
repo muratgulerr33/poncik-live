@@ -23,75 +23,53 @@ export type StudioPreviewRequestResult =
       kind: "degraded";
     };
 
-export type StudioCameraFacingMode = "user" | "environment" | "left" | "right";
-
-export type StudioCameraConstraintTarget = Readonly<{
-  deviceId?: string;
-  facingMode?: StudioCameraFacingMode;
-}>;
-
-export type StudioViableCameraDevice = Readonly<{
-  deviceId: string;
-  groupId: string;
-  label: string;
-}>;
-
-function canRequestStudioMedia() {
-  const allowInsecureLanMediaDev =
-    process.env.NEXT_PUBLIC_ALLOW_INSECURE_LAN_MEDIA_DEV === "1";
-  const isDev = process.env.NODE_ENV === "development";
-
-  if (
-    typeof window === "undefined" ||
-    (!window.isSecureContext && !(isDev && allowInsecureLanMediaDev))
-  ) {
-    return false;
-  }
-
-  return (
-    "mediaDevices" in navigator &&
-    typeof navigator.mediaDevices?.getUserMedia === "function"
-  );
-}
-
-function isStudioUnsupportedMediaError(error: unknown) {
-  return (
-    error instanceof DOMException &&
-    ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
-  );
-}
-
-function isStudioBlockedMediaError(error: unknown) {
-  return (
-    error instanceof DOMException &&
-    ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
-  );
-}
-
-async function requestStudioMediaStream(
-  constraints: MediaStreamConstraints
-): Promise<StudioPreviewRequestResult> {
+export async function requestStudioPreviewStream(): Promise<StudioPreviewRequestResult> {
   try {
-    if (!canRequestStudioMedia()) {
+    const allowInsecureLanMediaDev =
+      process.env.NEXT_PUBLIC_ALLOW_INSECURE_LAN_MEDIA_DEV === "1";
+    const isDev = process.env.NODE_ENV === "development";
+
+    if (
+      typeof window === "undefined" ||
+      (!window.isSecureContext && !(isDev && allowInsecureLanMediaDev))
+    ) {
       return {
         kind: "unsupported"
       };
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    if (
+      !("mediaDevices" in navigator) ||
+      typeof navigator.mediaDevices?.getUserMedia !== "function"
+    ) {
+      return {
+        kind: "unsupported"
+      };
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    });
 
     return {
       kind: "success",
       stream
     };
   } catch (error) {
-    if (isStudioBlockedMediaError(error)) {
+    if (
+      error instanceof DOMException &&
+      ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
+    ) {
       return {
         kind: "blocked"
       };
     }
 
-    if (isStudioUnsupportedMediaError(error)) {
+    if (
+      error instanceof DOMException &&
+      ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
+    ) {
       return {
         kind: "unsupported"
       };
@@ -101,89 +79,6 @@ async function requestStudioMediaStream(
       kind: "degraded"
     };
   }
-}
-
-export async function requestStudioPreviewStream(): Promise<StudioPreviewRequestResult> {
-  return requestStudioMediaStream({
-    video: true,
-    audio: true
-  });
-}
-
-export async function requestStudioTargetedCameraStream(
-  target: StudioCameraConstraintTarget
-): Promise<StudioPreviewRequestResult> {
-  const videoConstraint =
-    target.deviceId || target.facingMode
-      ? {
-          ...(target.deviceId
-            ? {
-                deviceId: {
-                  exact: target.deviceId
-                }
-              }
-            : {}),
-          ...(target.facingMode
-            ? {
-                facingMode: {
-                  exact: target.facingMode
-                }
-              }
-            : {})
-        }
-      : true;
-
-  return requestStudioMediaStream({
-    video: videoConstraint,
-    audio: false
-  });
-}
-
-export async function readStudioViableCameraDevices({
-  activeDeviceId = null
-}: Readonly<{
-  activeDeviceId?: string | null;
-}> = {}): Promise<StudioViableCameraDevice[]> {
-  if (
-    !canRequestStudioMedia() ||
-    typeof navigator.mediaDevices?.enumerateDevices !== "function"
-  ) {
-    return [];
-  }
-
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  const seenDeviceIds = new Set<string>();
-  const viableDevices: StudioViableCameraDevice[] = [];
-
-  for (const device of devices) {
-    if (device.kind !== "videoinput" || !device.deviceId || seenDeviceIds.has(device.deviceId)) {
-      continue;
-    }
-
-    seenDeviceIds.add(device.deviceId);
-
-    viableDevices.push({
-      deviceId: device.deviceId,
-      groupId: device.groupId,
-      label: device.label
-    });
-  }
-
-  if (!activeDeviceId) {
-    return viableDevices;
-  }
-
-  return viableDevices.sort((left, right) => {
-    if (left.deviceId === activeDeviceId) {
-      return -1;
-    }
-
-    if (right.deviceId === activeDeviceId) {
-      return 1;
-    }
-
-    return 0;
-  });
 }
 
 export async function attachStudioPreviewStream(

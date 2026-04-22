@@ -2,9 +2,6 @@
 
 import { Room, RoomEvent, Track } from "livekit-client";
 
-const CAMERA_SWITCH_EVIDENCE_TIMEOUT_MS = 400;
-const CAMERA_SWITCH_SETTLE_POLL_INTERVAL_MS = 50;
-
 type PublisherTokenResponse = {
   server_url: string;
   participant_token: string;
@@ -27,72 +24,6 @@ type StudioPublisherConnectionResult =
   | {
       kind: "degraded";
     };
-
-type StudioPublisherTrackSnapshot = Readonly<{
-  activeDeviceId: string | null;
-  facingMode: string | null;
-  groupId: string | null;
-  label: string | null;
-  mediaStreamTrack: MediaStreamTrack;
-}>;
-
-export type StudioPublisherCameraTrackReplaceResult =
-  | {
-      kind: "success";
-      mediaStreamTrack: MediaStreamTrack;
-    }
-  | {
-      kind: "failed";
-    };
-
-function normalizeFacingMode(value: MediaTrackSettings["facingMode"]) {
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (Array.isArray(value)) {
-    return value[0] ?? null;
-  }
-
-  return null;
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
-
-async function readPublisherTrackSnapshot(videoTrack: {
-  getDeviceId: (fallback?: boolean) => Promise<string | undefined>;
-  mediaStreamTrack: MediaStreamTrack;
-}): Promise<StudioPublisherTrackSnapshot> {
-  const mediaStreamTrack = videoTrack.mediaStreamTrack;
-  const settings = mediaStreamTrack.getSettings();
-
-  return {
-    activeDeviceId: (await videoTrack.getDeviceId(false)) ?? settings.deviceId ?? null,
-    facingMode: normalizeFacingMode(settings.facingMode),
-    groupId: settings.groupId ?? null,
-    label: mediaStreamTrack.label || null,
-    mediaStreamTrack
-  };
-}
-
-function hasPositiveCameraSwitchEvidence(
-  targetDeviceId: string,
-  previousSnapshot: StudioPublisherTrackSnapshot,
-  nextSnapshot: StudioPublisherTrackSnapshot
-) {
-  return (
-    nextSnapshot.activeDeviceId === targetDeviceId ||
-    previousSnapshot.mediaStreamTrack !== nextSnapshot.mediaStreamTrack ||
-    previousSnapshot.mediaStreamTrack.id !== nextSnapshot.mediaStreamTrack.id ||
-    previousSnapshot.groupId !== nextSnapshot.groupId ||
-    previousSnapshot.facingMode !== nextSnapshot.facingMode ||
-    previousSnapshot.label !== nextSnapshot.label
-  );
-}
 
 export async function fetchStudioPublisherToken(): Promise<StudioPublisherTokenFetchResult> {
   try {
@@ -185,88 +116,6 @@ export async function publishStudioPreviewTracks(room: Room, stream: MediaStream
     return true;
   } catch {
     return false;
-  }
-}
-
-export async function switchStudioPublisherCameraDevice(
-  room: Room,
-  deviceId: string
-) {
-  const publication = room.localParticipant.getTrackPublication(Track.Source.Camera);
-  const videoTrack = publication?.videoTrack;
-
-  if (!videoTrack) {
-    return null;
-  }
-
-  const previousSnapshot = await readPublisherTrackSnapshot(videoTrack);
-
-  let didSwitch = false;
-
-  try {
-    didSwitch = await videoTrack.setDeviceId(deviceId);
-  } catch {
-    return null;
-  }
-
-  if (!didSwitch) {
-    return null;
-  }
-
-  const deadline = Date.now() + CAMERA_SWITCH_EVIDENCE_TIMEOUT_MS;
-
-  while (true) {
-    const nextSnapshot = await readPublisherTrackSnapshot(videoTrack);
-    const isReturnedTrackReady = nextSnapshot.mediaStreamTrack.readyState === "live";
-    const hasPositiveEvidence = hasPositiveCameraSwitchEvidence(
-      deviceId,
-      previousSnapshot,
-      nextSnapshot
-    );
-
-    if (isReturnedTrackReady && hasPositiveEvidence) {
-      return nextSnapshot.mediaStreamTrack;
-    }
-
-    if (Date.now() >= deadline) {
-      return null;
-    }
-
-    await sleep(CAMERA_SWITCH_SETTLE_POLL_INTERVAL_MS);
-  }
-}
-
-export async function replaceStudioPublisherCameraTrack(
-  room: Room,
-  nextVideoTrack: MediaStreamTrack
-): Promise<StudioPublisherCameraTrackReplaceResult> {
-  const publication = room.localParticipant.getTrackPublication(Track.Source.Camera);
-  const videoTrack = publication?.videoTrack;
-
-  if (!videoTrack) {
-    return {
-      kind: "failed"
-    };
-  }
-
-  try {
-    const resultingVideoTrack = await videoTrack.replaceTrack(nextVideoTrack, true);
-    const mediaStreamTrack = resultingVideoTrack.mediaStreamTrack;
-
-    if (mediaStreamTrack.readyState !== "live") {
-      return {
-        kind: "failed"
-      };
-    }
-
-    return {
-      kind: "success",
-      mediaStreamTrack
-    };
-  } catch {
-    return {
-      kind: "failed"
-    };
   }
 }
 
