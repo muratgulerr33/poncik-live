@@ -1,6 +1,6 @@
 "use client";
 
-import { Room, RoomEvent, Track } from "livekit-client";
+import { Room, RoomEvent, Track, type LocalTrackPublication } from "livekit-client";
 
 type PublisherTokenResponse = {
   server_url: string;
@@ -117,6 +117,18 @@ export async function publishStudioPreviewTracks(room: Room, stream: MediaStream
   } catch {
     return false;
   }
+}
+
+export function readStudioPublisherCameraPublication(
+  room: Room | null
+): LocalTrackPublication | null {
+  const publication = room?.localParticipant.getTrackPublication(Track.Source.Camera);
+
+  if (!publication?.track) {
+    return null;
+  }
+
+  return publication;
 }
 
 export async function disconnectStudioPublisherRoom(room: Room | null) {

@@ -2,14 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Room } from "livekit-client";
+import type { LocalTrackPublication, Room } from "livekit-client";
 
 import {
   bindStudioPublisherRoomDisconnect,
   connectStudioPublisherRoom,
   disconnectStudioPublisherRoom,
   fetchStudioPublisherToken,
-  publishStudioPreviewTracks
+  publishStudioPreviewTracks,
+  readStudioPublisherCameraPublication
 } from "../_adapters/studio-livekit-publisher-adapter";
 import {
   startStudioBroadcastLifecycle,
@@ -57,6 +58,11 @@ export function useStudioPublishFoundation({
   }, []);
 
   const getPublisherRoom = useCallback(() => roomRef.current, []);
+  const readActiveLiveVideoPublication = useCallback(
+    (): LocalTrackPublication | null =>
+      readStudioPublisherCameraPublication(roomRef.current),
+    []
+  );
 
   const clearLocalPublisher = useCallback(async () => {
     const room = roomRef.current;
@@ -237,6 +243,7 @@ export function useStudioPublishFoundation({
     isStarting,
     isStopping,
     lifecycleMessage,
+    readActiveLiveVideoPublication,
     startSuccessSequence,
     startPublishing,
     stopPublishing
