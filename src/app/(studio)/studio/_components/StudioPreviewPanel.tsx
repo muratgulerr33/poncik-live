@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LocalTrackPublication } from "livekit-client";
 
+import type { StudioPublisherFacingMode } from "../_adapters/studio-livekit-publisher-adapter";
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import type {
@@ -112,6 +113,24 @@ function readCurrentLiveCameraAnchor(publication: LocalTrackPublication | null) 
   }
 
   return readTrackDeviceId(publication?.videoTrack?.mediaStreamTrack);
+}
+
+function readCurrentLiveFacingMode(
+  publication: LocalTrackPublication | null
+): StudioPublisherFacingMode | null {
+  const sourceTrackFacingMode = publication?.videoTrack?.getSourceTrackSettings().facingMode;
+
+  if (sourceTrackFacingMode === "user" || sourceTrackFacingMode === "environment") {
+    return sourceTrackFacingMode;
+  }
+
+  const mediaTrackFacingMode = publication?.videoTrack?.mediaStreamTrack
+    ?.getSettings()
+    .facingMode;
+
+  return mediaTrackFacingMode === "user" || mediaTrackFacingMode === "environment"
+    ? mediaTrackFacingMode
+    : null;
 }
 
 function readCurrentPreviewCameraAnchor(stream: MediaStream | null) {
@@ -289,8 +308,10 @@ export function StudioPreviewPanel({
     () => (effectiveLifecycleKind === "live" ? eligibleCameraDeviceIds : []),
     [effectiveLifecycleKind, eligibleCameraDeviceIds]
   );
+  const currentLiveVideoPublication = readActiveLiveVideoPublication();
+  const currentLiveFacingMode = readCurrentLiveFacingMode(currentLiveVideoPublication);
   const currentAnchorDeviceId =
-    readCurrentLiveCameraAnchor(readActiveLiveVideoPublication()) ??
+    readCurrentLiveCameraAnchor(currentLiveVideoPublication) ??
     readCurrentPreviewCameraAnchor(getPreviewStream());
   const canRenderLiveCameraControl =
     effectiveLifecycleKind === "live" &&
@@ -531,10 +552,25 @@ export function StudioPreviewPanel({
         };
       }
 
-      return switchCamera(nextDeviceId);
+      const preferredFacingMode: StudioPublisherFacingMode | null =
+        liveEligibleCameraDeviceIds.length === 2 &&
+        nextDeviceId !== currentAnchorDeviceId &&
+        currentLiveFacingMode === "user"
+          ? "environment"
+          : liveEligibleCameraDeviceIds.length === 2 &&
+              nextDeviceId !== currentAnchorDeviceId &&
+              currentLiveFacingMode === "environment"
+            ? "user"
+            : null;
+
+      return switchCamera({
+        deviceId: nextDeviceId,
+        preferredFacingMode
+      });
     },
     [
       currentAnchorDeviceId,
+      currentLiveFacingMode,
       effectiveLifecycleKind,
       liveEligibleCameraDeviceIds,
       switchCamera

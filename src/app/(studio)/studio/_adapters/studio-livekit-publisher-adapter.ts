@@ -36,6 +36,13 @@ export type StudioPublisherLiveVideoSwitchAttemptResult =
       kind: "blocked" | "unsupported" | "degraded";
     };
 
+export type StudioPublisherFacingMode = "user" | "environment";
+
+export type StudioPublisherLiveVideoSwitchRequest = Readonly<{
+  deviceId: string;
+  preferredFacingMode?: StudioPublisherFacingMode | null;
+}>;
+
 export async function fetchStudioPublisherToken(): Promise<StudioPublisherTokenFetchResult> {
   try {
     const response = await fetch("/api/livekit/publisher-token", {
@@ -146,25 +153,6 @@ function readStudioPublisherCameraOwner(room: Room | null) {
   return readStudioPublisherCameraPublication(room)?.videoTrack ?? null;
 }
 
-function readStudioPublisherFacingMode(
-  facingMode: MediaTrackSettings["facingMode"]
-): "user" | "environment" | null {
-  return facingMode === "user" || facingMode === "environment" ? facingMode : null;
-}
-
-function resolveStudioPublisherRestartFacingMode(
-  deviceId: string,
-  currentVideoTrack: NonNullable<ReturnType<typeof readStudioPublisherCameraOwner>>
-) {
-  const sourceTrackSettings = currentVideoTrack.getSourceTrackSettings();
-
-  if (sourceTrackSettings.deviceId !== deviceId) {
-    return null;
-  }
-
-  return readStudioPublisherFacingMode(sourceTrackSettings.facingMode);
-}
-
 function mapStudioPublisherLiveVideoSwitchError(
   error: unknown
 ): Exclude<StudioPublisherLiveVideoSwitchAttemptResult, { kind: "success" | "no_active_live_video" }> {
@@ -198,7 +186,7 @@ function mapStudioPublisherLiveVideoSwitchError(
 
 export async function switchStudioPublisherLiveVideo(
   room: Room | null,
-  deviceId: string
+  input: StudioPublisherLiveVideoSwitchRequest
 ): Promise<StudioPublisherLiveVideoSwitchAttemptResult> {
   const currentVideoTrack = readStudioPublisherCameraOwner(room);
 
@@ -208,22 +196,18 @@ export async function switchStudioPublisherLiveVideo(
     };
   }
 
-  const restartFacingMode = resolveStudioPublisherRestartFacingMode(
-    deviceId,
-    currentVideoTrack
-  );
-
   try {
-    if (restartFacingMode) {
+    if (input.preferredFacingMode) {
       await currentVideoTrack.restartTrack({
-        facingMode: restartFacingMode
+        facingMode: input.preferredFacingMode
       });
+
       return {
         kind: "success"
       };
     }
 
-    const didSwitch = await currentVideoTrack.setDeviceId(deviceId);
+    const didSwitch = await currentVideoTrack.setDeviceId(input.deviceId);
 
     if (!didSwitch) {
       return {

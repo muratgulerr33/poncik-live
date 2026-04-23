@@ -12,6 +12,7 @@ import {
   publishStudioPreviewTracks,
   readStudioPublisherCameraPublication,
   switchStudioPublisherLiveVideo,
+  type StudioPublisherLiveVideoSwitchRequest,
   type StudioPublisherLiveVideoSwitchAttemptResult
 } from "../_adapters/studio-livekit-publisher-adapter";
 import {
@@ -66,8 +67,10 @@ export function useStudioPublishFoundation({
     []
   );
   const switchActiveLiveVideo = useCallback(
-    (deviceId: string): Promise<StudioPublisherLiveVideoSwitchAttemptResult> =>
-      switchStudioPublisherLiveVideo(roomRef.current, deviceId),
+    (
+      input: StudioPublisherLiveVideoSwitchRequest
+    ): Promise<StudioPublisherLiveVideoSwitchAttemptResult> =>
+      switchStudioPublisherLiveVideo(roomRef.current, input),
     []
   );
 
