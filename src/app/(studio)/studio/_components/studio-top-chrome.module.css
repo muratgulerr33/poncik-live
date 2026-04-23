@@ -3,6 +3,7 @@
   --chrome-gap: 0.4rem;
   --chrome-inline-padding: 0.42rem;
   --chrome-top-padding: 0.14rem;
+  --chrome-bottom-padding: 0;
   --chrome-label-size: 0.89rem;
   --chrome-border-alpha: 10%;
   --chrome-surface-alpha: 12%;
@@ -21,7 +22,7 @@
       var(--chrome-inline-padding),
       calc(var(--safe-area-right) + var(--chrome-inline-padding))
     )
-    0
+    var(--chrome-bottom-padding)
     max(
       var(--chrome-inline-padding),
       calc(var(--safe-area-left) + var(--chrome-inline-padding))
@@ -39,7 +40,10 @@
   box-shadow:
     inset 0 -1px 0 color-mix(in oklch, var(--foreground) 3%, transparent),
     0 10px 24px -26px color-mix(in oklch, black 40%, transparent);
-  min-block-size: var(--chrome-touch-target);
+  min-block-size: calc(
+    var(--chrome-touch-target) + var(--chrome-top-padding) +
+      var(--chrome-bottom-padding)
+  );
   pointer-events: none;
 }
 
@@ -157,6 +161,7 @@
     --chrome-gap: 0.5rem;
     --chrome-inline-padding: 0.62rem;
     --chrome-top-padding: 0.58rem;
+    --chrome-bottom-padding: 0.34rem;
     --chrome-label-size: 0.92rem;
     --chrome-border-alpha: 11%;
     --chrome-surface-alpha: 14%;
