@@ -133,6 +133,10 @@ function readCurrentLiveFacingMode(
     : null;
 }
 
+function readCurrentLiveSourceTrack(publication: LocalTrackPublication | null) {
+  return publication?.videoTrack?.mediaStreamTrack ?? null;
+}
+
 function readCurrentPreviewCameraAnchor(stream: MediaStream | null) {
   return readTrackDeviceId(stream?.getVideoTracks()[0]);
 }
@@ -247,6 +251,7 @@ export function StudioPreviewPanel({
     getPreviewStream,
     isInitialBootstrapPending,
     previewState,
+    releasePreviewVideoTrackForSwitch,
     replacePreviewVideoTrack,
     retryPreview,
     videoRef
@@ -273,6 +278,15 @@ export function StudioPreviewPanel({
     effectiveLifecycleKind,
     getPublisherRoom
   });
+  const liveEligibleCameraDeviceIds = useMemo(
+    () => (effectiveLifecycleKind === "live" ? eligibleCameraDeviceIds : []),
+    [effectiveLifecycleKind, eligibleCameraDeviceIds]
+  );
+  const currentLiveVideoPublication = readActiveLiveVideoPublication();
+  const currentLiveFacingMode = readCurrentLiveFacingMode(currentLiveVideoPublication);
+  const currentAnchorDeviceId =
+    readCurrentLiveCameraAnchor(currentLiveVideoPublication) ??
+    readCurrentPreviewCameraAnchor(getPreviewStream());
   const catchUpPreviewAfterSwitch = useCallback(async () => {
     const nextVideoTrack =
       readActiveLiveVideoPublication()?.videoTrack?.mediaStreamTrack ?? null;
@@ -283,11 +297,31 @@ export function StudioPreviewPanel({
 
     return replacePreviewVideoTrack(nextVideoTrack);
   }, [readActiveLiveVideoPublication, replacePreviewVideoTrack]);
+  const restorePreviewAfterFailedReverseSwitch = useCallback(
+    async () => catchUpPreviewAfterSwitch(),
+    [catchUpPreviewAfterSwitch]
+  );
+  const preparePreviewForReverseSwitch = useCallback(async () => {
+    const previewTrack = getPreviewStream()?.getVideoTracks()[0] ?? null;
+    const liveSourceTrack = readCurrentLiveSourceTrack(readActiveLiveVideoPublication());
+
+    if (!previewTrack || !liveSourceTrack || previewTrack === liveSourceTrack) {
+      return false;
+    }
+
+    return releasePreviewVideoTrackForSwitch();
+  }, [
+    getPreviewStream,
+    readActiveLiveVideoPublication,
+    releasePreviewVideoTrackForSwitch
+  ]);
   const {
     isPending: isLiveCameraSwitchPending,
     switchCamera
   } = useStudioLiveCameraSwitchSurface({
     catchUpPreviewAfterSwitch,
+    preparePreviewForReverseSwitch,
+    restorePreviewAfterFailedReverseSwitch,
     switchActiveLiveVideo
   });
   const [initialStartSuccessSequence] = useState(startSuccessSequence);
@@ -304,15 +338,6 @@ export function StudioPreviewPanel({
     visibleSuccessToken === startSuccessSequence;
   const shouldShowSupportStack =
     !isInitialRequestFlashSuppressed && (!isHealthyPreview || canRetry);
-  const liveEligibleCameraDeviceIds = useMemo(
-    () => (effectiveLifecycleKind === "live" ? eligibleCameraDeviceIds : []),
-    [effectiveLifecycleKind, eligibleCameraDeviceIds]
-  );
-  const currentLiveVideoPublication = readActiveLiveVideoPublication();
-  const currentLiveFacingMode = readCurrentLiveFacingMode(currentLiveVideoPublication);
-  const currentAnchorDeviceId =
-    readCurrentLiveCameraAnchor(currentLiveVideoPublication) ??
-    readCurrentPreviewCameraAnchor(getPreviewStream());
   const canRenderLiveCameraControl =
     effectiveLifecycleKind === "live" &&
     liveEligibleCameraDeviceIds.length >= 2 &&

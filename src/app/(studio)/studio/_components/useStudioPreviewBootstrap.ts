@@ -56,13 +56,37 @@ export function useStudioPreviewBootstrap() {
 
   const getPreviewStream = useCallback(() => streamRef.current, []);
 
+  const releasePreviewVideoTrackForSwitch = useCallback(async (): Promise<boolean> => {
+    const currentPreviewStream = streamRef.current;
+    const currentPreviewVideoTrack = currentPreviewStream?.getVideoTracks()[0] ?? null;
+    const videoElement = videoRef.current;
+
+    if (!currentPreviewStream || !currentPreviewVideoTrack || !videoElement) {
+      return false;
+    }
+
+    const preservedNonVideoTracks = currentPreviewStream
+      .getTracks()
+      .filter((track) => track.kind !== "video");
+    const nextPreviewStream = new MediaStream(preservedNonVideoTracks);
+    const didAttach = await attachStudioPreviewStream(videoElement, nextPreviewStream);
+
+    if (!didAttach) {
+      await attachStudioPreviewStream(videoElement, currentPreviewStream);
+      return false;
+    }
+
+    streamRef.current = nextPreviewStream;
+    currentPreviewStream.getVideoTracks().forEach((track) => track.stop());
+    return true;
+  }, []);
+
   const replacePreviewVideoTrack = useCallback(
     async (nextVideoTrack: MediaStreamTrack): Promise<boolean> => {
       const currentPreviewStream = streamRef.current;
-      const currentPreviewVideoTrack = currentPreviewStream?.getVideoTracks()[0] ?? null;
       const videoElement = videoRef.current;
 
-      if (!currentPreviewStream || !currentPreviewVideoTrack || !videoElement) {
+      if (!currentPreviewStream || !videoElement) {
         return false;
       }
 
@@ -182,6 +206,7 @@ export function useStudioPreviewBootstrap() {
     getPreviewStream,
     isInitialBootstrapPending,
     previewState,
+    releasePreviewVideoTrackForSwitch,
     replacePreviewVideoTrack,
     retryPreview: runPreviewAttempt,
     videoRef
