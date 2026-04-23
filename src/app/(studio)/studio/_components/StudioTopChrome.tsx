@@ -2,6 +2,9 @@ import { Mic, MicOff, SwitchCamera, X } from "lucide-react";
 
 import styles from "./studio-top-chrome.module.css";
 
+const CHROME_ICON_SIZE = 17;
+const CHROME_ICON_STROKE_WIDTH = 2.05;
+
 export type StudioLiveMicControl = Readonly<{
   isMuted: boolean;
   isPending: boolean;
@@ -43,7 +46,11 @@ export function StudioTopChrome({
           onClick={onRequestClose}
           type="button"
         >
-          <X aria-hidden="true" size={18} strokeWidth={2.2} />
+          <X
+            aria-hidden="true"
+            size={CHROME_ICON_SIZE}
+            strokeWidth={CHROME_ICON_STROKE_WIDTH}
+          />
         </button>
         {username ? (
           <p className={`t-label ${styles.usernameLabel}`}>@{username}</p>
@@ -62,9 +69,17 @@ export function StudioTopChrome({
               type="button"
             >
               {liveMicControl.isMuted ? (
-                <MicOff aria-hidden="true" size={18} strokeWidth={2.2} />
+                <MicOff
+                  aria-hidden="true"
+                  size={CHROME_ICON_SIZE}
+                  strokeWidth={CHROME_ICON_STROKE_WIDTH}
+                />
               ) : (
-                <Mic aria-hidden="true" size={18} strokeWidth={2.2} />
+                <Mic
+                  aria-hidden="true"
+                  size={CHROME_ICON_SIZE}
+                  strokeWidth={CHROME_ICON_STROKE_WIDTH}
+                />
               )}
             </button>
           ) : null}
@@ -77,7 +92,11 @@ export function StudioTopChrome({
               onClick={liveCameraControl.onSwitch}
               type="button"
             >
-              <SwitchCamera aria-hidden="true" size={18} strokeWidth={2.2} />
+              <SwitchCamera
+                aria-hidden="true"
+                size={CHROME_ICON_SIZE}
+                strokeWidth={CHROME_ICON_STROKE_WIDTH}
+              />
             </button>
           ) : null}
         </div>

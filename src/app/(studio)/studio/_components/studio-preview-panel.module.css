@@ -285,7 +285,8 @@
   .previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget {
     width: fit-content;
     max-width: min(100%, 15.5rem);
-    padding: 0;
+    padding-block: 1.25rem;
+    padding-inline: 0;
   }
 
   .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneActionSurface {
@@ -298,7 +299,7 @@
 
   .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneSuccessFeedbackLane {
     padding:
-      max(3rem, calc(var(--safe-area-top) + 2.82rem))
+      max(3.3rem, calc(var(--safe-area-top) + 3.12rem))
       max(0.34rem, calc(var(--safe-area-right) + 0.06rem))
       0
       max(0.34rem, calc(var(--safe-area-left) + 0.06rem));
