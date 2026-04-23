@@ -1,6 +1,6 @@
 "use client";
 
-import { Room, RoomEvent, Track, type LocalTrackPublication } from "livekit-client";
+import { Room, RoomEvent, Track } from "livekit-client";
 
 type PublisherTokenResponse = {
   server_url: string;
@@ -24,24 +24,6 @@ type StudioPublisherConnectionResult =
   | {
       kind: "degraded";
     };
-
-export type StudioPublisherLiveVideoSwitchAttemptResult =
-  | {
-      kind: "success";
-    }
-  | {
-      kind: "no_active_live_video";
-    }
-  | {
-      kind: "blocked" | "unsupported" | "degraded";
-    };
-
-export type StudioPublisherFacingMode = "user" | "environment";
-
-export type StudioPublisherLiveVideoSwitchRequest = Readonly<{
-  deviceId: string;
-  preferredFacingMode?: StudioPublisherFacingMode | null;
-}>;
 
 export async function fetchStudioPublisherToken(): Promise<StudioPublisherTokenFetchResult> {
   try {
@@ -134,92 +116,6 @@ export async function publishStudioPreviewTracks(room: Room, stream: MediaStream
     return true;
   } catch {
     return false;
-  }
-}
-
-export function readStudioPublisherCameraPublication(
-  room: Room | null
-): LocalTrackPublication | null {
-  const publication = room?.localParticipant.getTrackPublication(Track.Source.Camera);
-
-  if (!publication?.track) {
-    return null;
-  }
-
-  return publication;
-}
-
-function readStudioPublisherCameraOwner(room: Room | null) {
-  return readStudioPublisherCameraPublication(room)?.videoTrack ?? null;
-}
-
-function mapStudioPublisherLiveVideoSwitchError(
-  error: unknown
-): Exclude<StudioPublisherLiveVideoSwitchAttemptResult, { kind: "success" | "no_active_live_video" }> {
-  if (
-    error instanceof DOMException &&
-    ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
-  ) {
-    return {
-      kind: "blocked"
-    };
-  }
-
-  if (
-    error instanceof DOMException &&
-    [
-      "NotFoundError",
-      "OverconstrainedError",
-      "SecurityError",
-      "NotSupportedError"
-    ].includes(error.name)
-  ) {
-    return {
-      kind: "unsupported"
-    };
-  }
-
-  return {
-    kind: "degraded"
-  };
-}
-
-export async function switchStudioPublisherLiveVideo(
-  room: Room | null,
-  input: StudioPublisherLiveVideoSwitchRequest
-): Promise<StudioPublisherLiveVideoSwitchAttemptResult> {
-  const currentVideoTrack = readStudioPublisherCameraOwner(room);
-
-  if (!currentVideoTrack) {
-    return {
-      kind: "no_active_live_video"
-    };
-  }
-
-  try {
-    if (input.preferredFacingMode) {
-      await currentVideoTrack.restartTrack({
-        facingMode: input.preferredFacingMode
-      });
-
-      return {
-        kind: "success"
-      };
-    }
-
-    const didSwitch = await currentVideoTrack.setDeviceId(input.deviceId);
-
-    if (!didSwitch) {
-      return {
-        kind: "degraded"
-      };
-    }
-
-    return {
-      kind: "success"
-    };
-  } catch (error) {
-    return mapStudioPublisherLiveVideoSwitchError(error);
   }
 }
 

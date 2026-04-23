@@ -1,4 +1,4 @@
-import { Mic, MicOff, SwitchCamera, X } from "lucide-react";
+import { Mic, MicOff, X } from "lucide-react";
 
 import styles from "./studio-top-chrome.module.css";
 
@@ -11,14 +11,8 @@ export type StudioLiveMicControl = Readonly<{
   onToggle: () => void;
 }>;
 
-export type StudioLiveCameraControl = Readonly<{
-  isPending: boolean;
-  onSwitch: () => void;
-}>;
-
 type StudioTopChromeProps = Readonly<{
   closeDisabled?: boolean;
-  liveCameraControl?: StudioLiveCameraControl | null;
   liveMicControl?: StudioLiveMicControl | null;
   onRequestClose: () => void;
   username?: string;
@@ -26,7 +20,6 @@ type StudioTopChromeProps = Readonly<{
 
 export function StudioTopChrome({
   closeDisabled = false,
-  liveCameraControl = null,
   liveMicControl = null,
   onRequestClose,
   username
@@ -56,7 +49,7 @@ export function StudioTopChrome({
           <p className={`t-label ${styles.usernameLabel}`}>@{username}</p>
         ) : null}
       </div>
-      {liveMicControl || liveCameraControl ? (
+      {liveMicControl ? (
         <div className={styles.trailingCluster}>
           {liveMicControl ? (
             <button
@@ -81,22 +74,6 @@ export function StudioTopChrome({
                   strokeWidth={CHROME_ICON_STROKE_WIDTH}
                 />
               )}
-            </button>
-          ) : null}
-          {liveCameraControl ? (
-            <button
-              aria-label="Kamerayi degistir"
-              className={styles.utilityButton}
-              data-state="active"
-              disabled={liveCameraControl.isPending}
-              onClick={liveCameraControl.onSwitch}
-              type="button"
-            >
-              <SwitchCamera
-                aria-hidden="true"
-                size={CHROME_ICON_SIZE}
-                strokeWidth={CHROME_ICON_STROKE_WIDTH}
-              />
             </button>
           ) : null}
         </div>

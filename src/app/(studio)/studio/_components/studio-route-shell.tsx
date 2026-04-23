@@ -4,11 +4,7 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
 
-import {
-  StudioTopChrome,
-  type StudioLiveCameraControl,
-  type StudioLiveMicControl
-} from "./StudioTopChrome";
+import { StudioTopChrome, type StudioLiveMicControl } from "./StudioTopChrome";
 import styles from "./studio.module.css";
 
 type StudioRouteShellProps = Readonly<{
@@ -16,7 +12,6 @@ type StudioRouteShellProps = Readonly<{
   closeDisabled?: boolean;
   closeHref?: string;
   layout?: "page" | "scene";
-  liveCameraControl?: StudioLiveCameraControl | null;
   liveMicControl?: StudioLiveMicControl | null;
   onRequestClose?: () => void;
   surface?: "default" | "approved";
@@ -28,7 +23,6 @@ export function StudioRouteShell({
   closeDisabled = false,
   closeHref = "/",
   layout = "page",
-  liveCameraControl = null,
   liveMicControl = null,
   onRequestClose,
   surface = "default",
@@ -81,7 +75,6 @@ export function StudioRouteShell({
         {isApprovedSceneChrome && onRequestClose ? (
           <StudioTopChrome
             closeDisabled={closeDisabled}
-            liveCameraControl={liveCameraControl}
             liveMicControl={liveMicControl}
             onRequestClose={onRequestClose}
             username={username}

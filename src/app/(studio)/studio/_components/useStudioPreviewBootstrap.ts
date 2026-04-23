@@ -56,39 +56,6 @@ export function useStudioPreviewBootstrap() {
 
   const getPreviewStream = useCallback(() => streamRef.current, []);
 
-  const replacePreviewVideoTrack = useCallback(
-    async (nextVideoTrack: MediaStreamTrack): Promise<boolean> => {
-      const currentPreviewStream = streamRef.current;
-      const currentPreviewVideoTrack = currentPreviewStream?.getVideoTracks()[0] ?? null;
-      const videoElement = videoRef.current;
-
-      if (!currentPreviewStream || !currentPreviewVideoTrack || !videoElement) {
-        return false;
-      }
-
-      const replacementVideoTrack = nextVideoTrack.clone();
-      const preservedNonVideoTracks = currentPreviewStream
-        .getTracks()
-        .filter((track) => track.kind !== "video");
-      const nextPreviewStream = new MediaStream([
-        ...preservedNonVideoTracks,
-        replacementVideoTrack
-      ]);
-      const didAttach = await attachStudioPreviewStream(videoElement, nextPreviewStream);
-
-      if (!didAttach) {
-        replacementVideoTrack.stop();
-        await attachStudioPreviewStream(videoElement, currentPreviewStream);
-        return false;
-      }
-
-      streamRef.current = nextPreviewStream;
-      currentPreviewStream.getVideoTracks().forEach((track) => track.stop());
-      return true;
-    },
-    []
-  );
-
   const runPreviewAttempt = useCallback(async (isInitialAttempt = false) => {
     attemptIdRef.current += 1;
     const attemptId = attemptIdRef.current;
@@ -182,7 +149,6 @@ export function useStudioPreviewBootstrap() {
     getPreviewStream,
     isInitialBootstrapPending,
     previewState,
-    replacePreviewVideoTrack,
     retryPreview: runPreviewAttempt,
     videoRef
   };
