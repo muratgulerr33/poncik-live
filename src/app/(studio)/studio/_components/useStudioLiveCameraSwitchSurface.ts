@@ -9,8 +9,6 @@ import type {
 
 type UseStudioLiveCameraSwitchSurfaceArgs = Readonly<{
   catchUpPreviewAfterSwitch: () => Promise<boolean>;
-  preparePreviewForReverseSwitch: () => Promise<boolean>;
-  restorePreviewAfterFailedReverseSwitch: () => Promise<boolean>;
   switchActiveLiveVideo: (
     input: StudioPublisherLiveVideoSwitchRequest
   ) => Promise<StudioPublisherLiveVideoSwitchAttemptResult>;
@@ -27,8 +25,6 @@ export type StudioLiveCameraSwitchResult =
 
 export function useStudioLiveCameraSwitchSurface({
   catchUpPreviewAfterSwitch,
-  preparePreviewForReverseSwitch,
-  restorePreviewAfterFailedReverseSwitch,
   switchActiveLiveVideo
 }: UseStudioLiveCameraSwitchSurfaceArgs) {
   const isPendingRef = useRef(false);
@@ -46,27 +42,15 @@ export function useStudioLiveCameraSwitchSurface({
       setIsPending(true);
 
       try {
-        const didReleasePreviewForReverseSwitch =
-          input.preferredFacingMode === "user"
-            ? await preparePreviewForReverseSwitch()
-            : false;
         const switchResult = await switchActiveLiveVideo(input);
 
         if (switchResult.kind !== "success") {
-          if (didReleasePreviewForReverseSwitch) {
-            await restorePreviewAfterFailedReverseSwitch();
-          }
-
           return switchResult;
         }
 
         const didCatchUpPreview = await catchUpPreviewAfterSwitch();
 
         if (!didCatchUpPreview) {
-          if (didReleasePreviewForReverseSwitch) {
-            await restorePreviewAfterFailedReverseSwitch();
-          }
-
           return {
             kind: "preview_failed"
           };
@@ -80,12 +64,7 @@ export function useStudioLiveCameraSwitchSurface({
         setIsPending(false);
       }
     },
-    [
-      catchUpPreviewAfterSwitch,
-      preparePreviewForReverseSwitch,
-      restorePreviewAfterFailedReverseSwitch,
-      switchActiveLiveVideo
-    ]
+    [catchUpPreviewAfterSwitch, switchActiveLiveVideo]
   );
 
   return {
