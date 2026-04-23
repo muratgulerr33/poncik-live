@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Room,
-  RoomEvent,
-  Track,
-  createLocalVideoTrack,
-  type LocalTrackPublication,
-  type LocalVideoTrack,
-  type TrackPublishOptions,
-  type VideoCaptureOptions
-} from "livekit-client";
+import { Room, RoomEvent, Track, type LocalTrackPublication } from "livekit-client";
 
 type PublisherTokenResponse = {
   server_url: string;
@@ -51,16 +42,6 @@ export type StudioPublisherLiveVideoSwitchRequest = Readonly<{
   deviceId: string;
   preferredFacingMode?: StudioPublisherFacingMode | null;
 }>;
-
-type StudioPublisherCameraSnapshot = Readonly<{
-  publication: LocalTrackPublication;
-  track: LocalVideoTrack;
-  deviceId: string | null;
-  facingMode: StudioPublisherFacingMode | null;
-  publishOptions: TrackPublishOptions;
-}>;
-
-const STUDIO_PUBLISHER_RELEASE_SETTLE_MS = 150;
 
 export async function fetchStudioPublisherToken(): Promise<StudioPublisherTokenFetchResult> {
   try {
@@ -172,121 +153,6 @@ function readStudioPublisherCameraOwner(room: Room | null) {
   return readStudioPublisherCameraPublication(room)?.videoTrack ?? null;
 }
 
-function readStudioPublisherFacingMode(
-  facingMode: MediaTrackSettings["facingMode"]
-): StudioPublisherFacingMode | null {
-  return facingMode === "user" || facingMode === "environment" ? facingMode : null;
-}
-
-function readStudioPublisherCameraPublishOptions(
-  publication: LocalTrackPublication
-): TrackPublishOptions {
-  return publication.options
-    ? {
-        ...publication.options,
-        source: Track.Source.Camera
-      }
-    : {
-        source: Track.Source.Camera
-      };
-}
-
-function readStudioPublisherCameraSnapshot(
-  room: Room | null
-): StudioPublisherCameraSnapshot | null {
-  const publication = readStudioPublisherCameraPublication(room);
-  const track = publication?.videoTrack;
-
-  if (!publication || !track) {
-    return null;
-  }
-
-  const sourceTrackSettings = track.getSourceTrackSettings();
-  const deviceId =
-    typeof sourceTrackSettings.deviceId === "string" &&
-    sourceTrackSettings.deviceId.length > 0
-      ? sourceTrackSettings.deviceId
-      : null;
-
-  return {
-    publication,
-    track,
-    deviceId,
-    facingMode: readStudioPublisherFacingMode(sourceTrackSettings.facingMode),
-    publishOptions: readStudioPublisherCameraPublishOptions(publication)
-  };
-}
-
-function waitStudioPublisherReleaseSettle() {
-  return new Promise<void>((resolve) => {
-    setTimeout(resolve, STUDIO_PUBLISHER_RELEASE_SETTLE_MS);
-  });
-}
-
-function isStudioPublisherNotReadableRetryableError(error: unknown) {
-  return error instanceof DOMException && error.name === "NotReadableError";
-}
-
-async function publishStudioPublisherFreshTargetVideoTrack(
-  localParticipant: Room["localParticipant"],
-  facingMode: StudioPublisherFacingMode,
-  publishOptions: TrackPublishOptions
-) {
-  let freshTargetVideoTrack: LocalVideoTrack | null = null;
-
-  try {
-    freshTargetVideoTrack = await createLocalVideoTrack({
-      facingMode
-    });
-    await localParticipant.publishTrack(freshTargetVideoTrack, publishOptions);
-  } catch (error) {
-    freshTargetVideoTrack?.stop();
-    throw error;
-  }
-}
-
-function resolveStudioPublisherRollbackVideoCaptureOptions(
-  snapshot: StudioPublisherCameraSnapshot
-): VideoCaptureOptions | null {
-  if (snapshot.deviceId) {
-    return {
-      deviceId: snapshot.deviceId
-    };
-  }
-
-  if (snapshot.facingMode) {
-    return {
-      facingMode: snapshot.facingMode
-    };
-  }
-
-  return null;
-}
-
-async function rollbackStudioPublisherCameraSnapshot(
-  room: Room | null,
-  snapshot: StudioPublisherCameraSnapshot
-) {
-  const localParticipant = room?.localParticipant ?? null;
-  const rollbackVideoCaptureOptions =
-    resolveStudioPublisherRollbackVideoCaptureOptions(snapshot);
-
-  if (!localParticipant || !rollbackVideoCaptureOptions) {
-    return false;
-  }
-
-  let rollbackTrack: LocalVideoTrack | null = null;
-
-  try {
-    rollbackTrack = await createLocalVideoTrack(rollbackVideoCaptureOptions);
-    await localParticipant.publishTrack(rollbackTrack, snapshot.publishOptions);
-    return true;
-  } catch {
-    rollbackTrack?.stop();
-    return false;
-  }
-}
-
 function mapStudioPublisherLiveVideoSwitchError(
   error: unknown
 ): Exclude<StudioPublisherLiveVideoSwitchAttemptResult, { kind: "success" | "no_active_live_video" }> {
@@ -322,10 +188,9 @@ export async function switchStudioPublisherLiveVideo(
   room: Room | null,
   input: StudioPublisherLiveVideoSwitchRequest
 ): Promise<StudioPublisherLiveVideoSwitchAttemptResult> {
-  const localParticipant = room?.localParticipant ?? null;
   const currentVideoTrack = readStudioPublisherCameraOwner(room);
 
-  if (!currentVideoTrack || !localParticipant) {
+  if (!currentVideoTrack) {
     return {
       kind: "no_active_live_video"
     };
@@ -333,54 +198,9 @@ export async function switchStudioPublisherLiveVideo(
 
   try {
     if (input.preferredFacingMode) {
-      const snapshot = readStudioPublisherCameraSnapshot(room);
-
-      if (!snapshot) {
-        throw new Error("missing_current_camera_snapshot");
-      }
-
-      const unpublishedPublication = await localParticipant.unpublishTrack(
-        snapshot.track,
-        true
-      );
-
-      if (!unpublishedPublication) {
-        throw new Error("failed_to_unpublish_current_camera");
-      }
-
-      await waitStudioPublisherReleaseSettle();
-
-      let primaryFailure: unknown;
-
-      try {
-        await publishStudioPublisherFreshTargetVideoTrack(
-          localParticipant,
-          input.preferredFacingMode,
-          snapshot.publishOptions
-        );
-      } catch (error) {
-        primaryFailure = error;
-
-        if (isStudioPublisherNotReadableRetryableError(error)) {
-          try {
-            await waitStudioPublisherReleaseSettle();
-            await publishStudioPublisherFreshTargetVideoTrack(
-              localParticipant,
-              input.preferredFacingMode,
-              snapshot.publishOptions
-            );
-            return {
-              kind: "success"
-            };
-          } catch {
-            await rollbackStudioPublisherCameraSnapshot(room, snapshot);
-            return mapStudioPublisherLiveVideoSwitchError(primaryFailure);
-          }
-        }
-
-        await rollbackStudioPublisherCameraSnapshot(room, snapshot);
-        return mapStudioPublisherLiveVideoSwitchError(primaryFailure);
-      }
+      await currentVideoTrack.restartTrack({
+        facingMode: input.preferredFacingMode
+      });
 
       return {
         kind: "success"
