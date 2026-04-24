@@ -771,5 +771,3 @@ It does not establish:
 * final chat history readability
 * keyboard-open composer acceptance
 
-```
-```
