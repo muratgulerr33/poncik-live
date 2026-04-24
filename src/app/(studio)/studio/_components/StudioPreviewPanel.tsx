@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
+import { StudioChatOwners } from "./StudioChatOwners";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import type { StudioLiveMicControl } from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
@@ -397,6 +398,12 @@ export function StudioPreviewPanel({
                 />
               ) : null}
             </div>
+
+            <StudioChatOwners
+              effectiveLifecycleKind={effectiveLifecycleKind}
+              isStarting={isStarting}
+              isStopping={isStopping}
+            />
 
             <div className={styles.sceneActionSurface}>
               <div className={styles.sceneActionBudget}>{lifecycleActions}</div>
