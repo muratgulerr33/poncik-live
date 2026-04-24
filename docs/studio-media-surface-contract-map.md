@@ -1,5 +1,3 @@
-
-````md
 ---
 title: Studio Media Surface Contract Map
 status: evidence-map
@@ -139,7 +137,7 @@ StudioShell
                   → StudioLifecycleActions
       → StudioTopChrome
         → top chrome lane
-````
+```
 
 Important correction:
 
