@@ -1,20 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import styles from "./studio-chat-owners.module.css";
+import { StudioChatOwnersSurface } from "./StudioChatOwnersSurface";
 
 type StudioChatOwnersProps = Readonly<{
   effectiveLifecycleKind: "idle" | "live" | "degraded";
   isStarting: boolean;
   isStopping: boolean;
+  username: string;
 }>;
 
 type ChatOwnerPhase = "hidden" | "live" | "exiting";
+export type StudioChatMessageRow = Readonly<{
+  id: number;
+  username: string;
+  text: string;
+}>;
 
 const CHAT_OWNER_EXIT_DURATION_MS = 220;
 
-function clearExitTimeout(timeoutRef: React.RefObject<ReturnType<typeof setTimeout> | null>) {
+function clearScheduledTimeout(timeoutRef: {
+  current: ReturnType<typeof setTimeout> | null;
+}) {
   if (!timeoutRef.current) {
     return;
   }
@@ -26,18 +34,44 @@ function clearExitTimeout(timeoutRef: React.RefObject<ReturnType<typeof setTimeo
 export function StudioChatOwners({
   effectiveLifecycleKind,
   isStarting,
-  isStopping
+  isStopping,
+  username
 }: StudioChatOwnersProps) {
   const [phase, setPhase] = useState<ChatOwnerPhase>("hidden");
+  const [inputValue, setInputValue] = useState("");
+  const [messages, setMessages] = useState<StudioChatMessageRow[]>([]);
   const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const phaseSyncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const interactionResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  const latestScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasPendingExitRef = useRef(false);
   const hasBeenLiveRef = useRef(false);
+  const hasInitializedLiveStateRef = useRef(false);
+  const nextMessageIdRef = useRef(1);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const overlayScrollRef = useRef<HTMLDivElement | null>(null);
   const isLive = effectiveLifecycleKind === "live";
   const isActive = phase === "live";
+  const hasRenderableUsername = username.trim().length > 0;
+
+  const createMessageRow = useCallback(
+    (text: string): StudioChatMessageRow => {
+      const nextId = nextMessageIdRef.current;
+      nextMessageIdRef.current += 1;
+
+      return {
+        id: nextId,
+        username,
+        text
+      };
+    },
+    [username]
+  );
 
   const schedulePhaseUpdate = (nextPhase: ChatOwnerPhase) => {
-    clearExitTimeout(phaseSyncTimeoutRef);
+    clearScheduledTimeout(phaseSyncTimeoutRef);
     phaseSyncTimeoutRef.current = setTimeout(() => {
       phaseSyncTimeoutRef.current = null;
       setPhase((currentPhase) =>
@@ -46,28 +80,94 @@ export function StudioChatOwners({
     }, 0);
   };
 
+  const scheduleScrollToLatest = useCallback(() => {
+    clearScheduledTimeout(latestScrollTimeoutRef);
+    latestScrollTimeoutRef.current = setTimeout(() => {
+      const overlayElement = overlayScrollRef.current;
+
+      latestScrollTimeoutRef.current = null;
+
+      if (!overlayElement) {
+        return;
+      }
+
+      overlayElement.scrollTo({
+        top: overlayElement.scrollHeight,
+        behavior: "smooth"
+      });
+    }, 0);
+  }, []);
+
+  const scheduleInteractionReset = useCallback(() => {
+    clearScheduledTimeout(interactionResetTimeoutRef);
+    interactionResetTimeoutRef.current = setTimeout(() => {
+      interactionResetTimeoutRef.current = null;
+      nextMessageIdRef.current = 1;
+      setInputValue("");
+      setMessages([]);
+    }, 0);
+  }, []);
+
+  const handleInputValueChange = useCallback((nextValue: string) => {
+    setInputValue(nextValue);
+  }, []);
+
+  const handleSubmitMessage = useCallback(() => {
+    if (!isActive) {
+      return;
+    }
+
+    const trimmedValue = inputValue.trim();
+
+    if (!trimmedValue) {
+      return;
+    }
+
+    setMessages((currentMessages) => [
+      ...currentMessages,
+      createMessageRow(trimmedValue)
+    ]);
+    setInputValue("");
+    inputRef.current?.blur();
+    scheduleScrollToLatest();
+  }, [createMessageRow, inputValue, isActive, scheduleScrollToLatest]);
+
   useEffect(() => {
     return () => {
-      clearExitTimeout(exitTimeoutRef);
-      clearExitTimeout(phaseSyncTimeoutRef);
+      clearScheduledTimeout(exitTimeoutRef);
+      clearScheduledTimeout(interactionResetTimeoutRef);
+      clearScheduledTimeout(latestScrollTimeoutRef);
+      clearScheduledTimeout(phaseSyncTimeoutRef);
     };
   }, []);
 
   useEffect(() => {
+    if (!hasRenderableUsername) {
+      return;
+    }
+
     if (isLive && !isStopping) {
-      clearExitTimeout(exitTimeoutRef);
-      clearExitTimeout(phaseSyncTimeoutRef);
+      clearScheduledTimeout(exitTimeoutRef);
+      clearScheduledTimeout(phaseSyncTimeoutRef);
       hasPendingExitRef.current = false;
       hasBeenLiveRef.current = true;
       schedulePhaseUpdate("live");
+
+      if (!hasInitializedLiveStateRef.current) {
+        hasInitializedLiveStateRef.current = true;
+        scheduleInteractionReset();
+      }
+
       return;
     }
 
     if (isStarting) {
-      clearExitTimeout(exitTimeoutRef);
-      clearExitTimeout(phaseSyncTimeoutRef);
+      clearScheduledTimeout(exitTimeoutRef);
+      clearScheduledTimeout(phaseSyncTimeoutRef);
       hasPendingExitRef.current = false;
       hasBeenLiveRef.current = false;
+      hasInitializedLiveStateRef.current = false;
+      scheduleInteractionReset();
       schedulePhaseUpdate("hidden");
       return;
     }
@@ -77,69 +177,50 @@ export function StudioChatOwners({
         return;
       }
 
-      clearExitTimeout(exitTimeoutRef);
+      clearScheduledTimeout(exitTimeoutRef);
       hasPendingExitRef.current = true;
       hasBeenLiveRef.current = false;
+      hasInitializedLiveStateRef.current = false;
       schedulePhaseUpdate("exiting");
       exitTimeoutRef.current = setTimeout(() => {
         hasPendingExitRef.current = false;
-        exitTimeoutRef.current = null;
-        setPhase("hidden");
-      }, CHAT_OWNER_EXIT_DURATION_MS);
+      exitTimeoutRef.current = null;
+      setPhase("hidden");
+      setInputValue("");
+      setMessages([]);
+    }, CHAT_OWNER_EXIT_DURATION_MS);
       return;
     }
 
-    clearExitTimeout(exitTimeoutRef);
-    clearExitTimeout(phaseSyncTimeoutRef);
+    clearScheduledTimeout(exitTimeoutRef);
+    clearScheduledTimeout(phaseSyncTimeoutRef);
     hasPendingExitRef.current = false;
+    hasInitializedLiveStateRef.current = false;
+    scheduleInteractionReset();
     schedulePhaseUpdate("hidden");
-  }, [isLive, isStarting, isStopping]);
+  }, [
+    hasRenderableUsername,
+    isLive,
+    isStarting,
+    isStopping,
+    scheduleInteractionReset
+  ]);
 
-  if (phase === "hidden") {
+  if (phase === "hidden" || !hasRenderableUsername) {
     return null;
   }
 
   return (
-    <div className={styles.chatLayer} data-phase={phase}>
-      <section
-        aria-label="Sohbet mesaj katmani"
-        className={styles.overlayOwner}
-        data-active={isActive ? "true" : "false"}
-        data-owner="message-overlay"
-      >
-        <p className={styles.overlayEyebrow}>Sohbet</p>
-        <div className={styles.overlayStack}>
-          <article className={styles.overlayBubble} data-tone="primary">
-            <p className={styles.overlayAuthor}>Yayin akisi</p>
-            <p className={styles.overlayBody}>Mesajlar canli yayin boyunca burada gorunur.</p>
-          </article>
-          <article className={styles.overlayBubble} data-tone="secondary">
-            <p className={styles.overlayAuthor}>Hazir gorunum</p>
-            <p className={styles.overlayBody}>Mesaj katmani yalniz canli durumda acik kalir.</p>
-          </article>
-        </div>
-      </section>
-
-      <section
-        aria-label="Sohbet yazma alani"
-        className={styles.composerOwner}
-        data-active={isActive ? "true" : "false"}
-        data-owner="composer-dock"
-      >
-        <div className={styles.composerHeader}>
-          <p className={styles.composerTitle}>Canli sohbet</p>
-          <span className={styles.composerStatus}>{isActive ? "Hazir" : "Kapaniyor"}</span>
-        </div>
-        <label className={styles.composerField}>
-          <span className={styles.composerLabel}>Mesaj yaz</span>
-          <textarea
-            className={styles.composerTextarea}
-            disabled={!isActive}
-            placeholder="Canliyken sohbet yazma alani burada yer alir."
-            rows={3}
-          />
-        </label>
-      </section>
-    </div>
+    <StudioChatOwnersSurface
+      inputRef={inputRef}
+      inputValue={inputValue}
+      isActive={isActive}
+      messages={messages}
+      overlayScrollRef={overlayScrollRef}
+      phase={phase}
+      username={username}
+      onInputValueChange={handleInputValueChange}
+      onSubmitMessage={handleSubmitMessage}
+    />
   );
 }

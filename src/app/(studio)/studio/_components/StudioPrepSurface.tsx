@@ -102,6 +102,7 @@ export function StudioPrepSurface({
           lifecycle={lifecycle}
           onExitControlChange={setExitControl}
           onLiveMicControlChange={setLiveMicControl}
+          username={username}
         />
       </section>
 

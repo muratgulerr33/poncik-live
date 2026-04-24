@@ -26,6 +26,7 @@ type StudioPreviewPanelProps = {
   };
   onExitControlChange?: (state: StudioExitControlState) => void;
   onLiveMicControlChange?: (liveMicControl: StudioLiveMicControl | null) => void;
+  username: string;
 };
 
 type StartSuccessFeedbackSnapshot = {
@@ -80,7 +81,8 @@ function scheduleStartSuccessFeedbackDeferredClear() {
 export function StudioPreviewPanel({
   lifecycle,
   onExitControlChange,
-  onLiveMicControlChange
+  onLiveMicControlChange,
+  username
 }: StudioPreviewPanelProps) {
   const [isSecondTriggerBlockActive, setIsSecondTriggerBlockActive] = useState(false);
   const [hasVisibleStartSuccessFeedback, setHasVisibleStartSuccessFeedback] =
@@ -403,6 +405,7 @@ export function StudioPreviewPanel({
               effectiveLifecycleKind={effectiveLifecycleKind}
               isStarting={isStarting}
               isStopping={isStopping}
+              username={username}
             />
 
             <div className={styles.sceneActionSurface}>
