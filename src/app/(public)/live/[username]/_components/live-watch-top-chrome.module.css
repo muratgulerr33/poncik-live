@@ -34,7 +34,16 @@
   min-block-size: var(--chrome-touch-target);
 }
 
-.closeButton {
+.trailingCluster {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.closeButton,
+.audioToggleButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -63,12 +72,23 @@
     transform 140ms ease;
 }
 
-.closeButton:focus-visible {
+.audioToggleButton[data-state="muted"] {
+  background: color-mix(
+    in oklch,
+    var(--surface-1) var(--chrome-surface-alpha),
+    transparent
+  );
+  color: color-mix(in oklch, var(--foreground) 76%, var(--surface-1));
+}
+
+.closeButton:focus-visible,
+.audioToggleButton:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 4px;
 }
 
-.closeButton:active {
+.closeButton:active,
+.audioToggleButton:active {
   transform: scale(0.965);
 }
 
@@ -131,7 +151,8 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .closeButton:hover {
+  .closeButton:hover,
+  .audioToggleButton:hover {
     background: color-mix(in oklch, var(--surface-2) 18%, transparent);
     border-color: color-mix(in oklch, var(--foreground) 15%, transparent);
     box-shadow:

@@ -18,7 +18,7 @@ export default async function LivePage({ params }: LivePageProps) {
   return (
     <Suspense
       fallback={
-        <LiveWatchShell username={username}>
+        <LiveWatchShell audioToggleEnabled={false} username={username}>
           <LiveWatchLoadingState />
         </LiveWatchShell>
       }

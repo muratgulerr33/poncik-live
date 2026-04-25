@@ -3,6 +3,7 @@
 import { Track, type RemoteTrack, type Room } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useLiveWatchAudioControl } from "../_components/live-watch-audio-control-context";
 import {
   attachLiveWatchAudioTrack,
   attachLiveWatchVideoTrack,
@@ -24,7 +25,9 @@ type LiveWatchPlaybackState =
   | "degraded";
 
 export function useLiveWatchPlayback(username: string) {
+  const { isMuted } = useLiveWatchAudioControl();
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const isMutedRef = useRef(isMuted);
   const audioTrackCleanupRef = useRef<(() => void) | null>(null);
   const audioTrackRef = useRef<RemoteTrack | null>(null);
   const bindCleanupRef = useRef<(() => void) | null>(null);
@@ -38,6 +41,16 @@ export function useLiveWatchPlayback(username: string) {
   const [playbackMessage, setPlaybackMessage] = useState<string | null>(null);
   const [playbackState, setPlaybackState] =
     useState<LiveWatchPlaybackState>("connecting");
+
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+
+    if (!audioElementRef.current) {
+      return;
+    }
+
+    audioElementRef.current.muted = isMuted;
+  }, [isMuted]);
 
   const clearTrackWaitTimeout = useCallback(() => {
     if (trackWaitTimeoutRef.current === null) {
@@ -150,6 +163,7 @@ export function useLiveWatchPlayback(username: string) {
         detachAudioTrack();
         audioTrackRef.current = track;
         audioTrackCleanupRef.current = bindTrackPlaybackEvents(track);
+        audioElement.muted = isMutedRef.current;
 
         const didAttach = await attachLiveWatchAudioTrack(track, audioElement);
 

@@ -19,7 +19,7 @@ export async function LiveWatchController({
 
   if (view.kind === "live") {
     return (
-      <LiveWatchShell username={view.username}>
+      <LiveWatchShell audioToggleEnabled username={view.username}>
         <LiveWatchPlaybackController username={view.username} />
         <LiveWatchFreshness mode="live" />
       </LiveWatchShell>
@@ -28,7 +28,7 @@ export async function LiveWatchController({
 
   if (view.kind === "ended") {
     return (
-      <LiveWatchShell username={view.username}>
+      <LiveWatchShell audioToggleEnabled={false} username={view.username}>
         <LiveEndedState username={view.username} />
         <LiveWatchFreshness mode="non_live" />
       </LiveWatchShell>
@@ -36,7 +36,7 @@ export async function LiveWatchController({
   }
 
   return (
-    <LiveWatchShell username={view.username}>
+    <LiveWatchShell audioToggleEnabled={false} username={view.username}>
       <LiveUnavailableState username={view.username} />
       <LiveWatchFreshness mode="non_live" />
     </LiveWatchShell>
