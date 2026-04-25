@@ -49,57 +49,6 @@
   );
 }
 
-.chrome {
-  display: flex;
-  align-items: center;
-  min-height: 3.1rem;
-}
-
-.leadingCluster {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.closeButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 1px solid color-mix(in oklch, var(--border) 88%, var(--foreground) 12%);
-  border-radius: 999px;
-  background: color-mix(in oklch, var(--surface-1) 84%, transparent);
-  color: color-mix(in oklch, var(--foreground) 90%, var(--surface-1));
-  cursor: pointer;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 8%, transparent);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    transform 140ms ease;
-}
-
-.closeButton:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 4px;
-}
-
-.closeButton:active {
-  transform: scale(0.97);
-}
-
-.usernameLabel {
-  margin: 0;
-  color: color-mix(in oklch, var(--foreground) 88%, var(--surface-1));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .contentStack {
   display: grid;
   min-height: 0;
@@ -264,19 +213,6 @@
     );
   }
 
-  .chrome {
-    min-height: 2.9rem;
-  }
-
-  .leadingCluster {
-    gap: 0.65rem;
-  }
-
-  .closeButton {
-    width: 2.625rem;
-    height: 2.625rem;
-  }
-
   .frame {
     height: min(calc(100svh - 6.55rem), calc((100vw - 2rem) * 1.25));
     height: min(calc(100dvh - 6.55rem), calc((100vw - 2rem) * 1.25));
@@ -303,24 +239,6 @@
     gap: 0;
     grid-template-rows: minmax(0, 1fr);
     position: relative;
-  }
-
-  .chrome {
-    position: absolute;
-    inset: 0 0 auto;
-    z-index: 2;
-    width: 100%;
-    min-height: 0;
-    padding:
-      max(0.875rem, calc(var(--safe-area-top) + 0.7rem))
-      max(1rem, calc(var(--safe-area-right) + 0.875rem))
-      0
-      max(1rem, calc(var(--safe-area-left) + 0.875rem));
-    background: linear-gradient(
-      180deg,
-      color-mix(in oklch, black 20%, transparent) 0%,
-      transparent 100%
-    );
   }
 
   .contentStack {
@@ -380,10 +298,6 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .closeButton:hover {
-    background: color-mix(in oklch, var(--surface-1) 94%, transparent);
-    border-color: color-mix(in oklch, var(--primary) 24%, var(--border));
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

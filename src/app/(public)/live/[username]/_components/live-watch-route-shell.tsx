@@ -1,11 +1,11 @@
 "use client";
 
-import { X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import styles from "./live-watch.module.css";
+import { LiveWatchTopChrome } from "./LiveWatchTopChrome";
 
 type LiveWatchRouteShellProps = Readonly<{
   children: ReactNode;
@@ -33,20 +33,10 @@ export function LiveWatchRouteShell({
 
   return (
     <div className={styles.shell}>
-      <header className={styles.chrome} aria-label="Canli yayin ust denetimleri">
-        <div className={styles.leadingCluster}>
-          <button
-            aria-label="Canli yayini kapat"
-            className={styles.closeButton}
-            onClick={() => router.back()}
-            type="button"
-          >
-            <X aria-hidden="true" size={18} strokeWidth={2.2} />
-          </button>
-          <p className={`t-label ${styles.usernameLabel}`}>@{username}</p>
-        </div>
-      </header>
-
+      <LiveWatchTopChrome
+        onRequestClose={() => router.back()}
+        username={username}
+      />
       <div className={styles.contentStack}>{children}</div>
     </div>
   );
