@@ -1,12 +1,13 @@
 "use client";
 
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 
 import styles from "./live-watch.module.css";
 
 type LiveWatchPlaybackSurfaceProps = Readonly<{
   audioRef: RefObject<HTMLAudioElement | null>;
   canRetryPlayback: boolean;
+  chatOverlay?: ReactNode;
   playbackMessage: string | null;
   playbackState: "connecting" | "playing" | "playback_blocked" | "degraded";
   onRetryPlayback: () => void;
@@ -17,6 +18,7 @@ type LiveWatchPlaybackSurfaceProps = Readonly<{
 export function LiveWatchPlaybackSurface({
   audioRef,
   canRetryPlayback,
+  chatOverlay,
   playbackMessage,
   playbackState,
   onRetryPlayback,
@@ -34,6 +36,7 @@ export function LiveWatchPlaybackSurface({
           ref={videoRef}
         />
         <audio ref={audioRef} />
+        {chatOverlay}
 
         {playbackState === "playing" && !playbackMessage ? null : (
           <div className={styles.frameOverlay}>

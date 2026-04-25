@@ -1,11 +1,14 @@
 "use client";
 
+import { LiveWatchChatController, type LiveWatchChatAccess } from "./LiveWatchChatController";
 import { LiveWatchPlaybackSurface } from "../_components/LiveWatchPlaybackSurface";
 import { useLiveWatchPlayback } from "./use-live-watch-playback";
 
 export function LiveWatchPlaybackController({
+  chatAccess,
   username
 }: Readonly<{
+  chatAccess: LiveWatchChatAccess;
   username: string;
 }>) {
   const {
@@ -21,6 +24,12 @@ export function LiveWatchPlaybackController({
     <LiveWatchPlaybackSurface
       audioRef={audioRef}
       canRetryPlayback={canRetryPlayback}
+      chatOverlay={
+        <LiveWatchChatController
+          access={chatAccess}
+          isInteractive={playbackState === "playing"}
+        />
+      }
       playbackMessage={playbackMessage}
       playbackState={playbackState}
       onRetryPlayback={() => {
