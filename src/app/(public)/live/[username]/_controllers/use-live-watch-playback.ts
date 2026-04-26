@@ -39,6 +39,7 @@ export function useLiveWatchPlayback(username: string) {
   const videoTrackRef = useRef<RemoteTrack | null>(null);
   const [canRetryPlayback, setCanRetryPlayback] = useState(false);
   const [playbackMessage, setPlaybackMessage] = useState<string | null>(null);
+  const [room, setRoom] = useState<Room | null>(null);
   const [playbackState, setPlaybackState] =
     useState<LiveWatchPlaybackState>("connecting");
 
@@ -85,6 +86,7 @@ export function useLiveWatchPlayback(username: string) {
 
     const room = roomRef.current;
     roomRef.current = null;
+    setRoom(null);
     await disconnectLiveWatchRoom(room);
   }, [clearTrackWaitTimeout, detachAudioTrack, detachVideoTrack]);
 
@@ -250,6 +252,7 @@ export function useLiveWatchPlayback(username: string) {
       }
 
       roomRef.current = connectionResult.room;
+      setRoom(connectionResult.room);
 
       const binding = bindLiveWatchRoom(connectionResult.room, {
         onDisconnected: () => {
@@ -304,6 +307,7 @@ export function useLiveWatchPlayback(username: string) {
     canRetryPlayback,
     playbackMessage,
     playbackState,
+    room,
     retryPlayback,
     videoRef: videoElementRef
   };

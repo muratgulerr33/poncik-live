@@ -16,6 +16,7 @@ export function LiveWatchPlaybackController({
     canRetryPlayback,
     playbackMessage,
     playbackState,
+    room,
     retryPlayback,
     videoRef
   } = useLiveWatchPlayback(username);
@@ -28,6 +29,7 @@ export function LiveWatchPlaybackController({
         <LiveWatchChatController
           access={chatAccess}
           isInteractive={playbackState === "playing"}
+          room={room}
         />
       }
       playbackMessage={playbackMessage}

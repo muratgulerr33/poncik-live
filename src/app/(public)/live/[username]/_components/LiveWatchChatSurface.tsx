@@ -36,15 +36,18 @@ export function LiveWatchChatSurface({
   const isGuest = access.kind === "guest";
   const isComposerVisible = isViewerReady && isInteractive;
   const isGuestActionVisible = isGuest && isInteractive;
+  const isHistoryVisible = isInteractive && messages.length > 0;
+  const hasVisibleChatContent =
+    isHistoryVisible || isComposerVisible || isGuestActionVisible;
   const isSubmitDisabled = !isComposerVisible || draft.trim().length === 0;
 
   return (
     <div
-      aria-hidden={!isInteractive && messages.length === 0}
+      aria-hidden={!hasVisibleChatContent}
       className={styles.chatLayer}
       data-interactive={isInteractive ? "true" : "false"}
     >
-      {messages.length > 0 ? (
+      {isHistoryVisible ? (
         <section aria-label="Sohbet katmanı" className={styles.historyLayer}>
           <div className={styles.historyViewport}>
             <div className={styles.historyScroll} ref={overlayScrollRef}>

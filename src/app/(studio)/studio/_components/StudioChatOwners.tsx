@@ -1,24 +1,34 @@
 "use client";
 
+import type { Room } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import {
+  bindStudioChatRealtime,
+  publishStudioChatMessage,
+  type StudioRealtimeChatMessage
+} from "../_lib/studio-chat-realtime-transport";
 import { StudioChatOwnersSurface } from "./StudioChatOwnersSurface";
 
 type StudioChatOwnersProps = Readonly<{
   effectiveLifecycleKind: "idle" | "live" | "degraded";
   isStarting: boolean;
   isStopping: boolean;
+  room: Room | null;
   username: string;
 }>;
 
 type ChatOwnerPhase = "hidden" | "live" | "exiting";
 export type StudioChatMessageRow = Readonly<{
-  id: number;
+  id: string;
   username: string;
   text: string;
 }>;
 
 const CHAT_OWNER_EXIT_DURATION_MS = 220;
+const CHAT_HISTORY_CAP = 100;
+const DUPLICATE_KEY_CAP = 200;
+const SEND_COOLDOWN_MS = 900;
 
 function clearScheduledTimeout(timeoutRef: {
   current: ReturnType<typeof setTimeout> | null;
@@ -35,6 +45,7 @@ export function StudioChatOwners({
   effectiveLifecycleKind,
   isStarting,
   isStopping,
+  room,
   username
 }: StudioChatOwnersProps) {
   const [phase, setPhase] = useState<ChatOwnerPhase>("hidden");
@@ -49,26 +60,39 @@ export function StudioChatOwners({
   const hasPendingExitRef = useRef(false);
   const hasBeenLiveRef = useRef(false);
   const hasInitializedLiveStateRef = useRef(false);
-  const nextMessageIdRef = useRef(1);
+  const duplicateKeyQueueRef = useRef<string[]>([]);
+  const duplicateKeySetRef = useRef(new Set<string>());
+  const lastSentAtRef = useRef(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const overlayScrollRef = useRef<HTMLDivElement | null>(null);
   const isLive = effectiveLifecycleKind === "live";
   const isActive = phase === "live";
   const hasRenderableUsername = username.trim().length > 0;
 
-  const createMessageRow = useCallback(
-    (text: string): StudioChatMessageRow => {
-      const nextId = nextMessageIdRef.current;
-      nextMessageIdRef.current += 1;
+  const appendMessageRow = useCallback((message: StudioChatMessageRow) => {
+    setMessages((currentMessages) =>
+      [...currentMessages, message].slice(-CHAT_HISTORY_CAP)
+    );
+  }, []);
 
-      return {
-        id: nextId,
-        username,
-        text
-      };
-    },
-    [username]
-  );
+  const rememberDuplicateKey = useCallback((duplicateKey: string) => {
+    if (duplicateKeySetRef.current.has(duplicateKey)) {
+      return false;
+    }
+
+    duplicateKeySetRef.current.add(duplicateKey);
+    duplicateKeyQueueRef.current.push(duplicateKey);
+
+    while (duplicateKeyQueueRef.current.length > DUPLICATE_KEY_CAP) {
+      const oldestKey = duplicateKeyQueueRef.current.shift();
+
+      if (oldestKey) {
+        duplicateKeySetRef.current.delete(oldestKey);
+      }
+    }
+
+    return true;
+  }, []);
 
   const schedulePhaseUpdate = (nextPhase: ChatOwnerPhase) => {
     clearScheduledTimeout(phaseSyncTimeoutRef);
@@ -102,7 +126,9 @@ export function StudioChatOwners({
     clearScheduledTimeout(interactionResetTimeoutRef);
     interactionResetTimeoutRef.current = setTimeout(() => {
       interactionResetTimeoutRef.current = null;
-      nextMessageIdRef.current = 1;
+      duplicateKeyQueueRef.current = [];
+      duplicateKeySetRef.current.clear();
+      lastSentAtRef.current = 0;
       setInputValue("");
       setMessages([]);
     }, 0);
@@ -112,8 +138,32 @@ export function StudioChatOwners({
     setInputValue(nextValue);
   }, []);
 
+  const handleReceiveMessage = useCallback(
+    (message: StudioRealtimeChatMessage) => {
+      const duplicateKey = `${message.participantIdentity}:${message.id}`;
+
+      if (!rememberDuplicateKey(duplicateKey)) {
+        return;
+      }
+
+      appendMessageRow({
+        id: message.id,
+        text: message.text,
+        username: message.username
+      });
+      scheduleScrollToLatest();
+    },
+    [appendMessageRow, rememberDuplicateKey, scheduleScrollToLatest]
+  );
+
   const handleSubmitMessage = useCallback(() => {
-    if (!isActive) {
+    if (!isActive || !room) {
+      return;
+    }
+
+    const now = Date.now();
+
+    if (now - lastSentAtRef.current < SEND_COOLDOWN_MS) {
       return;
     }
 
@@ -123,14 +173,35 @@ export function StudioChatOwners({
       return;
     }
 
-    setMessages((currentMessages) => [
-      ...currentMessages,
-      createMessageRow(trimmedValue)
-    ]);
-    setInputValue("");
-    inputRef.current?.blur();
-    scheduleScrollToLatest();
-  }, [createMessageRow, inputValue, isActive, scheduleScrollToLatest]);
+    lastSentAtRef.current = now;
+
+    void publishStudioChatMessage(room, trimmedValue, username).then((result) => {
+      if (result.kind !== "published") {
+        return;
+      }
+
+      const duplicateKey = `${result.message.participantIdentity}:${result.message.id}`;
+      if (!rememberDuplicateKey(duplicateKey)) {
+        return;
+      }
+      appendMessageRow({
+        id: result.message.id,
+        text: result.message.text,
+        username: result.message.username
+      });
+      setInputValue("");
+      inputRef.current?.blur();
+      scheduleScrollToLatest();
+    });
+  }, [
+    appendMessageRow,
+    inputValue,
+    isActive,
+    rememberDuplicateKey,
+    room,
+    scheduleScrollToLatest,
+    username
+  ]);
 
   useEffect(() => {
     return () => {
@@ -140,6 +211,14 @@ export function StudioChatOwners({
       clearScheduledTimeout(phaseSyncTimeoutRef);
     };
   }, []);
+
+  useEffect(() => {
+    if (!room) {
+      return;
+    }
+
+    return bindStudioChatRealtime(room, handleReceiveMessage);
+  }, [handleReceiveMessage, room]);
 
   useEffect(() => {
     if (!hasRenderableUsername) {
@@ -184,11 +263,14 @@ export function StudioChatOwners({
       schedulePhaseUpdate("exiting");
       exitTimeoutRef.current = setTimeout(() => {
         hasPendingExitRef.current = false;
-      exitTimeoutRef.current = null;
-      setPhase("hidden");
-      setInputValue("");
-      setMessages([]);
-    }, CHAT_OWNER_EXIT_DURATION_MS);
+        exitTimeoutRef.current = null;
+        duplicateKeyQueueRef.current = [];
+        duplicateKeySetRef.current.clear();
+        lastSentAtRef.current = 0;
+        setPhase("hidden");
+        setInputValue("");
+        setMessages([]);
+      }, CHAT_OWNER_EXIT_DURATION_MS);
       return;
     }
 

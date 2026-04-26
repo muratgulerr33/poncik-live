@@ -1,5 +1,4 @@
 import { readWatchView } from "@/app/(public)/_lib/public-live-read";
-import { readCurrentSessionState } from "@/app/(public)/auth/_adapters/auth-session-boundary";
 
 import { LiveWatchFreshness } from "../_components/live-watch-freshness";
 import { LiveWatchShell } from "../_components/live-watch-shell";
@@ -9,6 +8,7 @@ import {
 } from "../_components/live-watch-state";
 import { LiveWatchPlaybackController } from "./LiveWatchPlaybackController";
 import type { LiveWatchChatAccess } from "./LiveWatchChatController";
+import { readLiveWatchViewerWriteAccess } from "../_lib/live-watch-viewer-write-access";
 
 type LiveWatchControllerProps = Readonly<{
   username: string;
@@ -17,35 +17,32 @@ type LiveWatchControllerProps = Readonly<{
 export async function LiveWatchController({
   username
 }: LiveWatchControllerProps) {
-  const [sessionState, view] = await Promise.all([
-    readCurrentSessionState(),
+  const [viewerWriteAccess, view] = await Promise.all([
+    readLiveWatchViewerWriteAccess(),
     readWatchView(username)
   ]);
 
-  let chatAccess: LiveWatchChatAccess = {
-    kind: "auth_state_blocked"
-  };
-
-  if (sessionState.kind === "anonymous") {
-    chatAccess = {
+  const chatAccess: LiveWatchChatAccess =
+    viewerWriteAccess.kind === "guest_read_only"
+      ? {
       kind: "guest"
-    };
-  }
-
-  if (sessionState.kind === "authenticated") {
-    const viewerUsername = sessionState.session.username.trim();
-
-    if (viewerUsername.length > 0) {
-      chatAccess = {
-        kind: "viewer_ready",
-        viewerUsername
-      };
-    } else {
-      chatAccess = {
-        kind: "viewer_username_blocked"
-      };
-    }
-  }
+        }
+      : viewerWriteAccess.kind === "viewer_write_allowed"
+        ? {
+            kind: "viewer_ready",
+            viewerUsername: viewerWriteAccess.username
+          }
+        : viewerWriteAccess.kind === "viewer_write_role_blocked"
+          ? {
+              kind: "viewer_role_blocked"
+            }
+          : viewerWriteAccess.kind === "viewer_write_username_blocked"
+            ? {
+                kind: "viewer_username_blocked"
+              }
+            : {
+                kind: "auth_state_blocked"
+              };
 
   if (view.kind === "live") {
     return (

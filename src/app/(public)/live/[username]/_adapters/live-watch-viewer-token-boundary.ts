@@ -6,6 +6,7 @@ import { AccessToken } from "livekit-server-sdk";
 
 import { getLiveKitBroadcastRoomName } from "@/app/api/livekit/_lib/livekit-room-naming";
 import { readWatchView } from "@/app/(public)/_lib/public-live-read";
+import { readLiveWatchViewerWriteAccess } from "../_lib/live-watch-viewer-write-access";
 
 type LiveWatchViewerTokenPayload = {
   participant_token: string;
@@ -48,7 +49,10 @@ export async function createLiveWatchViewerToken(
     };
   }
 
-  const view = await readWatchView(normalizedUsername);
+  const [viewerWriteAccess, view] = await Promise.all([
+    readLiveWatchViewerWriteAccess(),
+    readWatchView(normalizedUsername)
+  ]);
 
   if (view.kind !== "live") {
     return {
@@ -65,14 +69,21 @@ export async function createLiveWatchViewerToken(
   }
 
   try {
-    const token = new AccessToken(env.apiKey, env.apiSecret, {
-      identity: `viewer-${randomUUID()}`,
-      ttl: "5m"
-    });
+    const token =
+      viewerWriteAccess.kind === "viewer_write_allowed"
+        ? new AccessToken(env.apiKey, env.apiSecret, {
+            identity: `viewer-${viewerWriteAccess.accountId}`,
+            name: viewerWriteAccess.username,
+            ttl: "5m"
+          })
+        : new AccessToken(env.apiKey, env.apiSecret, {
+            identity: `viewer-${randomUUID()}`,
+            ttl: "5m"
+          });
 
     token.addGrant({
       canPublish: false,
-      canPublishData: false,
+      canPublishData: viewerWriteAccess.kind === "viewer_write_allowed",
       canSubscribe: true,
       room: getLiveKitBroadcastRoomName(view.broadcasterAccountId),
       roomJoin: true

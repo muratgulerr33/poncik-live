@@ -84,6 +84,7 @@ export async function createStudioPublisherToken(): Promise<StudioPublisherToken
       room: getLiveKitBroadcastRoomName(sessionState.session.accountId),
       roomJoin: true,
       canPublish: true,
+      canPublishData: true,
       canSubscribe: false
     });
 

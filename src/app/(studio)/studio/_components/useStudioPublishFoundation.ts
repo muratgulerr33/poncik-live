@@ -43,6 +43,7 @@ export function useStudioPublishFoundation({
   const [isStarting, setIsStarting] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [isLocallyLive, setIsLocallyLive] = useState(false);
+  const [publisherRoom, setPublisherRoom] = useState<Room | null>(null);
   const [startSuccessSequence, setStartSuccessSequence] = useState(
     () => latestStudioStartSuccessSequence
   );
@@ -63,6 +64,7 @@ export function useStudioPublishFoundation({
 
     clearRoomDisconnectBinding();
     roomRef.current = null;
+    setPublisherRoom(null);
     isLocallyLiveRef.current = false;
     setIsLocallyLive(false);
     await disconnectStudioPublisherRoom(room);
@@ -126,6 +128,7 @@ export function useStudioPublishFoundation({
     }
 
     roomRef.current = connectionResult.room;
+    setPublisherRoom(connectionResult.room);
 
     const startResult = await startStudioBroadcastLifecycle();
 
@@ -237,6 +240,7 @@ export function useStudioPublishFoundation({
     isStarting,
     isStopping,
     lifecycleMessage,
+    publisherRoom,
     startSuccessSequence,
     startPublishing,
     stopPublishing

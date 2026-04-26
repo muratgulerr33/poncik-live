@@ -112,6 +112,7 @@ export function StudioPreviewPanel({
     isStarting,
     isStopping,
     lifecycleMessage,
+    publisherRoom,
     startSuccessSequence,
     startPublishing,
     stopPublishing
@@ -405,6 +406,7 @@ export function StudioPreviewPanel({
               effectiveLifecycleKind={effectiveLifecycleKind}
               isStarting={isStarting}
               isStopping={isStopping}
+              room={publisherRoom}
               username={username}
             />
 
