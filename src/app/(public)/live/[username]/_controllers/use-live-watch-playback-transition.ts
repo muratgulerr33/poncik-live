@@ -13,11 +13,15 @@ type LiveWatchPlaybackState =
 
 type LiveWatchPlaybackTransitionInput = Readonly<{
   liveStatusCheckRequestSequence: number;
+  mediaReady: boolean;
+  playbackMessage: string | null;
   playbackState: LiveWatchPlaybackState;
 }>;
 
 export function useLiveWatchPlaybackTransition({
   liveStatusCheckRequestSequence,
+  mediaReady,
+  playbackMessage,
   playbackState
 }: LiveWatchPlaybackTransitionInput) {
   const [recoveredSequence, setRecoveredSequence] = useState(0);
@@ -44,7 +48,7 @@ export function useLiveWatchPlaybackTransition({
   }, [liveStatusCheckRequestSequence, router]);
 
   useEffect(() => {
-    if (playbackState !== "playing") {
+    if (playbackState !== "playing" || !mediaReady) {
       return;
     }
 
@@ -68,11 +72,12 @@ export function useLiveWatchPlaybackTransition({
     return () => {
       window.clearTimeout(recoverySyncTimeout);
     };
-  }, [liveStatusCheckRequestSequence, playbackState, recoveredSequence]);
+  }, [liveStatusCheckRequestSequence, mediaReady, playbackState, recoveredSequence]);
 
   useEffect(() => {
     if (
-      playbackState === "playing" ||
+      mediaReady ||
+      playbackState === "playback_blocked" ||
       liveStatusCheckRequestSequence === 0 ||
       liveStatusCheckRequestSequence <= recoveredSequence ||
       lastScheduledRecoverySequenceRef.current === liveStatusCheckRequestSequence
@@ -96,16 +101,24 @@ export function useLiveWatchPlaybackTransition({
         recoveryTimeoutRef.current = null;
       }
     };
-  }, [liveStatusCheckRequestSequence, playbackState, recoveredSequence]);
+  }, [liveStatusCheckRequestSequence, mediaReady, playbackState, recoveredSequence]);
 
-  const isSpinnerOnly =
-    playbackState !== "playing" &&
-    liveStatusCheckRequestSequence > recoveredSequence;
+  const isStatusCheckPending = liveStatusCheckRequestSequence > recoveredSequence;
+  const shouldShowMessageFallback =
+    playbackState === "playback_blocked" ||
+    (playbackState === "degraded" && !isStatusCheckPending && playbackMessage !== null);
+  const overlayMode =
+    shouldShowMessageFallback
+      ? "message"
+      : playbackState !== "playing" || !mediaReady
+        ? "spinner_only"
+        : "hidden";
+  const isChatVisible = playbackState === "playing" && mediaReady;
 
   return {
-    overlayAccessibleLabel: isSpinnerOnly
-      ? "Yayın durumu güncelleniyor"
-      : null,
-    overlayMode: isSpinnerOnly ? "spinner_only" : "message"
+    isChatVisible,
+    overlayAccessibleLabel:
+      overlayMode === "spinner_only" ? "Yayın durumu güncelleniyor" : null,
+    overlayMode
   } as const;
 }

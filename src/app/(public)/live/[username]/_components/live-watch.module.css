@@ -122,6 +122,7 @@
 .frameOverlay {
   position: absolute;
   inset: 0;
+  z-index: 2;
   display: grid;
   place-items: center;
   padding: 1.5rem;

@@ -38,6 +38,7 @@ export function useLiveWatchPlayback(username: string) {
   const videoTrackRef = useRef<RemoteTrack | null>(null);
   const [canRetryPlayback, setCanRetryPlayback] = useState(false);
   const [liveStatusCheckRequestSequence, setLiveStatusCheckRequestSequence] = useState(0);
+  const [mediaReady, setMediaReady] = useState(false);
   const [playbackMessage, setPlaybackMessage] = useState<string | null>(null);
   const [room, setRoom] = useState<Room | null>(null);
   const [playbackState, setPlaybackState] = useState<LiveWatchPlaybackState>("connecting");
@@ -64,6 +65,7 @@ export function useLiveWatchPlayback(username: string) {
     videoTrackCleanupRef.current = null;
     detachLiveWatchTrack(videoTrackRef.current, videoElementRef.current);
     videoTrackRef.current = null;
+    setMediaReady(false);
   }, []);
 
   const detachAudioTrack = useCallback(() => {
@@ -83,6 +85,7 @@ export function useLiveWatchPlayback(username: string) {
     if (isDisposedRef.current) return;
     clearTrackWaitTimeout();
     hasPlayableTrackRef.current = false;
+    setMediaReady(false);
     setCanRetryPlayback(true);
     setPlaybackMessage(PLAYBACK_DEGRADED_MESSAGE);
     setPlaybackState("degraded");
@@ -97,6 +100,7 @@ export function useLiveWatchPlayback(username: string) {
     detachVideoTrack();
     detachAudioTrack();
     hasPlayableTrackRef.current = false;
+    setMediaReady(false);
     const room = roomRef.current;
     roomRef.current = null;
     setRoom(null);
@@ -127,12 +131,24 @@ export function useLiveWatchPlayback(username: string) {
       bindLiveWatchTrackPlaybackEvents(track, {
         onPlaybackFailed: () => {
           if (isDisposedRef.current) return;
+          if (track.kind === Track.Kind.Video && videoTrackRef.current === track) {
+            setMediaReady(false);
+          }
           setCanRetryPlayback(true);
           if (hasPlayableTrackRef.current) return;
           setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
           setPlaybackState("playback_blocked");
         },
-        onPlaybackStarted: handlePlaybackStarted
+        onPlaybackStarted: () => {
+          if (
+            track.kind === Track.Kind.Video &&
+            videoTrackRef.current === track &&
+            !isDisposedRef.current
+          ) {
+            setMediaReady(true);
+          }
+          handlePlaybackStarted();
+        }
       }),
     [handlePlaybackStarted]
   );
@@ -150,8 +166,12 @@ export function useLiveWatchPlayback(username: string) {
 
         const didAttach = await attachLiveWatchVideoTrack(track, videoElement);
         if (isDisposedRef.current || videoTrackRef.current !== track) return;
-        if (didAttach) return handlePlaybackStarted();
+        if (didAttach) {
+          setMediaReady(true);
+          return handlePlaybackStarted();
+        }
 
+        setMediaReady(false);
         setCanRetryPlayback(true);
         setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
         setPlaybackState("playback_blocked");
@@ -182,7 +202,13 @@ export function useLiveWatchPlayback(username: string) {
   const retryPlayback = useCallback(async () => {
     const didRetry = await retryLiveWatchPlayback(videoElementRef.current, audioElementRef.current);
     if (isDisposedRef.current) return;
-    if (didRetry) return handlePlaybackStarted();
+    if (didRetry) {
+      if (videoTrackRef.current && videoElementRef.current?.srcObject) {
+        setMediaReady(true);
+      }
+      return handlePlaybackStarted();
+    }
+    setMediaReady(false);
     setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
     setPlaybackState("playback_blocked");
   }, [handlePlaybackStarted]);
@@ -199,6 +225,7 @@ export function useLiveWatchPlayback(username: string) {
     let didCancel = false;
 
     async function startPlayback() {
+      setMediaReady(false);
       setPlaybackState("connecting");
       setPlaybackMessage(null);
       setCanRetryPlayback(false);
@@ -288,6 +315,7 @@ export function useLiveWatchPlayback(username: string) {
     audioRef: audioElementRef,
     canRetryPlayback,
     liveStatusCheckRequestSequence,
+    mediaReady,
     playbackMessage,
     playbackState,
     room,

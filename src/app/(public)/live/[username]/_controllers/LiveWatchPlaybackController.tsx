@@ -16,15 +16,18 @@ export function LiveWatchPlaybackController({
     audioRef,
     canRetryPlayback,
     liveStatusCheckRequestSequence,
+    mediaReady,
     playbackMessage,
     playbackState,
     room,
     retryPlayback,
     videoRef
   } = useLiveWatchPlayback(username);
-  const { overlayAccessibleLabel, overlayMode } =
+  const { isChatVisible, overlayAccessibleLabel, overlayMode } =
     useLiveWatchPlaybackTransition({
       liveStatusCheckRequestSequence,
+      mediaReady,
+      playbackMessage,
       playbackState
     });
 
@@ -35,7 +38,7 @@ export function LiveWatchPlaybackController({
       chatOverlay={
         <LiveWatchChatController
           access={chatAccess}
-          isInteractive={playbackState === "playing"}
+          isInteractive={isChatVisible}
           room={room}
         />
       }
