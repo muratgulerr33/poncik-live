@@ -1,6 +1,7 @@
 import { readWatchView } from "@/app/(public)/_lib/public-live-read";
 
 import { LiveWatchFreshness } from "../_components/live-watch-freshness";
+import { LiveWatchEndedRedirectOwner } from "../_components/LiveWatchEndedRedirectOwner";
 import { LiveWatchShell } from "../_components/live-watch-shell";
 import {
   LiveEndedState,
@@ -56,7 +57,8 @@ export async function LiveWatchController({
   if (view.kind === "ended") {
     return (
       <LiveWatchShell audioToggleEnabled={false} username={view.username}>
-        <LiveEndedState username={view.username} />
+        <LiveEndedState />
+        <LiveWatchEndedRedirectOwner />
         <LiveWatchFreshness mode="non_live" />
       </LiveWatchShell>
     );

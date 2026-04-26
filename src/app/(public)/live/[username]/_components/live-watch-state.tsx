@@ -18,14 +18,11 @@ export function LiveWatchLoadingState() {
   );
 }
 
-export function LiveEndedState({ username }: LiveWatchMessageProps) {
+export function LiveEndedState() {
   return (
     <div className={styles.stateCard}>
       <h2 className="t-h3">Yayın sona erdi</h2>
-      <p className={`t-body ${styles.stateBody}`}>
-        @{username} için en son yayın artık açık değil. Discovery yüzeyine dönüp
-        başka bir yayın izleyebilirsin.
-      </p>
+      <p className={`t-body ${styles.stateBody}`}>Ana sayfaya dönüyorsun…</p>
     </div>
   );
 }

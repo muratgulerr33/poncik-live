@@ -3,6 +3,7 @@
 import { LiveWatchChatController, type LiveWatchChatAccess } from "./LiveWatchChatController";
 import { LiveWatchPlaybackSurface } from "../_components/LiveWatchPlaybackSurface";
 import { useLiveWatchPlayback } from "./use-live-watch-playback";
+import { useLiveWatchPlaybackTransition } from "./use-live-watch-playback-transition";
 
 export function LiveWatchPlaybackController({
   chatAccess,
@@ -14,12 +15,18 @@ export function LiveWatchPlaybackController({
   const {
     audioRef,
     canRetryPlayback,
+    liveStatusCheckRequestSequence,
     playbackMessage,
     playbackState,
     room,
     retryPlayback,
     videoRef
   } = useLiveWatchPlayback(username);
+  const { overlayAccessibleLabel, overlayMode } =
+    useLiveWatchPlaybackTransition({
+      liveStatusCheckRequestSequence,
+      playbackState
+    });
 
   return (
     <LiveWatchPlaybackSurface
@@ -32,6 +39,8 @@ export function LiveWatchPlaybackController({
           room={room}
         />
       }
+      overlayAccessibleLabel={overlayAccessibleLabel}
+      overlayMode={overlayMode}
       playbackMessage={playbackMessage}
       playbackState={playbackState}
       onRetryPlayback={() => {

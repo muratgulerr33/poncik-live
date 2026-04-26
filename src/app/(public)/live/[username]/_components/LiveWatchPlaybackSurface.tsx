@@ -8,6 +8,8 @@ type LiveWatchPlaybackSurfaceProps = Readonly<{
   audioRef: RefObject<HTMLAudioElement | null>;
   canRetryPlayback: boolean;
   chatOverlay?: ReactNode;
+  overlayAccessibleLabel: string | null;
+  overlayMode: "message" | "spinner_only";
   playbackMessage: string | null;
   playbackState: "connecting" | "playing" | "playback_blocked" | "degraded";
   onRetryPlayback: () => void;
@@ -19,6 +21,8 @@ export function LiveWatchPlaybackSurface({
   audioRef,
   canRetryPlayback,
   chatOverlay,
+  overlayAccessibleLabel,
+  overlayMode,
   playbackMessage,
   playbackState,
   onRetryPlayback,
@@ -38,7 +42,20 @@ export function LiveWatchPlaybackSurface({
         <audio ref={audioRef} />
         {chatOverlay}
 
-        {playbackState === "playing" && !playbackMessage ? null : (
+        {playbackState === "playing" && !playbackMessage ? null : overlayMode ===
+          "spinner_only" ? (
+          <div
+            aria-label={overlayAccessibleLabel ?? "Yayın durumu güncelleniyor"}
+            className={styles.frameOverlay}
+            role="status"
+          >
+            <div className={styles.spinnerOnlyShell}>
+              <div className={styles.spinnerOnlyPresence} aria-hidden="true">
+                <span className={styles.loadingSpinner} />
+              </div>
+            </div>
+          </div>
+        ) : (
           <div className={styles.frameOverlay}>
             <div className={styles.frameInner}>
               {playbackState === "connecting" ? (
