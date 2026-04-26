@@ -29,6 +29,8 @@ const CHAT_OWNER_EXIT_DURATION_MS = 220;
 const CHAT_HISTORY_CAP = 100;
 const DUPLICATE_KEY_CAP = 200;
 const SEND_COOLDOWN_MS = 900;
+const REMOTE_LATEST_NEAR_BOTTOM_GAP_PX = 32;
+const REMOTE_LATEST_SCROLL_SETTLE_GAP_PX = 1;
 
 function clearScheduledTimeout(timeoutRef: {
   current: ReturnType<typeof setTimeout> | null;
@@ -41,6 +43,23 @@ function clearScheduledTimeout(timeoutRef: {
   timeoutRef.current = null;
 }
 
+function clearScheduledAnimationFrame(frameRef: { current: number | null }) {
+  if (frameRef.current === null) {
+    return;
+  }
+
+  cancelAnimationFrame(frameRef.current);
+  frameRef.current = null;
+}
+
+function getBottomGap(element: HTMLDivElement | null) {
+  if (!element) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return element.scrollHeight - element.clientHeight - element.scrollTop;
+}
+
 export function StudioChatOwners({
   effectiveLifecycleKind,
   isStarting,
@@ -51,15 +70,19 @@ export function StudioChatOwners({
   const [phase, setPhase] = useState<ChatOwnerPhase>("hidden");
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<StudioChatMessageRow[]>([]);
+  const [remoteLatestCorrectionSequence, setRemoteLatestCorrectionSequence] =
+    useState(0);
   const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const phaseSyncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const interactionResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
   const latestScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const remoteLatestCorrectionFrameRef = useRef<number | null>(null);
   const hasPendingExitRef = useRef(false);
   const hasBeenLiveRef = useRef(false);
   const hasInitializedLiveStateRef = useRef(false);
+  const pendingRemoteLatestCorrectionRef = useRef(false);
   const duplicateKeyQueueRef = useRef<string[]>([]);
   const duplicateKeySetRef = useRef(new Set<string>());
   const lastSentAtRef = useRef(0);
@@ -73,6 +96,11 @@ export function StudioChatOwners({
     setMessages((currentMessages) =>
       [...currentMessages, message].slice(-CHAT_HISTORY_CAP)
     );
+  }, []);
+
+  const clearPendingRemoteLatestCorrection = useCallback(() => {
+    pendingRemoteLatestCorrectionRef.current = false;
+    clearScheduledAnimationFrame(remoteLatestCorrectionFrameRef);
   }, []);
 
   const rememberDuplicateKey = useCallback((duplicateKey: string) => {
@@ -123,6 +151,7 @@ export function StudioChatOwners({
   }, []);
 
   const scheduleInteractionReset = useCallback(() => {
+    clearPendingRemoteLatestCorrection();
     clearScheduledTimeout(interactionResetTimeoutRef);
     interactionResetTimeoutRef.current = setTimeout(() => {
       interactionResetTimeoutRef.current = null;
@@ -132,7 +161,7 @@ export function StudioChatOwners({
       setInputValue("");
       setMessages([]);
     }, 0);
-  }, []);
+  }, [clearPendingRemoteLatestCorrection]);
 
   const handleInputValueChange = useCallback((nextValue: string) => {
     setInputValue(nextValue);
@@ -146,14 +175,21 @@ export function StudioChatOwners({
         return;
       }
 
+      if (
+        getBottomGap(overlayScrollRef.current) <=
+        REMOTE_LATEST_NEAR_BOTTOM_GAP_PX
+      ) {
+        pendingRemoteLatestCorrectionRef.current = true;
+        setRemoteLatestCorrectionSequence((currentSequence) => currentSequence + 1);
+      }
+
       appendMessageRow({
         id: message.id,
         text: message.text,
         username: message.username
       });
-      scheduleScrollToLatest();
     },
-    [appendMessageRow, rememberDuplicateKey, scheduleScrollToLatest]
+    [appendMessageRow, rememberDuplicateKey]
   );
 
   const handleSubmitMessage = useCallback(() => {
@@ -205,12 +241,43 @@ export function StudioChatOwners({
 
   useEffect(() => {
     return () => {
+      clearPendingRemoteLatestCorrection();
       clearScheduledTimeout(exitTimeoutRef);
       clearScheduledTimeout(interactionResetTimeoutRef);
       clearScheduledTimeout(latestScrollTimeoutRef);
       clearScheduledTimeout(phaseSyncTimeoutRef);
     };
-  }, []);
+  }, [clearPendingRemoteLatestCorrection]);
+
+  useEffect(() => {
+    if (!pendingRemoteLatestCorrectionRef.current) {
+      return;
+    }
+
+    clearScheduledAnimationFrame(remoteLatestCorrectionFrameRef);
+    remoteLatestCorrectionFrameRef.current = requestAnimationFrame(() => {
+      remoteLatestCorrectionFrameRef.current = null;
+
+      const overlayElement = overlayScrollRef.current;
+
+      if (!overlayElement) {
+        pendingRemoteLatestCorrectionRef.current = false;
+        return;
+      }
+
+      overlayElement.scrollTop = overlayElement.scrollHeight;
+
+      if (getBottomGap(overlayElement) > REMOTE_LATEST_SCROLL_SETTLE_GAP_PX) {
+        overlayElement.scrollTop = overlayElement.scrollHeight;
+      }
+
+      pendingRemoteLatestCorrectionRef.current = false;
+    });
+
+    return () => {
+      clearScheduledAnimationFrame(remoteLatestCorrectionFrameRef);
+    };
+  }, [remoteLatestCorrectionSequence]);
 
   useEffect(() => {
     if (!room) {
@@ -264,6 +331,7 @@ export function StudioChatOwners({
       exitTimeoutRef.current = setTimeout(() => {
         hasPendingExitRef.current = false;
         exitTimeoutRef.current = null;
+        clearPendingRemoteLatestCorrection();
         duplicateKeyQueueRef.current = [];
         duplicateKeySetRef.current.clear();
         lastSentAtRef.current = 0;
@@ -285,6 +353,7 @@ export function StudioChatOwners({
     isLive,
     isStarting,
     isStopping,
+    clearPendingRemoteLatestCorrection,
     scheduleInteractionReset
   ]);
 
