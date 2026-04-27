@@ -2,7 +2,9 @@
 
 import type { ReactNode, RefObject } from "react";
 
+import { LiveWatchMediaPolish } from "./LiveWatchMediaPolish";
 import styles from "./live-watch.module.css";
+import { useLiveWatchMediaPolish } from "./useLiveWatchMediaPolish";
 
 type LiveWatchPlaybackSurfaceProps = Readonly<{
   audioRef: RefObject<HTMLAudioElement | null>;
@@ -29,9 +31,14 @@ export function LiveWatchPlaybackSurface({
   username,
   videoRef
 }: LiveWatchPlaybackSurfaceProps) {
+  const mediaStageRef = useLiveWatchMediaPolish({
+    enabled: playbackState === "playing" && overlayMode === "hidden",
+    videoRef
+  });
+
   return (
     <section className={styles.frame} aria-label={`@${username} canli yayin cercevesi`}>
-      <div className={styles.mediaStage}>
+      <div className={styles.mediaStage} ref={mediaStageRef}>
         <video
           className={
             playbackState === "playing" ? styles.playbackVideo : styles.playbackVideoHidden
@@ -40,6 +47,7 @@ export function LiveWatchPlaybackSurface({
           ref={videoRef}
         />
         <audio ref={audioRef} />
+        <LiveWatchMediaPolish />
         {chatOverlay}
 
         {overlayMode === "hidden" ? null : overlayMode === "spinner_only" ? (

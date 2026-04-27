@@ -1,0 +1,39 @@
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: none;
+  pointer-events: none;
+}
+
+.window {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 640px) and (orientation: portrait) {
+  :global([data-live-media-polish="ready"]) .root {
+    display: block;
+  }
+
+  :global([data-live-media-polish="ready"]) .window {
+    left: calc(
+      var(--live-watch-media-polish-left, 0px) +
+      var(--live-watch-media-polish-side-inset, 0px)
+    );
+    top: var(--live-watch-media-polish-top, 0px);
+    width: calc(
+      var(--live-watch-media-polish-width, 0px) -
+      (var(--live-watch-media-polish-side-inset, 0px) * 2)
+    );
+    height: var(--live-watch-media-polish-height, 0px);
+    border-radius: var(--live-watch-media-polish-radius, 0px);
+    box-shadow: 0 0 0 100vmax black;
+  }
+}
