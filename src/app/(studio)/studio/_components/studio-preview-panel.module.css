@@ -308,9 +308,9 @@
 }
 
 @media (max-width: 640px) and (orientation: portrait) {
-.previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
-  transform: scale(1.1);
-}
+  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
+    transform: scale(1.1);
+  }
 }
 
 @media (min-width: 641px) and (orientation: landscape) {

@@ -5,11 +5,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioChatOwners } from "./StudioChatOwners";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
+import { StudioPreviewMediaPolish } from "./StudioPreviewMediaPolish";
 import type { StudioLiveMicControl } from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
 import styles from "./studio-preview-panel.module.css";
 import { useStudioLiveMicUtilitySurface } from "./useStudioLiveMicUtilitySurface";
+import { useStudioPreviewMediaPolish } from "./useStudioPreviewMediaPolish";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
 
@@ -139,6 +141,10 @@ export function StudioPreviewPanel({
     visibleSuccessToken === startSuccessSequence;
   const shouldShowSupportStack =
     !isInitialRequestFlashSuppressed && (!isHealthyPreview || canRetry);
+  const previewFrameRef = useStudioPreviewMediaPolish({
+    enabled: previewState === "preview_ready",
+    videoRef
+  });
 
   const clearSecondTriggerBlockResetTimeout = useCallback(() => {
     if (!secondTriggerBlockResetTimeoutRef.current) {
@@ -369,7 +375,7 @@ export function StudioPreviewPanel({
             <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
           ) : null}
 
-          <div className={styles.previewFrame}>
+          <div className={styles.previewFrame} ref={previewFrameRef}>
             <video
               className={
                 previewState === "preview_ready"
@@ -385,6 +391,7 @@ export function StudioPreviewPanel({
                 {STUDIO_COPY.previewPlaceholder}
               </div>
             ) : null}
+            <StudioPreviewMediaPolish />
           </div>
 
           {shouldShowRequestFallback ? (
