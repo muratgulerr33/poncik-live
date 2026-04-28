@@ -1,0 +1,206 @@
+.dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.dialog[open] {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.36);
+}
+
+.panel {
+  --live-auth-body-height: 16.875rem;
+  --live-auth-body-max-height: calc(100dvh - 9.3rem);
+  width: min(100%, 32rem);
+  max-height: min(44rem, calc(100dvh - max(var(--safe-area-top), 0px) - 0.65rem));
+  min-height: 0;
+  padding:
+    0.68rem
+    0.88rem
+    max(0.88rem, calc(var(--safe-area-bottom) + 0.56rem));
+  border: 1px solid rgb(15 23 42 / 0.08);
+  border-bottom: 0;
+  border-radius: 1.55rem 1.55rem 0 0;
+  background: rgb(250 250 250);
+  color: rgb(15 23 42);
+  box-shadow:
+    0 -24px 60px rgb(15 23 42 / 0.16),
+    0 1px 0 rgb(255 255 255 / 0.88) inset;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, var(--live-auth-body-height));
+  gap: 0.58rem;
+  overflow: hidden;
+}
+
+.handle {
+  width: 2.6rem;
+  height: 0.28rem;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: rgb(148 163 184 / 0.68);
+}
+
+.label,
+.inlineError {
+  margin: 0;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
+  border: 1px solid rgb(148 163 184 / 0.22);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.94);
+  color: rgb(15 23 42);
+  box-shadow: 0 8px 18px -18px rgb(15 23 42 / 0.38);
+}
+
+.tabRow {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.36rem;
+  padding: 0.18rem;
+  border-radius: 999px;
+  background: rgb(226 232 240 / 0.6);
+}
+
+.tabButton {
+  min-height: 2.2rem;
+  padding: 0.44rem 0.72rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(71 85 105);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.tabButtonActive {
+  background: rgb(255 255 255);
+  color: rgb(15 23 42);
+  box-shadow: 0 8px 18px -20px rgb(15 23 42 / 0.28);
+}
+
+.body {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.body::-webkit-scrollbar {
+  display: none;
+}
+
+.form {
+  --live-auth-form-padding-bottom: 0px;
+  display: grid;
+  gap: 0.68rem;
+  padding-bottom: calc(
+    var(--live-auth-form-padding-bottom, 0px) + var(--live-auth-submit-scroll-slack, 0px)
+  );
+}
+
+.field {
+  display: grid;
+  gap: 0.24rem;
+}
+
+.label {
+  font-size: 0.82rem;
+  line-height: 1.22;
+  font-weight: 600;
+  color: rgb(30 41 59);
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.7rem;
+  padding: 0.7rem 0.82rem;
+  border: 1px solid rgb(148 163 184 / 0.28);
+  border-radius: 0.96rem;
+  background: rgb(255 255 255);
+  color: rgb(15 23 42);
+  font: inherit;
+  line-height: 1.2;
+}
+
+.input::placeholder {
+  color: rgb(100 116 139);
+}
+
+.closeButton:focus-visible,
+.tabButton:focus-visible,
+.submitButton:focus-visible {
+  outline: 2px solid rgb(99 102 241 / 0.44);
+  outline-offset: 2px;
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: rgb(99 102 241 / 0.62);
+  box-shadow: inset 0 0 0 1px rgb(99 102 241 / 0.32);
+}
+
+.inlineError {
+  padding: 0.68rem 0.82rem;
+  border-radius: 0.9rem;
+  background: rgb(254 242 242);
+  color: rgb(153 27 27);
+  font-size: 0.84rem;
+  line-height: 1.34;
+}
+
+.actionRow {
+  padding-top: 0.1rem;
+}
+
+.submitButton {
+  width: 100%;
+  min-height: 2.92rem;
+  padding: 0.74rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(17 24 39);
+  color: rgb(255 255 255);
+  font: inherit;
+  font-size: 0.93rem;
+  font-weight: 700;
+  box-shadow: 0 16px 28px -24px rgb(15 23 42 / 0.44);
+}
+
+.submitButton:disabled {
+  opacity: 0.78;
+}
+
+@media (max-width: 640px) {
+  .panel {
+    --live-auth-body-height: min(16.875rem, var(--live-auth-body-max-height));
+    width: 100%;
+    max-height: calc(100dvh - max(var(--safe-area-top), 0px));
+    padding-inline: 0.78rem;
+  }
+}
