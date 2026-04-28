@@ -20,6 +20,9 @@ PASS WITH NOTES
 - `src/app/(public)/live/[username]/_components/LiveWatchGuestRegisterForm.tsx`
 - `src/app/(public)/live/[username]/_components/useLiveWatchGuestAuthViewport.ts`
 - `src/app/(public)/live/[username]/_components/live-watch-guest-auth-drawer.module.css`
+- `src/app/(public)/live/[username]/_components/LiveWatchChatSurface.tsx`
+- `src/app/(public)/live/[username]/_components/live-watch-chat.module.css`
+- `src/app/(public)/live/[username]/_controllers/LiveWatchChatController.tsx`
 - `docs/live-watch-guest-auth-drawer-closeout.md`
 
 ## Validation
@@ -42,7 +45,7 @@ PASS WITH NOTES
 - Android Chrome / Redmi gerçek cihazda test edildi.
 - Firefox Android ayrı compatibility debt olarak bırakıldı; bu turun scope’una alınmadı.
 - Visual polish ve drawer motion ayrı follow-up turudur.
-- Chat dosyaları bu close-out kapsamına dahil değildir.
+- Chat surface/controller değişiklikleri guest auth drawer entry wiring ve composer chip cleanup kapsamındadır.
 
 ## Git
 

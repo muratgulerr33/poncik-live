@@ -172,7 +172,7 @@
 
 .composerInput:focus-visible,
 .sendButton:focus-visible,
-.guestActionLink:focus-visible {
+.guestActionButton:focus-visible {
   outline: 1.5px solid color-mix(in oklch, var(--foreground) 38%, transparent);
   outline-offset: 1px;
 }
@@ -211,7 +211,7 @@
   width: min(100%, 25rem);
 }
 
-.guestActionLink {
+.guestActionButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -249,7 +249,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .guestActionLink:hover,
+  .guestActionButton:hover,
   .sendButton:hover:not(:disabled) {
     filter: brightness(1.04);
   }
@@ -300,7 +300,7 @@
     width: min(100%, 100%);
   }
 
-  .guestActionLink {
+  .guestActionButton {
     width: min(100%, 24rem);
   }
 }

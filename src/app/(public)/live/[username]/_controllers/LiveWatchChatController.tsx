@@ -3,6 +3,7 @@
 import type { Room } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { LiveWatchGuestAuthDrawer } from "../_components/LiveWatchGuestAuthDrawer";
 import {
   LiveWatchChatSurface,
   type LiveWatchChatMessage
@@ -48,6 +49,7 @@ export function LiveWatchChatController({
   room
 }: LiveWatchChatControllerProps) {
   const [draft, setDraft] = useState("");
+  const [isGuestAuthDrawerOpen, setGuestAuthDrawerOpen] = useState(false);
   const [messages, setMessages] = useState<readonly LiveWatchChatMessage[]>([]);
   const overlayScrollRef = useRef<HTMLDivElement | null>(null);
   const duplicateKeyQueueRef = useRef<string[]>([]);
@@ -116,6 +118,14 @@ export function LiveWatchChatController({
     return bindLiveWatchChatRealtime(room, handleReceiveMessage);
   }, [handleReceiveMessage, room]);
 
+  const handleGuestAuthRequest = useCallback(() => {
+    if (access.kind !== "guest") {
+      return;
+    }
+
+    setGuestAuthDrawerOpen(true);
+  }, [access.kind]);
+
   function handleSubmit() {
     if (!isInteractive || access.kind !== "viewer_ready" || !room) {
       return;
@@ -156,14 +166,24 @@ export function LiveWatchChatController({
   }
 
   return (
-    <LiveWatchChatSurface
-      access={access}
-      draft={draft}
-      isInteractive={isInteractive}
-      messages={messages}
-      onDraftChange={handleDraftChange}
-      onSubmit={handleSubmit}
-      overlayScrollRef={overlayScrollRef}
-    />
+    <>
+      <LiveWatchChatSurface
+        access={access}
+        draft={draft}
+        isInteractive={isInteractive}
+        messages={messages}
+        onDraftChange={handleDraftChange}
+        onGuestAuthRequest={handleGuestAuthRequest}
+        onSubmit={handleSubmit}
+        overlayScrollRef={overlayScrollRef}
+      />
+
+      <LiveWatchGuestAuthDrawer
+        isOpen={isGuestAuthDrawerOpen}
+        onClose={() => {
+          setGuestAuthDrawerOpen(false);
+        }}
+      />
+    </>
   );
 }

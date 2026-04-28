@@ -1,7 +1,6 @@
 "use client";
 
 import type { RefObject } from "react";
-import Link from "next/link";
 import { SendHorizontal } from "lucide-react";
 
 import type { LiveWatchChatAccess } from "../_controllers/LiveWatchChatController";
@@ -18,6 +17,7 @@ type LiveWatchChatSurfaceProps = Readonly<{
   draft: string;
   isInteractive: boolean;
   messages: readonly LiveWatchChatMessage[];
+  onGuestAuthRequest: () => void;
   onDraftChange: (nextValue: string) => void;
   onSubmit: () => void;
   overlayScrollRef: RefObject<HTMLDivElement | null>;
@@ -28,6 +28,7 @@ export function LiveWatchChatSurface({
   draft,
   isInteractive,
   messages,
+  onGuestAuthRequest,
   onDraftChange,
   onSubmit,
   overlayScrollRef
@@ -103,9 +104,13 @@ export function LiveWatchChatSurface({
 
       {isGuestActionVisible ? (
         <div className={styles.guestActionDock}>
-          <Link className={styles.guestActionLink} href="/auth">
+          <button
+            className={styles.guestActionButton}
+            onClick={onGuestAuthRequest}
+            type="button"
+          >
             Yorum yapmak için giriş yap
-          </Link>
+          </button>
         </div>
       ) : null}
     </div>
