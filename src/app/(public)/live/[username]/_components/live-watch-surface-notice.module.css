@@ -1,0 +1,105 @@
+.noticeLayer {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  padding:
+    max(4.5rem, calc(var(--safe-area-top) + 4.1rem))
+    max(1rem, calc(var(--safe-area-right) + 1rem))
+    0
+    max(1rem, calc(var(--safe-area-left) + 1rem));
+  pointer-events: none;
+}
+
+.noticePill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.56rem;
+  width: min(100%, 28rem);
+  min-width: 0;
+  padding: 0.72rem 0.98rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgb(27 29 35 / 0.88), rgb(16 18 22 / 0.9));
+  color: color-mix(in oklch, white 92%, var(--foreground) 8%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 14px 34px -26px rgb(0 0 0 / 0.78);
+  backdrop-filter: blur(16px) saturate(1.08);
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
+  animation: liveWatchSurfaceNoticeIn 180ms ease-out both;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.noticePill[data-phase="exiting"] {
+  animation: none;
+  opacity: 0;
+  transform: translate3d(0, -0.5rem, 0) scale(0.985);
+}
+
+.noticeIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgb(74 222 128 / 0.96), rgb(34 197 94 / 0.9));
+  color: rgb(5 35 18);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.24),
+    0 0 0 1px rgb(74 222 128 / 0.18);
+}
+
+.noticeMessage {
+  margin: 0;
+  min-width: 0;
+  color: inherit;
+  font-size: 0.92rem;
+  line-height: 1.3;
+  font-weight: 550;
+  letter-spacing: 0.003em;
+  text-align: center;
+}
+
+@keyframes liveWatchSurfaceNoticeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -0.5rem, 0) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .noticeLayer {
+    padding-top: max(4.7rem, calc(var(--safe-area-top) + 4.32rem));
+  }
+
+  .noticePill {
+    width: min(100%, 24rem);
+    padding-inline: 0.92rem;
+  }
+
+  .noticeMessage {
+    font-size: 0.89rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .noticePill {
+    animation-duration: 1ms;
+    transition-duration: 1ms;
+  }
+}

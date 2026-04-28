@@ -9,6 +9,7 @@ import {
   LiveWatchAudioControlProvider,
   useLiveWatchAudioControl
 } from "./live-watch-audio-control-context";
+import { LiveWatchSurfaceNoticeProvider } from "./LiveWatchSurfaceNoticeProvider";
 import { LiveWatchTopChrome } from "./LiveWatchTopChrome";
 
 type LiveWatchRouteShellProps = Readonly<{
@@ -65,13 +66,15 @@ export function LiveWatchRouteShell({
 
   return (
     <LiveWatchAudioControlProvider enabled={audioToggleEnabled}>
-      <div className={styles.shell}>
-        <LiveWatchTopChromeBridge
-          onRequestClose={() => router.back()}
-          username={username}
-        />
-        <div className={styles.contentStack}>{children}</div>
-      </div>
+      <LiveWatchSurfaceNoticeProvider>
+        <div className={styles.shell}>
+          <LiveWatchTopChromeBridge
+            onRequestClose={() => router.back()}
+            username={username}
+          />
+          <div className={styles.contentStack}>{children}</div>
+        </div>
+      </LiveWatchSurfaceNoticeProvider>
     </LiveWatchAudioControlProvider>
   );
 }
