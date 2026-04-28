@@ -19,6 +19,7 @@ import { useLiveWatchGuestAuthViewport } from "./useLiveWatchGuestAuthViewport";
 
 type LiveWatchGuestAuthDrawerProps = Readonly<{
   isOpen: boolean;
+  onAuthSuccess?: () => void;
   onClose: () => void;
 }>;
 
@@ -35,6 +36,7 @@ function drawerStateReducer(
 
 export function LiveWatchGuestAuthDrawer({
   isOpen,
+  onAuthSuccess,
   onClose
 }: LiveWatchGuestAuthDrawerProps) {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -324,9 +326,15 @@ export function LiveWatchGuestAuthDrawer({
   ]);
 
   const handleAuthSuccess = useCallback(() => {
-    router.refresh();
-    requestDrawerClose();
-  }, [requestDrawerClose, router]);
+    try {
+      onAuthSuccess?.();
+    } catch {
+      // Surface notice feedback is non-critical; auth success close flow must continue.
+    } finally {
+      router.refresh();
+      requestDrawerClose();
+    }
+  }, [onAuthSuccess, requestDrawerClose, router]);
 
   const handleDialogBackdropClick = useCallback(
     (event: MouseEvent<HTMLDialogElement>) => {

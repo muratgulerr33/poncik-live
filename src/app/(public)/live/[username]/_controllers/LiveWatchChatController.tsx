@@ -4,6 +4,7 @@ import type { Room } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { LiveWatchGuestAuthDrawer } from "../_components/LiveWatchGuestAuthDrawer";
+import { useLiveWatchSurfaceNotice } from "../_components/LiveWatchSurfaceNoticeProvider";
 import {
   LiveWatchChatSurface,
   type LiveWatchChatMessage
@@ -42,12 +43,15 @@ const MAX_MESSAGE_LENGTH = 220;
 const CHAT_HISTORY_CAP = 100;
 const DUPLICATE_KEY_CAP = 200;
 const SEND_COOLDOWN_MS = 900;
+const LIVE_WATCH_AUTH_SUCCESS_NOTICE_DELAY_MS = 650;
+const LIVE_WATCH_AUTH_SUCCESS_NOTICE_DURATION_MS = 2500;
 
 export function LiveWatchChatController({
   access,
   isInteractive,
   room
 }: LiveWatchChatControllerProps) {
+  const { showNotice } = useLiveWatchSurfaceNotice();
   const [draft, setDraft] = useState("");
   const [isGuestAuthDrawerOpen, setGuestAuthDrawerOpen] = useState(false);
   const [messages, setMessages] = useState<readonly LiveWatchChatMessage[]>([]);
@@ -126,6 +130,15 @@ export function LiveWatchChatController({
     setGuestAuthDrawerOpen(true);
   }, [access.kind]);
 
+  const handleGuestAuthSuccess = useCallback(() => {
+    showNotice({
+      message: "Poncik’e hoş geldiniz",
+      tone: "success",
+      delayMs: LIVE_WATCH_AUTH_SUCCESS_NOTICE_DELAY_MS,
+      durationMs: LIVE_WATCH_AUTH_SUCCESS_NOTICE_DURATION_MS
+    });
+  }, [showNotice]);
+
   function handleSubmit() {
     if (!isInteractive || access.kind !== "viewer_ready" || !room) {
       return;
@@ -180,6 +193,7 @@ export function LiveWatchChatController({
 
       <LiveWatchGuestAuthDrawer
         isOpen={isGuestAuthDrawerOpen}
+        onAuthSuccess={handleGuestAuthSuccess}
         onClose={() => {
           setGuestAuthDrawerOpen(false);
         }}

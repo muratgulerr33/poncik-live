@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import type { TransitionEvent } from "react";
+import type { AnimationEvent } from "react";
 
 import styles from "./live-watch-surface-notice.module.css";
 
@@ -18,12 +18,16 @@ export function LiveWatchSurfaceNotice({
   phase,
   tone
 }: LiveWatchSurfaceNoticeProps) {
-  function handleTransitionEnd(event: TransitionEvent<HTMLDivElement>) {
-    if (!onExitComplete || event.target !== event.currentTarget) {
+  function handleAnimationEnd(event: AnimationEvent<HTMLDivElement>) {
+    if (
+      phase !== "exiting" ||
+      !onExitComplete ||
+      event.target !== event.currentTarget
+    ) {
       return;
     }
 
-    if (event.propertyName !== "opacity" && event.propertyName !== "transform") {
+    if (event.animationName !== "liveWatchSurfaceNoticeOut") {
       return;
     }
 
@@ -38,7 +42,7 @@ export function LiveWatchSurfaceNotice({
         className={styles.noticePill}
         data-phase={phase}
         data-tone={tone}
-        onTransitionEnd={onExitComplete ? handleTransitionEnd : undefined}
+        onAnimationEnd={handleAnimationEnd}
         role="status"
       >
         <span aria-hidden="true" className={styles.noticeIndicator}>
