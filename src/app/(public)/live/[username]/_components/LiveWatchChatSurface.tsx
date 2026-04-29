@@ -15,6 +15,7 @@ export type LiveWatchChatMessage = Readonly<{
 type LiveWatchChatSurfaceProps = Readonly<{
   access: LiveWatchChatAccess;
   draft: string;
+  isAuthSurfaceOpen: boolean;
   isInteractive: boolean;
   messages: readonly LiveWatchChatMessage[];
   onGuestAuthRequest: () => void;
@@ -26,6 +27,7 @@ type LiveWatchChatSurfaceProps = Readonly<{
 export function LiveWatchChatSurface({
   access,
   draft,
+  isAuthSurfaceOpen,
   isInteractive,
   messages,
   onGuestAuthRequest,
@@ -36,7 +38,7 @@ export function LiveWatchChatSurface({
   const isViewerReady = access.kind === "viewer_ready";
   const isGuest = access.kind === "guest";
   const isComposerVisible = isViewerReady && isInteractive;
-  const isGuestActionVisible = isGuest && isInteractive;
+  const isGuestActionVisible = isGuest && isInteractive && !isAuthSurfaceOpen;
   const isHistoryVisible = isInteractive && messages.length > 0;
   const hasVisibleChatContent =
     isHistoryVisible || isComposerVisible || isGuestActionVisible;

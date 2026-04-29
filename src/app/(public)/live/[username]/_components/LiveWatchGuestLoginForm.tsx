@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 
 import { signInLiveWatchGuestAction } from "../_actions/live-watch-guest-auth-actions";
 import { INITIAL_LIVE_WATCH_GUEST_AUTH_ACTION_STATE } from "../_lib/live-watch-guest-auth-action-state";
-import styles from "./live-watch-guest-auth-drawer.module.css";
+import styles from "./live-watch-guest-auth-surface.module.css";
 
 type LiveWatchGuestLoginFormProps = Readonly<{
   onSuccess: () => void;

@@ -3,7 +3,7 @@
 import type { Room } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { LiveWatchGuestAuthDrawer } from "../_components/LiveWatchGuestAuthDrawer";
+import { LiveWatchGuestAuthSurface } from "../_components/LiveWatchGuestAuthSurface";
 import { useLiveWatchSurfaceNotice } from "../_components/LiveWatchSurfaceNoticeProvider";
 import {
   LiveWatchChatSurface,
@@ -53,7 +53,7 @@ export function LiveWatchChatController({
 }: LiveWatchChatControllerProps) {
   const { showNotice } = useLiveWatchSurfaceNotice();
   const [draft, setDraft] = useState("");
-  const [isGuestAuthDrawerOpen, setGuestAuthDrawerOpen] = useState(false);
+  const [isGuestAuthSurfaceOpen, setGuestAuthSurfaceOpen] = useState(false);
   const [messages, setMessages] = useState<readonly LiveWatchChatMessage[]>([]);
   const overlayScrollRef = useRef<HTMLDivElement | null>(null);
   const duplicateKeyQueueRef = useRef<string[]>([]);
@@ -127,7 +127,7 @@ export function LiveWatchChatController({
       return;
     }
 
-    setGuestAuthDrawerOpen(true);
+    setGuestAuthSurfaceOpen(true);
   }, [access.kind]);
 
   const handleGuestAuthSuccess = useCallback(() => {
@@ -183,6 +183,7 @@ export function LiveWatchChatController({
       <LiveWatchChatSurface
         access={access}
         draft={draft}
+        isAuthSurfaceOpen={isGuestAuthSurfaceOpen}
         isInteractive={isInteractive}
         messages={messages}
         onDraftChange={handleDraftChange}
@@ -191,11 +192,11 @@ export function LiveWatchChatController({
         overlayScrollRef={overlayScrollRef}
       />
 
-      <LiveWatchGuestAuthDrawer
-        isOpen={isGuestAuthDrawerOpen}
+      <LiveWatchGuestAuthSurface
+        isOpen={isGuestAuthSurfaceOpen}
         onAuthSuccess={handleGuestAuthSuccess}
         onClose={() => {
-          setGuestAuthDrawerOpen(false);
+          setGuestAuthSurfaceOpen(false);
         }}
       />
     </>
