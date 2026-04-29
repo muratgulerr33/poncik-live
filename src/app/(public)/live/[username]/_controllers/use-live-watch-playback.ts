@@ -20,7 +20,10 @@ const TRACK_WAIT_TIMEOUT_MS = 12000;
 const PLAYBACK_DEGRADED_MESSAGE = "Canlı yayın akışı şu anda bağlanamıyor.";
 type LiveWatchPlaybackState = "connecting" | "playing" | "playback_blocked" | "degraded";
 
-export function useLiveWatchPlayback(username: string) {
+export function useLiveWatchPlayback(
+  username: string,
+  viewerConnectionKey: string
+) {
   const { isMuted } = useLiveWatchAudioControl();
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const isDisposedRef = useRef(false);
@@ -223,6 +226,7 @@ export function useLiveWatchPlayback(username: string) {
 
   useEffect(() => {
     let didCancel = false;
+    void viewerConnectionKey;
 
     async function startPlayback() {
       setMediaReady(false);
@@ -308,6 +312,7 @@ export function useLiveWatchPlayback(username: string) {
     detachVideoTrack,
     setDegradedPlaybackForStatusCheck,
     setTrackWaitTimeout,
+    viewerConnectionKey,
     username
   ]);
 

@@ -5,6 +5,14 @@ import { LiveWatchPlaybackSurface } from "../_components/LiveWatchPlaybackSurfac
 import { useLiveWatchPlayback } from "./use-live-watch-playback";
 import { useLiveWatchPlaybackTransition } from "./use-live-watch-playback-transition";
 
+function getLiveWatchViewerConnectionKey(access: LiveWatchChatAccess) {
+  if (access.kind === "viewer_ready") {
+    return `viewer_ready:${access.viewerUsername}`;
+  }
+
+  return access.kind;
+}
+
 export function LiveWatchPlaybackController({
   chatAccess,
   username
@@ -12,6 +20,7 @@ export function LiveWatchPlaybackController({
   chatAccess: LiveWatchChatAccess;
   username: string;
 }>) {
+  const viewerConnectionKey = getLiveWatchViewerConnectionKey(chatAccess);
   const {
     audioRef,
     canRetryPlayback,
@@ -22,7 +31,7 @@ export function LiveWatchPlaybackController({
     room,
     retryPlayback,
     videoRef
-  } = useLiveWatchPlayback(username);
+  } = useLiveWatchPlayback(username, viewerConnectionKey);
   const { isChatVisible, overlayAccessibleLabel, overlayMode } =
     useLiveWatchPlaybackTransition({
       liveStatusCheckRequestSequence,
