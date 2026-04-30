@@ -7,13 +7,22 @@ import { ThemeProvider } from "./theme-provider";
 
 export const metadata: Metadata = {
   title: "Poncik Live",
-  description: "PR-1 technical foundation"
+  description: "PR-1 technical foundation",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" }
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }]
+  }
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  viewportFit: "cover"
+  viewportFit: "cover",
+  themeColor: "#7c3aed"
 };
 
 const geist = Geist({
