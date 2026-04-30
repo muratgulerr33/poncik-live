@@ -150,66 +150,12 @@
   font-size: 0.84rem;
 }
 
-.previewFrame {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: clamp(20rem, calc(100svh - 11.5rem), 38rem);
-  min-height: clamp(20rem, calc(100dvh - 11.5rem), 38rem);
-  overflow: hidden;
-  border: 1px solid color-mix(in oklch, var(--border) 72%, transparent);
-  border-radius: calc(var(--radius) + 0.35rem);
-  box-shadow: 0 10px 26px color-mix(in oklch, var(--foreground) 7%, transparent);
-  background:
-    radial-gradient(circle at top, color-mix(in oklch, var(--primary) 12%, transparent), transparent 60%),
-    linear-gradient(
-      180deg,
-      color-mix(in oklch, var(--surface-2) 82%, black),
-      color-mix(in oklch, var(--background) 60%, black)
-    );
-}
-
-.previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
-  width: 100%;
-  min-height: 0;
-  height: 100%;
-  place-items: stretch;
-  align-self: stretch;
-  border: 0;
-  border-radius: 0;
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklch, var(--foreground) 3.5%, transparent),
-    inset 0 -22px 38px -40px color-mix(in oklch, black 90%, transparent);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in oklch, var(--foreground) 1.75%, black) 0%,
-      black 14%
-    );
-}
-
-.previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
-  filter: none;
-}
-
 .previewScene[data-surface="approved"][data-state="requesting"][data-host-contract="initial-scene"] .previewStageStack[data-layout="scene"][data-host-contract="initial-scene"] .sceneMediaRoot {
   width: 100%;
   height: 100%;
   min-height: 100%;
   align-self: stretch;
   overflow: clip;
-  background: black;
-}
-
-.previewScene[data-surface="approved"][data-state="requesting"][data-host-contract="initial-scene"] .previewStageStack[data-layout="scene"][data-host-contract="initial-scene"] .previewFrame {
-  width: 100%;
-  min-height: 0;
-  height: 100%;
-  place-items: stretch;
-  align-self: stretch;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
   background: black;
 }
 
@@ -229,38 +175,6 @@
   content: none;
 }
 
-.previewVideo,
-.previewVideoInactive {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-}
-
-.previewVideo {
-  transform: none;
-  transform-origin: center;
-  filter: saturate(1.01) contrast(1.01);
-}
-
-.previewVideoInactive {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.previewPlaceholder {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 1rem 1.25rem;
-  text-align: center;
-  color: var(--muted-foreground);
-  max-width: 24rem;
-  margin: 0 auto;
-}
-
 @media (max-width: 640px) {
   .previewScene {
     grid-template-columns: 1fr;
@@ -268,18 +182,6 @@
 
   .stackAction {
     width: 100%;
-  }
-
-  .previewFrame {
-    min-height: clamp(18.5rem, calc(100dvh - 13.5rem), 31rem);
-  }
-
-  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
-    min-height: 100%;
-  }
-
-  .previewScene[data-surface="approved"][data-state="requesting"][data-host-contract="initial-scene"] .previewStageStack[data-layout="scene"][data-host-contract="initial-scene"] .previewFrame {
-    min-height: 100%;
   }
 
   .previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget {
@@ -307,12 +209,6 @@
   }
 }
 
-@media (max-width: 640px) and (orientation: portrait) {
-  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
-    transform: scale(1.1);
-  }
-}
-
 @media (min-width: 641px) and (orientation: landscape) {
   .previewStageStack[data-surface="approved"][data-layout="scene"] .sceneMediaRoot {
     min-height: 0;
@@ -322,30 +218,4 @@
       inset 0 1px 0 color-mix(in oklch, var(--foreground) 3.5%, transparent);
   }
 
-  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewFrame {
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    justify-self: stretch;
-    align-self: stretch;
-    place-items: stretch;
-    background: transparent;
-    box-shadow:
-      inset 0 1px 0 color-mix(in oklch, var(--foreground) 3%, transparent);
-  }
-
-  .previewScene[data-surface="approved"][data-state="preview_ready"] .previewVideo {
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    filter: none;
-  }
-}
-
-@media (orientation: landscape) {
-  .previewFrame {
-    min-height: clamp(14rem, calc(100dvh - 8.75rem), 24rem);
-  }
 }

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioChatOwners } from "./StudioChatOwners";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
-import { StudioPreviewMediaPolish } from "./StudioPreviewMediaPolish";
+import { StudioPreviewMediaFrame } from "./StudioPreviewMediaFrame";
 import type { StudioLiveMicControl } from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
@@ -135,6 +135,7 @@ export function StudioPreviewPanel({
   const shouldShowRequestFallback = !isHealthyPreview && !isInitialRequestFlashSuppressed;
   const isEntryControlVisible = effectiveLifecycleKind !== "live";
   const isEntryActionPending = isStarting || isSecondTriggerBlockActive;
+  const mediaFitMode = isHealthyPreview ? "canonical-fill" : "fallback-contain";
   const shouldShowSuccessFeedback =
     isHealthyPreview &&
     hasVisibleStartSuccessFeedback &&
@@ -375,24 +376,14 @@ export function StudioPreviewPanel({
             <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
           ) : null}
 
-          <div className={styles.previewFrame} ref={previewFrameRef}>
-            <video
-              className={
-                previewState === "preview_ready"
-                  ? styles.previewVideo
-                  : styles.previewVideoInactive
-              }
-              muted
-              playsInline
-              ref={videoRef}
-            />
-            {shouldShowRequestFallback ? (
-              <div className={styles.previewPlaceholder}>
-                {STUDIO_COPY.previewPlaceholder}
-              </div>
-            ) : null}
-            <StudioPreviewMediaPolish />
-          </div>
+          <StudioPreviewMediaFrame
+            fitMode={mediaFitMode}
+            isVideoVisible={previewState === "preview_ready"}
+            placeholder={STUDIO_COPY.previewPlaceholder}
+            previewFrameRef={previewFrameRef}
+            showPlaceholder={shouldShowRequestFallback}
+            videoRef={videoRef}
+          />
 
           {shouldShowRequestFallback ? (
             <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>

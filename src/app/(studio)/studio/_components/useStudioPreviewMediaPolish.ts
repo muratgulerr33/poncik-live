@@ -4,7 +4,8 @@ import { useEffect, useRef, type RefObject } from "react";
 
 const PREVIEW_MEDIA_POLISH_ATTRIBUTE = "data-media-polish";
 const PREVIEW_MEDIA_POLISH_READY_VALUE = "ready";
-const PREVIEW_MEDIA_POLISH_SIDE_INSET_PX = 2;
+const PREVIEW_MEDIA_POLISH_CONTAIN_SIDE_INSET_PX = 2;
+const PREVIEW_MEDIA_POLISH_COVER_SIDE_INSET_PX = 0;
 const PREVIEW_MEDIA_POLISH_RADIUS_PX = 20;
 const PREVIEW_MEDIA_POLISH_STYLE_PROPERTIES = [
   "--preview-media-polish-left",
@@ -14,7 +15,8 @@ const PREVIEW_MEDIA_POLISH_STYLE_PROPERTIES = [
   "--preview-media-polish-side-inset",
   "--preview-media-polish-radius"
 ] as const;
-const PREVIEW_TRANSFORM_EPSILON = 0.001;
+const PREVIEW_MEDIA_POLISH_FIT_CONTAIN = "contain";
+const PREVIEW_MEDIA_POLISH_FIT_COVER = "cover";
 
 type UseStudioPreviewMediaPolishArgs = {
   enabled: boolean;
@@ -33,51 +35,17 @@ function clearPreviewMediaPolish(frameElement: HTMLDivElement | null) {
   }
 }
 
-function readPreviewVideoUniformScale(videoElement: HTMLVideoElement) {
-  const computedTransform = window.getComputedStyle(videoElement).transform;
-
-  if (!computedTransform || computedTransform === "none") {
-    return 1;
-  }
-
-  let matrix: DOMMatrixReadOnly;
-
-  try {
-    matrix = new DOMMatrixReadOnly(computedTransform);
-  } catch {
-    return null;
-  }
+function readPreviewVideoObjectFit(videoElement: HTMLVideoElement) {
+  const computedObjectFit = window.getComputedStyle(videoElement).objectFit;
 
   if (
-    !matrix.is2D ||
-    !Number.isFinite(matrix.a) ||
-    !Number.isFinite(matrix.b) ||
-    !Number.isFinite(matrix.c) ||
-    !Number.isFinite(matrix.d) ||
-    !Number.isFinite(matrix.e) ||
-    !Number.isFinite(matrix.f)
+    computedObjectFit === PREVIEW_MEDIA_POLISH_FIT_CONTAIN ||
+    computedObjectFit === PREVIEW_MEDIA_POLISH_FIT_COVER
   ) {
-    return null;
+    return computedObjectFit;
   }
 
-  if (
-    Math.abs(matrix.b) > PREVIEW_TRANSFORM_EPSILON ||
-    Math.abs(matrix.c) > PREVIEW_TRANSFORM_EPSILON ||
-    Math.abs(matrix.e) > PREVIEW_TRANSFORM_EPSILON ||
-    Math.abs(matrix.f) > PREVIEW_TRANSFORM_EPSILON
-  ) {
-    return null;
-  }
-
-  if (
-    matrix.a <= PREVIEW_TRANSFORM_EPSILON ||
-    matrix.d <= PREVIEW_TRANSFORM_EPSILON ||
-    Math.abs(matrix.a - matrix.d) > PREVIEW_TRANSFORM_EPSILON
-  ) {
-    return null;
-  }
-
-  return matrix.a;
+  return null;
 }
 
 function clampPreviewMediaCoordinate(value: number, min: number, max: number) {
@@ -126,27 +94,31 @@ export function useStudioPreviewMediaPolish({
         return;
       }
 
-      const transformScale = readPreviewVideoUniformScale(videoElement);
+      const objectFit = readPreviewVideoObjectFit(videoElement);
 
-      if (transformScale === null) {
+      if (objectFit === null) {
         clearPreviewMediaPolish(frameElement);
         return;
       }
 
-      const containScale = Math.min(
-        frameRect.width / sourceWidth,
-        frameRect.height / sourceHeight
-      );
+      const fitScale =
+        objectFit === PREVIEW_MEDIA_POLISH_FIT_COVER
+          ? Math.max(frameRect.width / sourceWidth, frameRect.height / sourceHeight)
+          : Math.min(frameRect.width / sourceWidth, frameRect.height / sourceHeight);
 
-      if (!(containScale > 0)) {
+      if (!(fitScale > 0)) {
         clearPreviewMediaPolish(frameElement);
         return;
       }
 
-      const paintedWidth = sourceWidth * containScale * transformScale;
-      const paintedHeight = sourceHeight * containScale * transformScale;
+      const paintedWidth = sourceWidth * fitScale;
+      const paintedHeight = sourceHeight * fitScale;
       const paintedLeft = (frameRect.width - paintedWidth) / 2;
       const paintedTop = (frameRect.height - paintedHeight) / 2;
+      const sideInsetPx =
+        objectFit === PREVIEW_MEDIA_POLISH_FIT_COVER
+          ? PREVIEW_MEDIA_POLISH_COVER_SIDE_INSET_PX
+          : PREVIEW_MEDIA_POLISH_CONTAIN_SIDE_INSET_PX;
       const visibleLeft = clampPreviewMediaCoordinate(paintedLeft, 0, frameRect.width);
       const visibleTop = clampPreviewMediaCoordinate(paintedTop, 0, frameRect.height);
       const visibleRight = clampPreviewMediaCoordinate(
@@ -163,7 +135,7 @@ export function useStudioPreviewMediaPolish({
       const visibleHeight = visibleBottom - visibleTop;
 
       if (
-        visibleWidth <= PREVIEW_MEDIA_POLISH_SIDE_INSET_PX * 2 ||
+        visibleWidth <= sideInsetPx * 2 ||
         !(visibleHeight > 0)
       ) {
         clearPreviewMediaPolish(frameElement);
@@ -188,7 +160,7 @@ export function useStudioPreviewMediaPolish({
       );
       frameElement.style.setProperty(
         "--preview-media-polish-side-inset",
-        `${PREVIEW_MEDIA_POLISH_SIDE_INSET_PX}px`
+        `${sideInsetPx}px`
       );
       frameElement.style.setProperty(
         "--preview-media-polish-radius",
