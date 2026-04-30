@@ -95,15 +95,19 @@ PR-1, yalnız `/studio` için canonical media frame foundation olarak kapatıld�
 - Live media parity ayrı PR
 - Live overlay budget ayrı PR
 
+Close-out standard note: Commit hash commit alınmadan önce bilinemeyeceği için close-out dokümanında en azından planlanan commit message önceden yazılmalı; commit sonrası final raporda gerçek hash ayrıca verilmelidir.
+
 # 11. Validation Sonuçları
 
-- `git diff --check`: pending close-out commit sırasında tekrar doğrulanacak
-- `npm run lint`: pending close-out commit sırasında tekrar doğrulanacak
-- `npm run build`: pending close-out commit sırasında tekrar doğrulanacak
+- `git diff --check`: PASS
+- `npm run lint`: PASS
+- `npm run build`: PASS
 
 # 12. Commit Hash Alanı
 
-- Final commit hash: close-out commit sonrası doldurulmak üzere final raporda verilecek
+- Commit: `95b4aec8f464ab110e63dfcd4379e1daca59809a`
+- Short commit: `95b4aec`
+- Commit message: `studio: add canonical media frame foundation`
 
 # 13. Next Step
 
