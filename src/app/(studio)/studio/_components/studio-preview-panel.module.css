@@ -114,7 +114,7 @@
   padding:
     max(0.2rem, calc(var(--safe-area-top) + 0.02rem))
     max(0.4rem, calc(var(--safe-area-right) + 0.1rem))
-    max(0.25rem, calc(var(--safe-area-bottom) + 0.08rem))
+    max(0.14rem, calc(var(--safe-area-bottom) + 0.04rem))
     max(0.4rem, calc(var(--safe-area-left) + 0.1rem));
   pointer-events: none;
   z-index: 2;
@@ -163,6 +163,7 @@
   width: fit-content;
   max-width: min(100%, 18rem);
   justify-self: center;
+  align-self: end;
   margin-top: 0;
   padding: 0;
   border: 0;
@@ -187,8 +188,8 @@
   .previewScene[data-surface="approved"][data-state="preview_ready"] .sceneActionBudget {
     width: fit-content;
     max-width: min(100%, 15.5rem);
-    padding-block-start: 0.25rem;
-    padding-block-end: 1.5rem;
+    padding-block-start: 0.18rem;
+    padding-block-end: clamp(0.78rem, calc(var(--safe-area-bottom) + 0.24rem), 1rem);
     padding-inline: 0;
   }
 
@@ -196,7 +197,7 @@
     padding:
       max(0.16rem, calc(var(--safe-area-top) + 0.02rem))
       max(0.24rem, calc(var(--safe-area-right) + 0.03rem))
-      max(0.18rem, calc(var(--safe-area-bottom) + 0.03rem))
+      max(0.1rem, calc(var(--safe-area-bottom) + 0.02rem))
       max(0.24rem, calc(var(--safe-area-left) + 0.03rem));
   }
 

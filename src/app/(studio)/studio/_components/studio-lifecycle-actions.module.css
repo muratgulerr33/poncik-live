@@ -8,9 +8,9 @@
 }
 
 .sceneNativeStack {
-  gap: 0.36rem;
+  gap: 0.32rem;
   margin-top: 0;
-  padding-bottom: clamp(0.55rem, calc(env(safe-area-inset-bottom) + 0.12rem), 1rem);
+  padding-bottom: clamp(0.42rem, calc(env(safe-area-inset-bottom) + 0.08rem), 0.82rem);
 }
 
 .sceneNativeControl {
@@ -91,10 +91,11 @@
   white-space: nowrap;
   text-align: center;
   font-size: 0.77rem;
-  line-height: 1;
+  line-height: 1.08;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: color-mix(in oklch, var(--foreground) 94%, white);
+  text-shadow: 0 1px 1px color-mix(in oklch, black 20%, transparent);
 }
 
 .fallbackAction {
@@ -138,6 +139,7 @@
   .sceneNativeLabel {
     width: 7.1rem;
     font-size: 0.75rem;
+    line-height: 1.06;
   }
 
   .fallbackAction {
