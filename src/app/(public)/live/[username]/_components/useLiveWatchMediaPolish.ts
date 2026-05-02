@@ -4,7 +4,9 @@ import { useEffect, useRef, type RefObject } from "react";
 
 const LIVE_WATCH_MEDIA_POLISH_ATTRIBUTE = "data-live-media-polish";
 const LIVE_WATCH_MEDIA_POLISH_READY_VALUE = "ready";
-const LIVE_WATCH_MEDIA_POLISH_SIDE_INSET_PX = 2;
+const LIVE_WATCH_MEDIA_FIT_ATTRIBUTE = "data-live-media-fit";
+const LIVE_WATCH_MEDIA_POLISH_CONTAIN_SIDE_INSET_PX = 2;
+const LIVE_WATCH_MEDIA_POLISH_COVER_SIDE_INSET_PX = 0;
 const LIVE_WATCH_MEDIA_POLISH_RADIUS_PX = 20;
 const LIVE_WATCH_MEDIA_POLISH_STYLE_PROPERTIES = [
   "--live-watch-media-polish-left",
@@ -14,7 +16,8 @@ const LIVE_WATCH_MEDIA_POLISH_STYLE_PROPERTIES = [
   "--live-watch-media-polish-side-inset",
   "--live-watch-media-polish-radius"
 ] as const;
-const LIVE_WATCH_MEDIA_POLISH_TRANSFORM_EPSILON = 0.001;
+const LIVE_WATCH_MEDIA_FIT_COVER = "cover";
+const LIVE_WATCH_MEDIA_FIT_SAFE_CONTAIN = "safe-contain";
 
 type UseLiveWatchMediaPolishArgs = Readonly<{
   enabled: boolean;
@@ -27,57 +30,11 @@ function clearLiveWatchMediaStagePolish(mediaStageElement: HTMLDivElement | null
   }
 
   mediaStageElement.removeAttribute(LIVE_WATCH_MEDIA_POLISH_ATTRIBUTE);
+  mediaStageElement.removeAttribute(LIVE_WATCH_MEDIA_FIT_ATTRIBUTE);
 
   for (const styleProperty of LIVE_WATCH_MEDIA_POLISH_STYLE_PROPERTIES) {
     mediaStageElement.style.removeProperty(styleProperty);
   }
-}
-
-function readLiveWatchMediaStageUniformScale(videoElement: HTMLVideoElement) {
-  const computedTransform = window.getComputedStyle(videoElement).transform;
-
-  if (!computedTransform || computedTransform === "none") {
-    return 1;
-  }
-
-  let matrix: DOMMatrixReadOnly;
-
-  try {
-    matrix = new DOMMatrixReadOnly(computedTransform);
-  } catch {
-    return null;
-  }
-
-  if (
-    !matrix.is2D ||
-    !Number.isFinite(matrix.a) ||
-    !Number.isFinite(matrix.b) ||
-    !Number.isFinite(matrix.c) ||
-    !Number.isFinite(matrix.d) ||
-    !Number.isFinite(matrix.e) ||
-    !Number.isFinite(matrix.f)
-  ) {
-    return null;
-  }
-
-  if (
-    Math.abs(matrix.b) > LIVE_WATCH_MEDIA_POLISH_TRANSFORM_EPSILON ||
-    Math.abs(matrix.c) > LIVE_WATCH_MEDIA_POLISH_TRANSFORM_EPSILON ||
-    Math.abs(matrix.e) > LIVE_WATCH_MEDIA_POLISH_TRANSFORM_EPSILON ||
-    Math.abs(matrix.f) > LIVE_WATCH_MEDIA_POLISH_TRANSFORM_EPSILON
-  ) {
-    return null;
-  }
-
-  if (
-    matrix.a <= LIVE_WATCH_MEDIA_POLISH_TRANSFORM_EPSILON ||
-    matrix.d <= LIVE_WATCH_MEDIA_POLISH_TRANSFORM_EPSILON ||
-    Math.abs(matrix.a - matrix.d) > LIVE_WATCH_MEDIA_POLISH_TRANSFORM_EPSILON
-  ) {
-    return null;
-  }
-
-  return matrix.a;
 }
 
 function clampLiveWatchMediaStageCoordinate(value: number, min: number, max: number) {
@@ -86,6 +43,36 @@ function clampLiveWatchMediaStageCoordinate(value: number, min: number, max: num
 
 function formatLiveWatchMediaStagePx(value: number) {
   return `${value.toFixed(3)}px`;
+}
+
+function resolveLiveWatchMediaFitMode({
+  frameHeight,
+  frameWidth,
+  sourceHeight,
+  sourceWidth
+}: Readonly<{
+  frameHeight: number;
+  frameWidth: number;
+  sourceHeight: number;
+  sourceWidth: number;
+}>) {
+  if (
+    !(frameWidth > 0) ||
+    !(frameHeight > 0) ||
+    !(sourceWidth > 0) ||
+    !(sourceHeight > 0)
+  ) {
+    return LIVE_WATCH_MEDIA_FIT_COVER;
+  }
+
+  const isPortraitFrame = frameHeight > frameWidth;
+  const isNonPortraitSource = sourceWidth >= sourceHeight;
+
+  if (isPortraitFrame && isNonPortraitSource) {
+    return LIVE_WATCH_MEDIA_FIT_SAFE_CONTAIN;
+  }
+
+  return LIVE_WATCH_MEDIA_FIT_COVER;
 }
 
 export function useLiveWatchMediaPolish({
@@ -113,12 +100,6 @@ export function useLiveWatchMediaPolish({
 
       const sourceWidth = videoElement.videoWidth;
       const sourceHeight = videoElement.videoHeight;
-
-      if (!(sourceWidth > 0) || !(sourceHeight > 0)) {
-        clearLiveWatchMediaStagePolish(mediaStageElement);
-        return;
-      }
-
       const mediaStageRect = mediaStageElement.getBoundingClientRect();
 
       if (!(mediaStageRect.width > 0) || !(mediaStageRect.height > 0)) {
@@ -126,27 +107,52 @@ export function useLiveWatchMediaPolish({
         return;
       }
 
-      const transformScale = readLiveWatchMediaStageUniformScale(videoElement);
+      const resolvedFitMode = resolveLiveWatchMediaFitMode({
+        frameHeight: mediaStageRect.height,
+        frameWidth: mediaStageRect.width,
+        sourceHeight,
+        sourceWidth
+      });
 
-      if (transformScale === null) {
-        clearLiveWatchMediaStagePolish(mediaStageElement);
-        return;
-      }
-
-      const containScale = Math.min(
-        mediaStageRect.width / sourceWidth,
-        mediaStageRect.height / sourceHeight
+      mediaStageElement.setAttribute(
+        LIVE_WATCH_MEDIA_FIT_ATTRIBUTE,
+        resolvedFitMode
       );
 
-      if (!(containScale > 0)) {
+      if (!(sourceWidth > 0) || !(sourceHeight > 0)) {
+        mediaStageElement.removeAttribute(LIVE_WATCH_MEDIA_POLISH_ATTRIBUTE);
+
+        for (const styleProperty of LIVE_WATCH_MEDIA_POLISH_STYLE_PROPERTIES) {
+          mediaStageElement.style.removeProperty(styleProperty);
+        }
+
+        return;
+      }
+
+      const fitScale =
+        resolvedFitMode === LIVE_WATCH_MEDIA_FIT_COVER
+          ? Math.max(
+              mediaStageRect.width / sourceWidth,
+              mediaStageRect.height / sourceHeight
+            )
+          : Math.min(
+              mediaStageRect.width / sourceWidth,
+              mediaStageRect.height / sourceHeight
+            );
+
+      if (!(fitScale > 0)) {
         clearLiveWatchMediaStagePolish(mediaStageElement);
         return;
       }
 
-      const paintedWidth = sourceWidth * containScale * transformScale;
-      const paintedHeight = sourceHeight * containScale * transformScale;
+      const paintedWidth = sourceWidth * fitScale;
+      const paintedHeight = sourceHeight * fitScale;
       const paintedLeft = (mediaStageRect.width - paintedWidth) / 2;
       const paintedTop = (mediaStageRect.height - paintedHeight) / 2;
+      const sideInsetPx =
+        resolvedFitMode === LIVE_WATCH_MEDIA_FIT_COVER
+          ? LIVE_WATCH_MEDIA_POLISH_COVER_SIDE_INSET_PX
+          : LIVE_WATCH_MEDIA_POLISH_CONTAIN_SIDE_INSET_PX;
       const visibleLeft = clampLiveWatchMediaStageCoordinate(
         paintedLeft,
         0,
@@ -171,7 +177,7 @@ export function useLiveWatchMediaPolish({
       const visibleHeight = visibleBottom - visibleTop;
 
       if (
-        visibleWidth <= LIVE_WATCH_MEDIA_POLISH_SIDE_INSET_PX * 2 ||
+        visibleWidth <= sideInsetPx * 2 ||
         !(visibleHeight > 0)
       ) {
         clearLiveWatchMediaStagePolish(mediaStageElement);
@@ -196,7 +202,7 @@ export function useLiveWatchMediaPolish({
       );
       mediaStageElement.style.setProperty(
         "--live-watch-media-polish-side-inset",
-        `${LIVE_WATCH_MEDIA_POLISH_SIDE_INSET_PX}px`
+        `${sideInsetPx}px`
       );
       mediaStageElement.style.setProperty(
         "--live-watch-media-polish-radius",
