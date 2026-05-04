@@ -135,6 +135,54 @@ export function getStudioPublisherMicrophonePublication(room: Room | null) {
   return publication as LocalTrackPublication;
 }
 
+export function getStudioPublisherCameraPublication(room: Room | null) {
+  if (!room) {
+    return null;
+  }
+
+  const publication = room.localParticipant.getTrackPublication(Track.Source.Camera);
+
+  if (!publication?.track) {
+    return null;
+  }
+
+  return publication as LocalTrackPublication;
+}
+
+export async function unpublishStudioPublisherCameraTrack(
+  room: Room | null,
+  track: MediaStreamTrack
+) {
+  if (!room || !track) {
+    return false;
+  }
+
+  try {
+    const publication = await room.localParticipant.unpublishTrack(track, true);
+    return !!publication;
+  } catch {
+    return false;
+  }
+}
+
+export async function publishStudioPublisherCameraTrack(
+  room: Room | null,
+  track: MediaStreamTrack
+) {
+  if (!room || !track || track.readyState === "ended") {
+    return false;
+  }
+
+  try {
+    await room.localParticipant.publishTrack(track, {
+      source: Track.Source.Camera
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function setStudioPublisherMicrophoneMuted(
   room: Room | null,
   muted: boolean

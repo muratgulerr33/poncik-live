@@ -12,6 +12,7 @@ import { StudioStartFeedback } from "./StudioStartFeedback";
 import styles from "./studio-preview-panel.module.css";
 import { useStudioMicUtilitySurface } from "./useStudioMicUtilitySurface";
 import { useStudioPreviewMediaPolish } from "./useStudioPreviewMediaPolish";
+import { useStudioPublishedCameraSwitch } from "./useStudioPublishedCameraSwitch";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
 
@@ -144,9 +145,11 @@ export function StudioPreviewPanel({
   const isEntryControlVisible = effectiveLifecycleKind !== "live";
   const isEntryActionPending = isStarting || isSecondTriggerBlockActive;
   const mediaFitMode = isHealthyPreview ? "canonical-fill" : "fallback-contain";
+  const isLiveCameraControlAvailable =
+    effectiveLifecycleKind === "live" && publisherRoom !== null;
   const isCameraControlAvailable =
     previewState === "preview_ready" &&
-    effectiveLifecycleKind !== "live" &&
+    (effectiveLifecycleKind !== "live" || isLiveCameraControlAvailable) &&
     !isStarting &&
     !isStopping;
   const shouldShowSuccessFeedback =
@@ -159,9 +162,21 @@ export function StudioPreviewPanel({
     enabled: previewState === "preview_ready",
     videoRef
   });
+  const {
+    isPublishedCameraSwitchPending,
+    switchPublishedCamera
+  } = useStudioPublishedCameraSwitch({
+    getPublisherRoom,
+    switchPreviewCamera
+  });
   const handleCameraToggle = useCallback(() => {
+    if (effectiveLifecycleKind === "live") {
+      void switchPublishedCamera();
+      return;
+    }
+
     void switchPreviewCamera();
-  }, [switchPreviewCamera]);
+  }, [effectiveLifecycleKind, switchPreviewCamera, switchPublishedCamera]);
   const cameraControl = useMemo<StudioCameraControl | null>(() => {
     if (!isCameraControlAvailable) {
       return null;
@@ -169,10 +184,15 @@ export function StudioPreviewPanel({
 
     return {
       isAvailable: true,
-      isPending: isCameraSwitchPending,
+      isPending: isCameraSwitchPending || isPublishedCameraSwitchPending,
       onToggle: handleCameraToggle
     };
-  }, [handleCameraToggle, isCameraControlAvailable, isCameraSwitchPending]);
+  }, [
+    handleCameraToggle,
+    isCameraControlAvailable,
+    isCameraSwitchPending,
+    isPublishedCameraSwitchPending
+  ]);
 
   const clearSecondTriggerBlockResetTimeout = useCallback(() => {
     if (!secondTriggerBlockResetTimeoutRef.current) {

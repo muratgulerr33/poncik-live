@@ -22,6 +22,36 @@ import {
 
 const PREVIEW_TIMEOUT_MS = 12000;
 
+type StudioPreviewCameraSwitchBeforeCurrentVideoStopInput = {
+  currentStream: MediaStream;
+  currentVideoTrack: MediaStreamTrack;
+  targetDeviceId: string;
+};
+
+type StudioPreviewCameraSwitchAfterNextVideoAttachBeforeCommitInput = {
+  nextStream: MediaStream;
+  nextVideoStream: MediaStream;
+  nextVideoTrack: MediaStreamTrack;
+  targetDeviceId: string;
+};
+
+type StudioPreviewCameraSwitchAfterNextVideoCommitAbortedInput = {
+  nextVideoTrack: MediaStreamTrack;
+  targetDeviceId: string;
+};
+
+export type StudioPreviewCameraSwitchCallbacks = {
+  beforeCurrentVideoStop?: (
+    input: StudioPreviewCameraSwitchBeforeCurrentVideoStopInput
+  ) => Promise<boolean>;
+  afterNextVideoAttachBeforeCommit?: (
+    input: StudioPreviewCameraSwitchAfterNextVideoAttachBeforeCommitInput
+  ) => Promise<boolean>;
+  afterNextVideoCommitAborted?: (
+    input: StudioPreviewCameraSwitchAfterNextVideoCommitAbortedInput
+  ) => Promise<void>;
+};
+
 function clearPreviewElementTarget(videoElement: HTMLVideoElement | null) {
   if (!videoElement) {
     return;
@@ -143,7 +173,9 @@ export function useStudioPreviewBootstrap() {
     setPreviewState("preview_ready");
   }, [cleanupStream, settleInitialBootstrapPending]);
 
-  const switchPreviewCamera = useCallback(async () => {
+  const switchPreviewCamera = useCallback(async (
+    callbacks?: StudioPreviewCameraSwitchCallbacks
+  ) => {
     if (isCameraSwitchPendingRef.current) {
       return false;
     }
@@ -159,7 +191,6 @@ export function useStudioPreviewBootstrap() {
     setIsCameraSwitchPending(true);
     attemptIdRef.current += 1;
     const switchAttemptId = attemptIdRef.current;
-    let shouldClearPendingState = true;
 
     try {
       const devicesResult = await readStudioVideoInputDevices();
@@ -180,6 +211,27 @@ export function useStudioPreviewBootstrap() {
 
       if (!targetDevice) {
         return false;
+      }
+
+      const currentVideoTrack =
+        currentStream
+          .getVideoTracks()
+          .find((track) => track.readyState !== "ended") ?? null;
+
+      if (!currentVideoTrack) {
+        return false;
+      }
+
+      if (callbacks?.beforeCurrentVideoStop) {
+        const didPrepareCurrentTrack = await callbacks.beforeCurrentVideoStop({
+          currentStream,
+          currentVideoTrack,
+          targetDeviceId: targetDevice.deviceId
+        });
+
+        if (!didPrepareCurrentTrack) {
+          return false;
+        }
       }
 
       stopStudioVideoTracks(currentStream);
@@ -228,11 +280,71 @@ export function useStudioPreviewBootstrap() {
         return false;
       }
 
+      const nextVideoTrack =
+        nextVideoStream
+          .getVideoTracks()
+          .find((track) => track.readyState !== "ended") ?? null;
+
+      if (!nextVideoTrack) {
+        stopStudioMediaStream(nextVideoStream);
+        clearPreviewElementTarget(videoElement);
+
+        if (
+          isMountedRef.current &&
+          attemptIdRef.current === switchAttemptId
+        ) {
+          setPreviewState("degraded");
+        }
+
+        return false;
+      }
+
       if (
         !isMountedRef.current ||
         attemptIdRef.current !== switchAttemptId
       ) {
-        shouldClearPendingState = false;
+        stopStudioMediaStream(nextVideoStream);
+        clearPreviewElementTarget(videoElement);
+        return false;
+      }
+
+      if (callbacks?.afterNextVideoAttachBeforeCommit) {
+        const didPrepareNextTrack =
+          await callbacks.afterNextVideoAttachBeforeCommit({
+            nextStream,
+            nextVideoStream,
+            nextVideoTrack,
+            targetDeviceId: targetDevice.deviceId
+          });
+
+        if (!didPrepareNextTrack) {
+          stopStudioMediaStream(nextVideoStream);
+          clearPreviewElementTarget(videoElement);
+
+          if (
+            isMountedRef.current &&
+            attemptIdRef.current === switchAttemptId
+          ) {
+            setPreviewState("degraded");
+          }
+
+          return false;
+        }
+      }
+
+      if (
+        !isMountedRef.current ||
+        attemptIdRef.current !== switchAttemptId
+      ) {
+        try {
+          await callbacks?.afterNextVideoCommitAborted?.({
+            nextVideoTrack,
+            targetDeviceId: targetDevice.deviceId
+          });
+        } catch {
+          // Best-effort orphan cleanup only.
+        }
+
         stopStudioMediaStream(nextVideoStream);
         clearPreviewElementTarget(videoElement);
         return false;
@@ -246,7 +358,6 @@ export function useStudioPreviewBootstrap() {
       isCameraSwitchPendingRef.current = false;
 
       if (
-        shouldClearPendingState &&
         isMountedRef.current &&
         attemptIdRef.current === switchAttemptId
       ) {
