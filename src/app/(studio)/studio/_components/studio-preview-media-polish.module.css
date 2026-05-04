@@ -36,7 +36,12 @@
       (var(--preview-media-polish-side-inset, 0px) * 2)
     );
     height: var(--preview-media-polish-height, 0px);
-    border-radius: var(--preview-media-polish-radius, 0px);
-    box-shadow: 0 0 0 100vmax black;
+    border-radius: 0 0 var(--preview-media-polish-radius, 0px)
+      var(--preview-media-polish-radius, 0px);
+    box-shadow:
+      0 0 0 100vmax black,
+      inset 0 0 0 1px color-mix(in oklch, white 6%, transparent),
+      inset 0 16px 22px -30px color-mix(in oklch, white 18%, transparent),
+      inset 0 -18px 26px -34px color-mix(in oklch, black 84%, transparent);
   }
 }
