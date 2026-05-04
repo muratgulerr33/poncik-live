@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioChatOwners } from "./StudioChatOwners";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import { StudioPreviewMediaFrame } from "./StudioPreviewMediaFrame";
-import type { StudioMicControl } from "./StudioTopChrome";
+import type { StudioCameraControl, StudioMicControl } from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
 import styles from "./studio-preview-panel.module.css";
@@ -26,6 +26,7 @@ type StudioPreviewPanelProps = {
   lifecycle: {
     kind: "idle" | "live" | "degraded";
   };
+  onCameraControlChange?: (cameraControl: StudioCameraControl | null) => void;
   onExitControlChange?: (state: StudioExitControlState) => void;
   onMicControlChange?: (micControl: StudioMicControl | null) => void;
   username: string;
@@ -82,6 +83,7 @@ function scheduleStartSuccessFeedbackDeferredClear() {
 
 export function StudioPreviewPanel({
   lifecycle,
+  onCameraControlChange,
   onExitControlChange,
   onMicControlChange,
   username
@@ -101,9 +103,11 @@ export function StudioPreviewPanel({
   const {
     canRetry,
     getPreviewStream,
+    isCameraSwitchPending,
     isInitialBootstrapPending,
     previewState,
     retryPreview,
+    switchPreviewCamera,
     videoRef
   } = useStudioPreviewBootstrap();
   const {
@@ -140,6 +144,11 @@ export function StudioPreviewPanel({
   const isEntryControlVisible = effectiveLifecycleKind !== "live";
   const isEntryActionPending = isStarting || isSecondTriggerBlockActive;
   const mediaFitMode = isHealthyPreview ? "canonical-fill" : "fallback-contain";
+  const isCameraControlAvailable =
+    previewState === "preview_ready" &&
+    effectiveLifecycleKind !== "live" &&
+    !isStarting &&
+    !isStopping;
   const shouldShowSuccessFeedback =
     isHealthyPreview &&
     hasVisibleStartSuccessFeedback &&
@@ -150,6 +159,20 @@ export function StudioPreviewPanel({
     enabled: previewState === "preview_ready",
     videoRef
   });
+  const handleCameraToggle = useCallback(() => {
+    void switchPreviewCamera();
+  }, [switchPreviewCamera]);
+  const cameraControl = useMemo<StudioCameraControl | null>(() => {
+    if (!isCameraControlAvailable) {
+      return null;
+    }
+
+    return {
+      isAvailable: true,
+      isPending: isCameraSwitchPending,
+      onToggle: handleCameraToggle
+    };
+  }, [handleCameraToggle, isCameraControlAvailable, isCameraSwitchPending]);
 
   const clearSecondTriggerBlockResetTimeout = useCallback(() => {
     if (!secondTriggerBlockResetTimeoutRef.current) {
@@ -359,6 +382,10 @@ export function StudioPreviewPanel({
   }, [micControl, onMicControlChange]);
 
   useEffect(() => {
+    onCameraControlChange?.(cameraControl);
+  }, [cameraControl, onCameraControlChange]);
+
+  useEffect(() => {
     if (!onMicControlChange) {
       return;
     }
@@ -367,6 +394,16 @@ export function StudioPreviewPanel({
       onMicControlChange(null);
     };
   }, [onMicControlChange]);
+
+  useEffect(() => {
+    if (!onCameraControlChange) {
+      return;
+    }
+
+    return () => {
+      onCameraControlChange(null);
+    };
+  }, [onCameraControlChange]);
 
   return (
     <section

@@ -1,4 +1,4 @@
-import { Mic, MicOff, X } from "lucide-react";
+import { Mic, MicOff, SwitchCamera, X } from "lucide-react";
 
 import styles from "./studio-top-chrome.module.css";
 
@@ -11,7 +11,14 @@ export type StudioMicControl = Readonly<{
   onToggle: () => void;
 }>;
 
+export type StudioCameraControl = Readonly<{
+  isAvailable: boolean;
+  isPending: boolean;
+  onToggle: () => void;
+}>;
+
 type StudioTopChromeProps = Readonly<{
+  cameraControl?: StudioCameraControl | null;
   closeDisabled?: boolean;
   micControl?: StudioMicControl | null;
   onRequestClose: () => void;
@@ -19,6 +26,7 @@ type StudioTopChromeProps = Readonly<{
 }>;
 
 export function StudioTopChrome({
+  cameraControl = null,
   closeDisabled = false,
   micControl = null,
   onRequestClose,
@@ -49,31 +57,48 @@ export function StudioTopChrome({
           <p className={`t-label ${styles.usernameLabel}`}>@{username}</p>
         ) : null}
       </div>
-      {micControl ? (
+      {cameraControl?.isAvailable || micControl ? (
         <div className={styles.trailingCluster}>
-          <button
-            aria-label={micControl.isMuted ? "Mikrofonu ac" : "Mikrofonu kapat"}
-            aria-pressed={micControl.isMuted}
-            className={styles.utilityButton}
-            data-state={micControl.isMuted ? "muted" : "active"}
-            disabled={micControl.isPending}
-            onClick={micControl.onToggle}
-            type="button"
-          >
-            {micControl.isMuted ? (
-              <MicOff
+          {cameraControl?.isAvailable ? (
+            <button
+              aria-label="Kamerayı değiştir"
+              className={styles.utilityButton}
+              disabled={cameraControl.isPending}
+              onClick={cameraControl.onToggle}
+              type="button"
+            >
+              <SwitchCamera
                 aria-hidden="true"
                 size={CHROME_ICON_SIZE}
                 strokeWidth={CHROME_ICON_STROKE_WIDTH}
               />
-            ) : (
-              <Mic
-                aria-hidden="true"
-                size={CHROME_ICON_SIZE}
-                strokeWidth={CHROME_ICON_STROKE_WIDTH}
-              />
-            )}
-          </button>
+            </button>
+          ) : null}
+          {micControl ? (
+            <button
+              aria-label={micControl.isMuted ? "Mikrofonu ac" : "Mikrofonu kapat"}
+              aria-pressed={micControl.isMuted}
+              className={styles.utilityButton}
+              data-state={micControl.isMuted ? "muted" : "active"}
+              disabled={micControl.isPending}
+              onClick={micControl.onToggle}
+              type="button"
+            >
+              {micControl.isMuted ? (
+                <MicOff
+                  aria-hidden="true"
+                  size={CHROME_ICON_SIZE}
+                  strokeWidth={CHROME_ICON_STROKE_WIDTH}
+                />
+              ) : (
+                <Mic
+                  aria-hidden="true"
+                  size={CHROME_ICON_SIZE}
+                  strokeWidth={CHROME_ICON_STROKE_WIDTH}
+                />
+              )}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </header>

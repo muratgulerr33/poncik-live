@@ -4,6 +4,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { readStudioBrowserCapabilityState } from "../_adapters/studio-browser-capability-adapter";
 import {
+  createStudioStreamWithReplacedVideo,
+  readStudioActiveVideoDeviceId,
+  readStudioVideoInputDevices,
+  requestStudioCameraStreamByDeviceId,
+  resolveStudioNextCameraDevice,
+  stopStudioMediaStream,
+  stopStudioVideoTracks,
+  waitStudioCameraReleaseSettle
+} from "../_adapters/studio-camera-device-adapter";
+import {
   attachStudioPreviewStream,
   requestStudioPreviewStream,
   stopStudioPreviewStream,
@@ -12,12 +22,23 @@ import {
 
 const PREVIEW_TIMEOUT_MS = 12000;
 
+function clearPreviewElementTarget(videoElement: HTMLVideoElement | null) {
+  if (!videoElement) {
+    return;
+  }
+
+  videoElement.pause();
+  videoElement.srcObject = null;
+}
+
 export function useStudioPreviewBootstrap() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const attemptIdRef = useRef(0);
   const initialBootstrapAttemptIdRef = useRef<number | null>(null);
+  const isCameraSwitchPendingRef = useRef(false);
   const isMountedRef = useRef(false);
+  const [isCameraSwitchPending, setIsCameraSwitchPending] = useState(false);
   const [isInitialBootstrapPending, setIsInitialBootstrapPending] = useState(true);
   const [previewState, setPreviewState] = useState<StudioPreviewState>("requesting");
 
@@ -26,14 +47,7 @@ export function useStudioPreviewBootstrap() {
   }
 
   const clearPreviewElement = useCallback(() => {
-    const videoElement = videoRef.current;
-
-    if (!videoElement) {
-      return;
-    }
-
-    videoElement.pause();
-    videoElement.srcObject = null;
+    clearPreviewElementTarget(videoRef.current);
   }, []);
 
   const cleanupStream = useCallback(() => {
@@ -129,6 +143,118 @@ export function useStudioPreviewBootstrap() {
     setPreviewState("preview_ready");
   }, [cleanupStream, settleInitialBootstrapPending]);
 
+  const switchPreviewCamera = useCallback(async () => {
+    if (isCameraSwitchPendingRef.current) {
+      return false;
+    }
+
+    const currentStream = streamRef.current;
+    const videoElement = videoRef.current;
+
+    if (!currentStream || !videoElement) {
+      return false;
+    }
+
+    isCameraSwitchPendingRef.current = true;
+    setIsCameraSwitchPending(true);
+    attemptIdRef.current += 1;
+    const switchAttemptId = attemptIdRef.current;
+    let shouldClearPendingState = true;
+
+    try {
+      const devicesResult = await readStudioVideoInputDevices();
+
+      if (devicesResult.kind !== "success") {
+        return false;
+      }
+
+      if (devicesResult.devices.length < 2) {
+        return false;
+      }
+
+      const currentDeviceId = readStudioActiveVideoDeviceId(currentStream);
+      const targetDevice = resolveStudioNextCameraDevice(
+        devicesResult.devices,
+        currentDeviceId
+      );
+
+      if (!targetDevice) {
+        return false;
+      }
+
+      stopStudioVideoTracks(currentStream);
+      await waitStudioCameraReleaseSettle();
+
+      const requestResult = await requestStudioCameraStreamByDeviceId({
+        deviceId: targetDevice.deviceId,
+        includeAudio: false
+      });
+
+      if (requestResult.kind !== "success") {
+        if (
+          isMountedRef.current &&
+          attemptIdRef.current === switchAttemptId
+        ) {
+          setPreviewState(
+            requestResult.kind === "blocked"
+              ? "blocked"
+              : requestResult.kind === "unsupported"
+                ? "unsupported"
+                : "degraded"
+          );
+        }
+
+        return false;
+      }
+
+      const nextVideoStream = requestResult.stream;
+      const nextStream = createStudioStreamWithReplacedVideo({
+        currentStream,
+        nextVideoStream
+      });
+      const didAttach = await attachStudioPreviewStream(videoElement, nextStream);
+
+      if (!didAttach) {
+        stopStudioMediaStream(nextVideoStream);
+        clearPreviewElementTarget(videoElement);
+
+        if (
+          isMountedRef.current &&
+          attemptIdRef.current === switchAttemptId
+        ) {
+          setPreviewState("degraded");
+        }
+
+        return false;
+      }
+
+      if (
+        !isMountedRef.current ||
+        attemptIdRef.current !== switchAttemptId
+      ) {
+        shouldClearPendingState = false;
+        stopStudioMediaStream(nextVideoStream);
+        clearPreviewElementTarget(videoElement);
+        return false;
+      }
+
+      streamRef.current = nextStream;
+      settleInitialBootstrapPending(switchAttemptId);
+      setPreviewState("preview_ready");
+      return true;
+    } finally {
+      isCameraSwitchPendingRef.current = false;
+
+      if (
+        shouldClearPendingState &&
+        isMountedRef.current &&
+        attemptIdRef.current === switchAttemptId
+      ) {
+        setIsCameraSwitchPending(false);
+      }
+    }
+  }, [settleInitialBootstrapPending]);
+
   useEffect(() => {
     isMountedRef.current = true;
     const timeoutId = window.setTimeout(() => {
@@ -137,6 +263,7 @@ export function useStudioPreviewBootstrap() {
 
     return () => {
       window.clearTimeout(timeoutId);
+      isCameraSwitchPendingRef.current = false;
       isMountedRef.current = false;
       attemptIdRef.current += 1;
       initialBootstrapAttemptIdRef.current = null;
@@ -147,9 +274,11 @@ export function useStudioPreviewBootstrap() {
   return {
     canRetry: isRetryableState(previewState),
     getPreviewStream,
+    isCameraSwitchPending,
     isInitialBootstrapPending,
     previewState,
     retryPreview: runPreviewAttempt,
+    switchPreviewCamera,
     videoRef
   };
 }
