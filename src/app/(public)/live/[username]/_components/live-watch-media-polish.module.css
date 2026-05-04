@@ -37,7 +37,8 @@
       (var(--live-watch-media-polish-side-inset, 0px) * 2)
     );
     height: var(--live-watch-media-polish-height, 0px);
-    border-radius: var(--live-watch-media-polish-radius, 0px);
+    border-radius: 0 0 var(--live-watch-media-polish-radius, 0px)
+      var(--live-watch-media-polish-radius, 0px);
     box-shadow:
       0 0 0 100vmax black,
       inset 0 0 0 1px color-mix(in oklch, white 9%, transparent),
