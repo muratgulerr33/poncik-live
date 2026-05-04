@@ -164,7 +164,7 @@ Important correction:
 
   * approved scene wrapper’dır.
   * exit dialog state’ini taşır.
-  * live mic control state’ini route shell’e geçirir.
+  * studio mic control state’ini route shell’e geçirir.
   * `StudioPreviewPanel` handoff’unu yapar.
 
 * `src/app/(studio)/studio/_components/studio-prep-surface.module.css`
@@ -207,7 +207,7 @@ Important correction:
 
   * `X`
   * username
-  * live mic utility
+  * studio mic utility
     alanlarını taşır.
 
 * `src/app/(studio)/studio/_components/studio-top-chrome.module.css`
@@ -371,7 +371,10 @@ Evidence-supported claims:
 * Mobile media frame remains visible across captured pre-live, going-live and live states.
 * Top chrome remains separated from the media frame.
 * Bottom action/composer lane remains scene-local.
-* Live state adds mic control to the top chrome.
+* Prelive `preview_ready` state keeps mic visible with active toggle.
+* Going-live keeps mic visible with local pending/disabled `KEEP FOR NOW`; future full-screen overlay owner is a separate tur.
+* Live state keeps mic visible and reads truth from LiveKit local microphone publication.
+* Prelive mic truth is browser preview audio track `MediaStreamTrack.enabled`.
 * `Canlı yayındasın` behaves as transient notice lane.
 * Live steady state shows composer placement at the bottom of the scene.
 * The viewport remains stable across captured state transitions.
@@ -768,4 +771,3 @@ It does not establish:
 * camera switcher readiness
 * final chat history readability
 * keyboard-open composer acceptance
-

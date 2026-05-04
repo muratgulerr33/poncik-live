@@ -9,14 +9,19 @@ import {
   connectStudioPublisherRoom,
   disconnectStudioPublisherRoom,
   fetchStudioPublisherToken,
-  publishStudioPreviewTracks
+  getStudioPublisherMicrophonePublication,
+  publishStudioPreviewTracks,
+  setStudioPublisherMicrophoneMuted
 } from "../_adapters/studio-livekit-publisher-adapter";
+import {
+  setStudioPreviewMicrophoneMuted,
+  type StudioPreviewState
+} from "../_adapters/studio-preview-adapter";
 import {
   startStudioBroadcastLifecycle,
   stopStudioBroadcastLifecycle,
   triggerStudioBroadcastCloseStop
 } from "../_adapters/studio-lifecycle-client-adapter";
-import { type StudioPreviewState } from "../_adapters/studio-preview-adapter";
 import { STUDIO_COPY } from "../_lib/studio-copy";
 
 type UseStudioPublishFoundationArgs = {
@@ -57,6 +62,10 @@ export function useStudioPublishFoundation({
     disconnectCleanupRef.current = null;
   }, []);
 
+  const reportStartError = useCallback(() => {
+    setLifecycleMessage(STUDIO_COPY.startBroadcastError);
+  }, []);
+
   const getPublisherRoom = useCallback(() => roomRef.current, []);
 
   const clearLocalPublisher = useCallback(async () => {
@@ -84,25 +93,36 @@ export function useStudioPublishFoundation({
     return true;
   }, []);
 
-  const startPublishing = useCallback(async () => {
+  const startPublishing = useCallback(async ({
+    initialMicMuted
+  }: {
+    initialMicMuted: boolean;
+  }) => {
     if (previewState !== "preview_ready" || lifecycleKind === "live" || isStarting) {
-      return;
-    }
-
-    const previewStream = readPreviewStream();
-
-    if (!previewStream) {
-      setLifecycleMessage(STUDIO_COPY.startBroadcastError);
       return;
     }
 
     setIsStarting(true);
     setLifecycleMessage(null);
 
+    const previewStream = readPreviewStream();
+
+    if (!previewStream) {
+      reportStartError();
+      setIsStarting(false);
+      return;
+    }
+
+    if (!setStudioPreviewMicrophoneMuted(previewStream, initialMicMuted)) {
+      reportStartError();
+      setIsStarting(false);
+      return;
+    }
+
     const tokenResult = await fetchStudioPublisherToken();
 
     if (tokenResult.kind !== "success") {
-      setLifecycleMessage(STUDIO_COPY.startBroadcastError);
+      reportStartError();
       setIsStarting(false);
       return;
     }
@@ -110,7 +130,7 @@ export function useStudioPublishFoundation({
     const connectionResult = await connectStudioPublisherRoom(tokenResult.payload);
 
     if (connectionResult.kind !== "success") {
-      setLifecycleMessage(STUDIO_COPY.startBroadcastError);
+      reportStartError();
       setIsStarting(false);
       return;
     }
@@ -122,7 +142,26 @@ export function useStudioPublishFoundation({
 
     if (!didPublish) {
       await disconnectStudioPublisherRoom(connectionResult.room);
-      setLifecycleMessage(STUDIO_COPY.startBroadcastError);
+      reportStartError();
+      setIsStarting(false);
+      return;
+    }
+
+    if (!getStudioPublisherMicrophonePublication(connectionResult.room)) {
+      await disconnectStudioPublisherRoom(connectionResult.room);
+      reportStartError();
+      setIsStarting(false);
+      return;
+    }
+
+    const didNormalizePublication = await setStudioPublisherMicrophoneMuted(
+      connectionResult.room,
+      initialMicMuted
+    );
+
+    if (!didNormalizePublication) {
+      await disconnectStudioPublisherRoom(connectionResult.room);
+      reportStartError();
       setIsStarting(false);
       return;
     }
@@ -152,14 +191,12 @@ export function useStudioPublishFoundation({
     lifecycleKind,
     previewState,
     readPreviewStream,
+    reportStartError,
     router
   ]);
 
   const stopPublishing = useCallback(async () => {
-    if (
-      (lifecycleKind !== "live" && !isLocallyLive) ||
-      isStopping
-    ) {
+    if ((lifecycleKind !== "live" && !isLocallyLive) || isStopping) {
       return false;
     }
 
@@ -241,6 +278,7 @@ export function useStudioPublishFoundation({
     isStopping,
     lifecycleMessage,
     publisherRoom,
+    reportStartError,
     startSuccessSequence,
     startPublishing,
     stopPublishing

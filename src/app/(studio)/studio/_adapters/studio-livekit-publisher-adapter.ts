@@ -1,6 +1,6 @@
 "use client";
 
-import { Room, RoomEvent, Track } from "livekit-client";
+import { Room, RoomEvent, Track, type LocalTrackPublication } from "livekit-client";
 
 type PublisherTokenResponse = {
   server_url: string;
@@ -117,6 +117,49 @@ export async function publishStudioPreviewTracks(room: Room, stream: MediaStream
   } catch {
     return false;
   }
+}
+
+export function getStudioPublisherMicrophonePublication(room: Room | null) {
+  if (!room) {
+    return null;
+  }
+
+  const publication = room.localParticipant.getTrackPublication(
+    Track.Source.Microphone
+  );
+
+  if (!publication?.track) {
+    return null;
+  }
+
+  return publication as LocalTrackPublication;
+}
+
+export async function setStudioPublisherMicrophoneMuted(
+  room: Room | null,
+  muted: boolean
+) {
+  const publication = getStudioPublisherMicrophonePublication(room);
+
+  if (!publication) {
+    return false;
+  }
+
+  try {
+    if (muted) {
+      if (!publication.isMuted) {
+        await publication.mute();
+      }
+    } else if (publication.isMuted) {
+      await publication.unmute();
+    }
+  } catch {
+    return false;
+  }
+
+  const normalizedPublication = getStudioPublisherMicrophonePublication(room);
+
+  return !!normalizedPublication && normalizedPublication.isMuted === muted;
 }
 
 export async function disconnectStudioPublisherRoom(room: Room | null) {

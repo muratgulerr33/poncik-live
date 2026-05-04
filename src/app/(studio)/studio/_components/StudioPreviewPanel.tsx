@@ -6,11 +6,11 @@ import { STUDIO_COPY } from "../_lib/studio-copy";
 import { StudioChatOwners } from "./StudioChatOwners";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import { StudioPreviewMediaFrame } from "./StudioPreviewMediaFrame";
-import type { StudioLiveMicControl } from "./StudioTopChrome";
+import type { StudioMicControl } from "./StudioTopChrome";
 import { StudioPermissionNotice } from "./StudioPermissionNotice";
 import { StudioStartFeedback } from "./StudioStartFeedback";
 import styles from "./studio-preview-panel.module.css";
-import { useStudioLiveMicUtilitySurface } from "./useStudioLiveMicUtilitySurface";
+import { useStudioMicUtilitySurface } from "./useStudioMicUtilitySurface";
 import { useStudioPreviewMediaPolish } from "./useStudioPreviewMediaPolish";
 import { useStudioPublishFoundation } from "./useStudioPublishFoundation";
 import { useStudioPreviewBootstrap } from "./useStudioPreviewBootstrap";
@@ -27,7 +27,7 @@ type StudioPreviewPanelProps = {
     kind: "idle" | "live" | "degraded";
   };
   onExitControlChange?: (state: StudioExitControlState) => void;
-  onLiveMicControlChange?: (liveMicControl: StudioLiveMicControl | null) => void;
+  onMicControlChange?: (micControl: StudioMicControl | null) => void;
   username: string;
 };
 
@@ -83,7 +83,7 @@ function scheduleStartSuccessFeedbackDeferredClear() {
 export function StudioPreviewPanel({
   lifecycle,
   onExitControlChange,
-  onLiveMicControlChange,
+  onMicControlChange,
   username
 }: StudioPreviewPanelProps) {
   const [isSecondTriggerBlockActive, setIsSecondTriggerBlockActive] = useState(false);
@@ -105,8 +105,7 @@ export function StudioPreviewPanel({
     previewState,
     retryPreview,
     videoRef
-  } =
-    useStudioPreviewBootstrap();
+  } = useStudioPreviewBootstrap();
   const {
     canStart,
     effectiveLifecycleKind,
@@ -115,6 +114,7 @@ export function StudioPreviewPanel({
     isStopping,
     lifecycleMessage,
     publisherRoom,
+    reportStartError,
     startSuccessSequence,
     startPublishing,
     stopPublishing
@@ -123,9 +123,13 @@ export function StudioPreviewPanel({
     previewState,
     readPreviewStream: getPreviewStream
   });
-  const { liveMicControl } = useStudioLiveMicUtilitySurface({
+  const { captureMicStartSnapshot, micControl } = useStudioMicUtilitySurface({
     effectiveLifecycleKind,
-    getPublisherRoom
+    getPreviewStream,
+    getPublisherRoom,
+    isStarting,
+    isStopping,
+    previewState
   });
   const [initialStartSuccessSequence] = useState(startSuccessSequence);
   const isHealthyPreview = previewState === "preview_ready";
@@ -310,9 +314,18 @@ export function StudioPreviewPanel({
             return;
           }
 
+          const startSnapshot = captureMicStartSnapshot();
+
+          if (!startSnapshot) {
+            reportStartError();
+            return;
+          }
+
           hasSecondTriggerBlockSeenStartProgressRef.current = false;
           setIsSecondTriggerBlockActive(true);
-          void startPublishing();
+          void startPublishing({
+            initialMicMuted: startSnapshot.initialMicMuted
+          });
         }}
         presentation={isHealthyPreview ? "scene-native" : "fallback"}
       />
@@ -338,22 +351,22 @@ export function StudioPreviewPanel({
   ]);
 
   useEffect(() => {
-    if (!onLiveMicControlChange) {
+    if (!onMicControlChange) {
       return;
     }
 
-    onLiveMicControlChange(liveMicControl);
-  }, [liveMicControl, onLiveMicControlChange]);
+    onMicControlChange(micControl);
+  }, [micControl, onMicControlChange]);
 
   useEffect(() => {
-    if (!onLiveMicControlChange) {
+    if (!onMicControlChange) {
       return;
     }
 
     return () => {
-      onLiveMicControlChange(null);
+      onMicControlChange(null);
     };
-  }, [onLiveMicControlChange]);
+  }, [onMicControlChange]);
 
   return (
     <section

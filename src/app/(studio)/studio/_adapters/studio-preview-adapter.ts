@@ -101,3 +101,49 @@ export async function attachStudioPreviewStream(
 export function stopStudioPreviewStream(stream: MediaStream | null | undefined) {
   stream?.getTracks().forEach((track) => track.stop());
 }
+
+export function getStudioPreviewMicrophoneTrack(
+  stream: MediaStream | null | undefined
+) {
+  if (!stream) {
+    return null;
+  }
+
+  return (
+    stream
+      .getAudioTracks()
+      .find((track) => track.readyState !== "ended") ?? null
+  );
+}
+
+export function readStudioPreviewMicrophoneState(
+  stream: MediaStream | null | undefined
+) {
+  const track = getStudioPreviewMicrophoneTrack(stream);
+
+  if (!track) {
+    return {
+      isAvailable: false,
+      isMuted: false
+    };
+  }
+
+  return {
+    isAvailable: true,
+    isMuted: !track.enabled
+  };
+}
+
+export function setStudioPreviewMicrophoneMuted(
+  stream: MediaStream | null | undefined,
+  muted: boolean
+) {
+  const track = getStudioPreviewMicrophoneTrack(stream);
+
+  if (!track) {
+    return false;
+  }
+
+  track.enabled = !muted;
+  return track.enabled === !muted;
+}
