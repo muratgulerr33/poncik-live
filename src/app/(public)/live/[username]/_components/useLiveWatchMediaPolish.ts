@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, type RefObject } from "react";
+import { useLayoutEffect, useRef, type RefObject } from "react";
 
 const LIVE_WATCH_MEDIA_POLISH_ATTRIBUTE = "data-live-media-polish";
+const LIVE_WATCH_MEDIA_POLISH_PENDING_VALUE = "pending";
 const LIVE_WATCH_MEDIA_POLISH_READY_VALUE = "ready";
 const LIVE_WATCH_MEDIA_FIT_ATTRIBUTE = "data-live-media-fit";
 const LIVE_WATCH_MEDIA_POLISH_CONTAIN_SIDE_INSET_PX = 2;
@@ -45,6 +46,48 @@ function formatLiveWatchMediaStagePx(value: number) {
   return `${value.toFixed(3)}px`;
 }
 
+function setLiveWatchMediaStagePolishPending(mediaStageElement: HTMLDivElement) {
+  mediaStageElement.setAttribute(
+    LIVE_WATCH_MEDIA_POLISH_ATTRIBUTE,
+    LIVE_WATCH_MEDIA_POLISH_PENDING_VALUE
+  );
+
+  for (const styleProperty of LIVE_WATCH_MEDIA_POLISH_STYLE_PROPERTIES) {
+    mediaStageElement.style.removeProperty(styleProperty);
+  }
+}
+
+function applyLiveWatchFullStagePolish({
+  mediaStageElement,
+  mediaStageRect,
+  resolvedFitMode
+}: Readonly<{
+  mediaStageElement: HTMLDivElement;
+  mediaStageRect: DOMRect;
+  resolvedFitMode: string;
+}>) {
+  mediaStageElement.setAttribute(LIVE_WATCH_MEDIA_FIT_ATTRIBUTE, resolvedFitMode);
+  mediaStageElement.style.setProperty("--live-watch-media-polish-left", "0.000px");
+  mediaStageElement.style.setProperty("--live-watch-media-polish-top", "0.000px");
+  mediaStageElement.style.setProperty(
+    "--live-watch-media-polish-width",
+    formatLiveWatchMediaStagePx(mediaStageRect.width)
+  );
+  mediaStageElement.style.setProperty(
+    "--live-watch-media-polish-height",
+    formatLiveWatchMediaStagePx(mediaStageRect.height)
+  );
+  mediaStageElement.style.setProperty("--live-watch-media-polish-side-inset", "0px");
+  mediaStageElement.style.setProperty(
+    "--live-watch-media-polish-radius",
+    `${LIVE_WATCH_MEDIA_POLISH_RADIUS_PX}px`
+  );
+  mediaStageElement.setAttribute(
+    LIVE_WATCH_MEDIA_POLISH_ATTRIBUTE,
+    LIVE_WATCH_MEDIA_POLISH_READY_VALUE
+  );
+}
+
 function resolveLiveWatchMediaFitMode({
   frameHeight,
   frameWidth,
@@ -80,12 +123,16 @@ export function useLiveWatchMediaPolish({
   videoRef
 }: UseLiveWatchMediaPolishArgs) {
   const mediaStageRef = useRef<HTMLDivElement | null>(null);
+  const lastVideoSourceRef = useRef<{
+    currentSrc: string;
+    srcObject: HTMLVideoElement["srcObject"];
+  } | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const mediaStageElement = mediaStageRef.current;
     const videoElement = videoRef.current;
 
-    if (!enabled || !mediaStageElement || !videoElement) {
+    if (!mediaStageElement || !videoElement) {
       clearLiveWatchMediaStagePolish(mediaStageElement);
       return;
     }
@@ -101,6 +148,23 @@ export function useLiveWatchMediaPolish({
       const sourceWidth = videoElement.videoWidth;
       const sourceHeight = videoElement.videoHeight;
       const mediaStageRect = mediaStageElement.getBoundingClientRect();
+      const currentVideoSource = {
+        currentSrc: videoElement.currentSrc,
+        srcObject: videoElement.srcObject
+      };
+      const hasMediaSource =
+        Boolean(currentVideoSource.srcObject) || currentVideoSource.currentSrc.length > 0;
+      const lastVideoSource = lastVideoSourceRef.current;
+      const hasVideoSourceChanged =
+        lastVideoSource !== null &&
+        (lastVideoSource.srcObject !== currentVideoSource.srcObject ||
+          lastVideoSource.currentSrc !== currentVideoSource.currentSrc);
+
+      if (hasVideoSourceChanged) {
+        setLiveWatchMediaStagePolishPending(mediaStageElement);
+      }
+
+      lastVideoSourceRef.current = currentVideoSource;
 
       if (!(mediaStageRect.width > 0) || !(mediaStageRect.height > 0)) {
         clearLiveWatchMediaStagePolish(mediaStageElement);
@@ -120,12 +184,16 @@ export function useLiveWatchMediaPolish({
       );
 
       if (!(sourceWidth > 0) || !(sourceHeight > 0)) {
-        mediaStageElement.removeAttribute(LIVE_WATCH_MEDIA_POLISH_ATTRIBUTE);
-
-        for (const styleProperty of LIVE_WATCH_MEDIA_POLISH_STYLE_PROPERTIES) {
-          mediaStageElement.style.removeProperty(styleProperty);
+        if (!enabled && !hasMediaSource) {
+          clearLiveWatchMediaStagePolish(mediaStageElement);
+          return;
         }
 
+        applyLiveWatchFullStagePolish({
+          mediaStageElement,
+          mediaStageRect,
+          resolvedFitMode
+        });
         return;
       }
 
@@ -229,9 +297,14 @@ export function useLiveWatchMediaPolish({
       scheduleLiveWatchMediaPolish();
     });
 
+    applyLiveWatchMediaPolish();
     mediaStageResizeObserver.observe(mediaStageElement);
     videoElement.addEventListener("loadedmetadata", scheduleLiveWatchMediaPolish);
+    videoElement.addEventListener("loadeddata", scheduleLiveWatchMediaPolish);
+    videoElement.addEventListener("canplay", scheduleLiveWatchMediaPolish);
+    videoElement.addEventListener("playing", scheduleLiveWatchMediaPolish);
     videoElement.addEventListener("resize", scheduleLiveWatchMediaPolish);
+    videoElement.addEventListener("emptied", scheduleLiveWatchMediaPolish);
     window.addEventListener("resize", scheduleLiveWatchMediaPolish);
     scheduleLiveWatchMediaPolish();
 
@@ -239,13 +312,18 @@ export function useLiveWatchMediaPolish({
       isDisposed = true;
       mediaStageResizeObserver.disconnect();
       videoElement.removeEventListener("loadedmetadata", scheduleLiveWatchMediaPolish);
+      videoElement.removeEventListener("loadeddata", scheduleLiveWatchMediaPolish);
+      videoElement.removeEventListener("canplay", scheduleLiveWatchMediaPolish);
+      videoElement.removeEventListener("playing", scheduleLiveWatchMediaPolish);
       videoElement.removeEventListener("resize", scheduleLiveWatchMediaPolish);
+      videoElement.removeEventListener("emptied", scheduleLiveWatchMediaPolish);
       window.removeEventListener("resize", scheduleLiveWatchMediaPolish);
 
       if (mediaStageRequestId !== null) {
         window.cancelAnimationFrame(mediaStageRequestId);
       }
 
+      lastVideoSourceRef.current = null;
       clearLiveWatchMediaStagePolish(mediaStageElement);
     };
   }, [enabled, videoRef]);

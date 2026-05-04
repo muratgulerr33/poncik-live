@@ -18,6 +18,10 @@
 }
 
 @media (max-width: 640px) and (orientation: portrait) {
+  :global([data-live-media-polish="pending"] video) {
+    opacity: 0;
+  }
+
   :global([data-live-media-polish="ready"]) .root {
     display: block;
   }
@@ -34,6 +38,10 @@
     );
     height: var(--live-watch-media-polish-height, 0px);
     border-radius: var(--live-watch-media-polish-radius, 0px);
-    box-shadow: 0 0 0 100vmax black;
+    box-shadow:
+      0 0 0 100vmax black,
+      inset 0 0 0 1px color-mix(in oklch, white 9%, transparent),
+      inset 0 18px 24px -28px color-mix(in oklch, white 26%, transparent),
+      inset 0 -22px 30px -34px color-mix(in oklch, black 92%, transparent);
   }
 }
