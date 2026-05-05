@@ -9,6 +9,10 @@ import {
   LiveWatchAudioControlProvider,
   useLiveWatchAudioControl
 } from "./live-watch-audio-control-context";
+import {
+  LiveWatchViewerCountProvider,
+  useLiveWatchViewerCountContext
+} from "./live-watch-viewer-count-context";
 import { LiveWatchSurfaceNoticeProvider } from "./LiveWatchSurfaceNoticeProvider";
 import { LiveWatchTopChrome } from "./LiveWatchTopChrome";
 
@@ -26,6 +30,7 @@ function LiveWatchTopChromeBridge({
   username: string;
 }>) {
   const audioControl = useLiveWatchAudioControl();
+  const { viewerCountMetric } = useLiveWatchViewerCountContext();
 
   return (
     <LiveWatchTopChrome
@@ -40,6 +45,7 @@ function LiveWatchTopChromeBridge({
       }
       onRequestClose={onRequestClose}
       username={username}
+      viewerCountMetric={viewerCountMetric}
     />
   );
 }
@@ -66,15 +72,17 @@ export function LiveWatchRouteShell({
 
   return (
     <LiveWatchAudioControlProvider enabled={audioToggleEnabled}>
-      <LiveWatchSurfaceNoticeProvider>
-        <div className={styles.shell}>
-          <LiveWatchTopChromeBridge
-            onRequestClose={() => router.back()}
-            username={username}
-          />
-          <div className={styles.contentStack}>{children}</div>
-        </div>
-      </LiveWatchSurfaceNoticeProvider>
+      <LiveWatchViewerCountProvider>
+        <LiveWatchSurfaceNoticeProvider>
+          <div className={styles.shell}>
+            <LiveWatchTopChromeBridge
+              onRequestClose={() => router.back()}
+              username={username}
+            />
+            <div className={styles.contentStack}>{children}</div>
+          </div>
+        </LiveWatchSurfaceNoticeProvider>
+      </LiveWatchViewerCountProvider>
     </LiveWatchAudioControlProvider>
   );
 }

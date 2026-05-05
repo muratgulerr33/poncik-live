@@ -1,7 +1,14 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
+
+import {
+  useLiveWatchViewerCountContext,
+  type LiveWatchViewerCountMetric
+} from "../_components/live-watch-viewer-count-context";
 import { LiveWatchChatController, type LiveWatchChatAccess } from "./LiveWatchChatController";
 import { LiveWatchPlaybackSurface } from "../_components/LiveWatchPlaybackSurface";
+import { useLiveWatchViewerCountMetric } from "./useLiveWatchViewerCountMetric";
 import { useLiveWatchPlayback } from "./use-live-watch-playback";
 import { useLiveWatchPlaybackTransition } from "./use-live-watch-playback-transition";
 
@@ -20,6 +27,7 @@ export function LiveWatchPlaybackController({
   chatAccess: LiveWatchChatAccess;
   username: string;
 }>) {
+  const { setViewerCountMetric } = useLiveWatchViewerCountContext();
   const viewerConnectionKey = getLiveWatchViewerConnectionKey(chatAccess);
   const {
     audioRef,
@@ -32,6 +40,7 @@ export function LiveWatchPlaybackController({
     retryPlayback,
     videoRef
   } = useLiveWatchPlayback(username, viewerConnectionKey);
+  const viewerCount = useLiveWatchViewerCountMetric(room);
   const { isChatVisible, overlayAccessibleLabel, overlayMode } =
     useLiveWatchPlaybackTransition({
       liveStatusCheckRequestSequence,
@@ -39,6 +48,28 @@ export function LiveWatchPlaybackController({
       playbackMessage,
       playbackState
     });
+  const viewerCountMetric = useMemo<LiveWatchViewerCountMetric | null>(() => {
+    if (room === null || viewerCount === null || viewerCount <= 0) {
+      return null;
+    }
+
+    const text = String(viewerCount);
+
+    return {
+      accessibilityText: `İzleyici sayısı: ${text}`,
+      text
+    };
+  }, [room, viewerCount]);
+
+  useEffect(() => {
+    setViewerCountMetric(viewerCountMetric);
+  }, [setViewerCountMetric, viewerCountMetric]);
+
+  useEffect(() => {
+    return () => {
+      setViewerCountMetric(null);
+    };
+  }, [setViewerCountMetric]);
 
   return (
     <LiveWatchPlaybackSurface
