@@ -1,5 +1,6 @@
 "use client";
 
+import type { Room } from "livekit-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { STUDIO_COPY } from "../_lib/studio-copy";
@@ -30,6 +31,7 @@ type StudioPreviewPanelProps = {
   onCameraControlChange?: (cameraControl: StudioCameraControl | null) => void;
   onExitControlChange?: (state: StudioExitControlState) => void;
   onMicControlChange?: (micControl: StudioMicControl | null) => void;
+  onPublisherRoomChange?: (room: Room | null) => void;
   username: string;
 };
 
@@ -87,6 +89,7 @@ export function StudioPreviewPanel({
   onCameraControlChange,
   onExitControlChange,
   onMicControlChange,
+  onPublisherRoomChange,
   username
 }: StudioPreviewPanelProps) {
   const [isSecondTriggerBlockActive, setIsSecondTriggerBlockActive] = useState(false);
@@ -101,6 +104,8 @@ export function StudioPreviewPanel({
     useRef<ReturnType<typeof setTimeout> | null>(null);
   const startSuccessFeedbackHideTimeoutRef =
     useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onPublisherRoomChangeRef =
+    useRef<StudioPreviewPanelProps["onPublisherRoomChange"]>(onPublisherRoomChange);
   const {
     canRetry,
     getPreviewStream,
@@ -406,6 +411,14 @@ export function StudioPreviewPanel({
   }, [cameraControl, onCameraControlChange]);
 
   useEffect(() => {
+    onPublisherRoomChangeRef.current = onPublisherRoomChange;
+  }, [onPublisherRoomChange]);
+
+  useEffect(() => {
+    onPublisherRoomChange?.(publisherRoom);
+  }, [onPublisherRoomChange, publisherRoom]);
+
+  useEffect(() => {
     if (!onMicControlChange) {
       return;
     }
@@ -424,6 +437,12 @@ export function StudioPreviewPanel({
       onCameraControlChange(null);
     };
   }, [onCameraControlChange]);
+
+  useEffect(() => {
+    return () => {
+      onPublisherRoomChangeRef.current?.(null);
+    };
+  }, []);
 
   return (
     <section

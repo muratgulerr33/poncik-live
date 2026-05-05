@@ -44,6 +44,11 @@
   pointer-events: none;
 }
 
+.chrome[data-layout="scene"][data-surface="approved"][data-has-viewer-metric="true"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
 .chrome[data-layout="scene"][data-surface="approved"] > * {
   pointer-events: auto;
   align-self: center;
@@ -73,6 +78,52 @@
   flex-wrap: nowrap;
   gap: var(--chrome-gap);
   min-width: 0;
+  justify-self: end;
+}
+
+.viewerMetric {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  gap: 0.28rem;
+  margin: 0;
+  min-width: 0;
+  white-space: nowrap;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.viewerMetricIcon {
+  display: block;
+  min-width: 15px;
+  min-height: 15px;
+  color: rgba(255, 255, 255, 0.78);
+  stroke: currentColor;
+  filter: drop-shadow(0 0.34px 0.26px rgba(0, 0, 0, 0.085));
+  flex-shrink: 0;
+}
+
+.viewerMetricCount {
+  display: block;
+  font-size: 15.5px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: 0;
+  color: #ffffff;
+  text-shadow: 0 0.42px 0.32px rgba(0, 0, 0, 0.085);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .closeButton,

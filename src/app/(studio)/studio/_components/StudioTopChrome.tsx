@@ -1,4 +1,4 @@
-import { Mic, MicOff, SwitchCamera, X } from "lucide-react";
+import { Eye, Mic, MicOff, SwitchCamera, X } from "lucide-react";
 
 import styles from "./studio-top-chrome.module.css";
 
@@ -17,12 +17,18 @@ export type StudioCameraControl = Readonly<{
   onToggle: () => void;
 }>;
 
+export type StudioViewerCountMetric = Readonly<{
+  accessibilityText: string;
+  text: string;
+}>;
+
 type StudioTopChromeProps = Readonly<{
   cameraControl?: StudioCameraControl | null;
   closeDisabled?: boolean;
   micControl?: StudioMicControl | null;
   onRequestClose: () => void;
   username?: string;
+  viewerCountMetric?: StudioViewerCountMetric | null;
 }>;
 
 export function StudioTopChrome({
@@ -30,13 +36,15 @@ export function StudioTopChrome({
   closeDisabled = false,
   micControl = null,
   onRequestClose,
-  username
+  username,
+  viewerCountMetric = null
 }: StudioTopChromeProps) {
   return (
     <header
       className={styles.chrome}
       data-layout="scene"
       data-surface="approved"
+      data-has-viewer-metric={viewerCountMetric ? "true" : "false"}
       aria-label="Studyo ust denetimleri"
     >
       <div className={styles.leadingCluster}>
@@ -57,6 +65,20 @@ export function StudioTopChrome({
           <p className={`t-label ${styles.usernameLabel}`}>@{username}</p>
         ) : null}
       </div>
+      {viewerCountMetric ? (
+        <p className={styles.viewerMetric}>
+          <span className={styles.visuallyHidden}>{viewerCountMetric.accessibilityText}</span>
+          <Eye
+            aria-hidden="true"
+            className={styles.viewerMetricIcon}
+            size={15}
+            strokeWidth={2}
+          />
+          <span aria-hidden="true" className={styles.viewerMetricCount}>
+            {viewerCountMetric.text}
+          </span>
+        </p>
+      ) : null}
       {cameraControl?.isAvailable || micControl ? (
         <div className={styles.trailingCluster}>
           {cameraControl?.isAvailable ? (

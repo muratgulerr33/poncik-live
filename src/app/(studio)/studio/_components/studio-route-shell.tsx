@@ -7,7 +7,8 @@ import type { ReactNode } from "react";
 import {
   StudioTopChrome,
   type StudioCameraControl,
-  type StudioMicControl
+  type StudioMicControl,
+  type StudioViewerCountMetric
 } from "./StudioTopChrome";
 import styles from "./studio.module.css";
 
@@ -21,6 +22,7 @@ type StudioRouteShellProps = Readonly<{
   onRequestClose?: () => void;
   surface?: "default" | "approved";
   username?: string;
+  viewerCountMetric?: StudioViewerCountMetric | null;
 }>;
 
 export function StudioRouteShell({
@@ -32,7 +34,8 @@ export function StudioRouteShell({
   micControl = null,
   onRequestClose,
   surface = "default",
-  username
+  username,
+  viewerCountMetric = null
 }: StudioRouteShellProps) {
   const isApprovedSceneChrome = layout === "scene" && surface === "approved";
   const chrome = (
@@ -85,6 +88,7 @@ export function StudioRouteShell({
             micControl={micControl}
             onRequestClose={onRequestClose}
             username={username}
+            viewerCountMetric={viewerCountMetric}
           />
         ) : layout === "scene" ? (
           chrome

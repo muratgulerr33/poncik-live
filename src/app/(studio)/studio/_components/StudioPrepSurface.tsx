@@ -1,16 +1,22 @@
 "use client";
 
+import type { Room } from "livekit-client";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   StudioPreviewPanel,
   type StudioExitControlState
 } from "./StudioPreviewPanel";
-import type { StudioCameraControl, StudioMicControl } from "./StudioTopChrome";
+import {
+  type StudioCameraControl,
+  type StudioMicControl,
+  type StudioViewerCountMetric
+} from "./StudioTopChrome";
 import { StudioExitConfirmDialog } from "./studio-exit-confirm-dialog";
 import styles from "./studio-prep-surface.module.css";
 import { StudioRouteShell } from "./studio-route-shell";
+import { useStudioViewerCountMetric } from "./useStudioViewerCountMetric";
 
 type StudioPrepSurfaceProps = {
   lifecycle: {
@@ -40,6 +46,24 @@ export function StudioPrepSurface({
   const [isExitPending, setIsExitPending] = useState(false);
   const [cameraControl, setCameraControl] = useState<StudioCameraControl | null>(null);
   const [micControl, setMicControl] = useState<StudioMicControl | null>(null);
+  const [publisherRoom, setPublisherRoom] = useState<Room | null>(null);
+  const viewerCount = useStudioViewerCountMetric(publisherRoom);
+  const viewerCountMetric = useMemo<StudioViewerCountMetric | null>(() => {
+    if (
+      exitControl.effectiveLifecycleKind !== "live" ||
+      exitControl.isStopping ||
+      viewerCount === null
+    ) {
+      return null;
+    }
+
+    const text = String(viewerCount);
+
+    return {
+      accessibilityText: `İzleyici sayısı: ${text}`,
+      text
+    };
+  }, [exitControl.effectiveLifecycleKind, exitControl.isStopping, viewerCount]);
 
   const handleRequestClose = useCallback(() => {
     if (isExitPending || exitControl.isStopping) {
@@ -96,6 +120,7 @@ export function StudioPrepSurface({
       onRequestClose={handleRequestClose}
       surface="approved"
       username={username}
+      viewerCountMetric={viewerCountMetric}
     >
       <section className={styles.prepScene} data-surface="approved">
         <StudioPreviewPanel
@@ -103,6 +128,7 @@ export function StudioPrepSurface({
           onCameraControlChange={setCameraControl}
           onExitControlChange={setExitControl}
           onMicControlChange={setMicControl}
+          onPublisherRoomChange={setPublisherRoom}
           username={username}
         />
       </section>
