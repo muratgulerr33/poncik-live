@@ -34,6 +34,10 @@ export type LiveWatchPlaybackBindResult = {
   reconcileTracks: () => void;
 };
 
+export function readLiveWatchCanPlaybackAudio(room: Room | null) {
+  return !!room?.canPlaybackAudio;
+}
+
 export async function connectLiveWatchRoom(
   input: LiveWatchViewerTokenPayload
 ): Promise<LiveWatchRoomConnectionResult> {
@@ -96,6 +100,23 @@ export function bindLiveWatchRoom(
       readPublishedTracks(room).forEach((track) => {
         handlers.onTrackSubscribed(track);
       });
+    }
+  };
+}
+
+export function bindLiveWatchAudioPlaybackStatus(
+  room: Room,
+  onChanged: (canPlaybackAudio: boolean) => void
+) {
+  const handleAudioPlaybackChanged = () => {
+    onChanged(readLiveWatchCanPlaybackAudio(room));
+  };
+
+  room.on(RoomEvent.AudioPlaybackStatusChanged, handleAudioPlaybackChanged);
+
+  return {
+    cleanup: () => {
+      room.off(RoomEvent.AudioPlaybackStatusChanged, handleAudioPlaybackChanged);
     }
   };
 }
@@ -174,17 +195,22 @@ export function detachLiveWatchTrack(
   track.detach();
 }
 
-export async function retryLiveWatchPlayback(
-  videoElement: HTMLVideoElement | null,
-  audioElement: HTMLAudioElement | null
-) {
+export async function retryLiveWatchPlayback(input: {
+  room: Room | null;
+  videoElement: HTMLVideoElement | null;
+  audioElement: HTMLAudioElement | null;
+}) {
   try {
-    if (videoElement) {
-      await videoElement.play();
+    if (input.room && !readLiveWatchCanPlaybackAudio(input.room)) {
+      await input.room.startAudio();
     }
 
-    if (audioElement) {
-      await audioElement.play();
+    if (input.audioElement) {
+      await input.audioElement.play();
+    }
+
+    if (input.videoElement) {
+      await input.videoElement.play();
     }
 
     return true;

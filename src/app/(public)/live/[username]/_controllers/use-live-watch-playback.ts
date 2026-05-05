@@ -7,11 +7,13 @@ import { useLiveWatchAudioControl } from "../_components/live-watch-audio-contro
 import {
   attachLiveWatchAudioTrack,
   attachLiveWatchVideoTrack,
+  bindLiveWatchAudioPlaybackStatus,
   bindLiveWatchRoom,
   bindLiveWatchTrackPlaybackEvents,
   connectLiveWatchRoom,
   detachLiveWatchTrack,
   disconnectLiveWatchRoom,
+  readLiveWatchCanPlaybackAudio,
   retryLiveWatchPlayback
 } from "../_adapters/live-watch-provider-adapter";
 import { fetchLiveWatchViewerToken } from "../_adapters/live-watch-token-adapter";
@@ -20,14 +22,35 @@ const TRACK_WAIT_TIMEOUT_MS = 12000;
 const PLAYBACK_DEGRADED_MESSAGE = "Canlı yayın akışı şu anda bağlanamıyor.";
 type LiveWatchPlaybackState = "connecting" | "playing" | "playback_blocked" | "degraded";
 
+function hasSettledLiveWatchVideoPlayback(videoElement: HTMLVideoElement | null) {
+  if (!videoElement || videoElement.srcObject === null) {
+    return false;
+  }
+
+  if (videoElement.paused || videoElement.ended) {
+    return false;
+  }
+
+  if (videoElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    return false;
+  }
+
+  return videoElement.videoWidth > 0 && videoElement.videoHeight > 0;
+}
+
 export function useLiveWatchPlayback(
   username: string,
   viewerConnectionKey: string
 ) {
-  const { isMuted } = useLiveWatchAudioControl();
+  const {
+    isUserMuted,
+    setAudioBlocked,
+    setUnlockAudioAction
+  } = useLiveWatchAudioControl();
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const isDisposedRef = useRef(false);
-  const isMutedRef = useRef(isMuted);
+  const isUserMutedRef = useRef(isUserMuted);
+  const audioPlaybackStatusCleanupRef = useRef<(() => void) | null>(null);
   const audioTrackCleanupRef = useRef<(() => void) | null>(null);
   const audioTrackRef = useRef<RemoteTrack | null>(null);
   const bindCleanupRef = useRef<(() => void) | null>(null);
@@ -47,9 +70,11 @@ export function useLiveWatchPlayback(
   const [playbackState, setPlaybackState] = useState<LiveWatchPlaybackState>("connecting");
 
   useEffect(() => {
-    isMutedRef.current = isMuted;
-    if (audioElementRef.current) audioElementRef.current.muted = isMuted;
-  }, [isMuted]);
+    isUserMutedRef.current = isUserMuted;
+    if (audioElementRef.current) {
+      audioElementRef.current.muted = isUserMuted;
+    }
+  }, [isUserMuted]);
 
   const clearTrackWaitTimeout = useCallback(() => {
     if (trackWaitTimeoutRef.current === null) return;
@@ -78,6 +103,10 @@ export function useLiveWatchPlayback(
     audioTrackRef.current = null;
   }, []);
 
+  const syncAudioBlockedFromRoom = useCallback((targetRoom: Room | null) => {
+    setAudioBlocked(!readLiveWatchCanPlaybackAudio(targetRoom));
+  }, [setAudioBlocked]);
+
   const emitLiveStatusCheckRequest = useCallback(() => {
     if (isDisposedRef.current || hasRequestedLiveStatusCheckRef.current) return;
     hasRequestedLiveStatusCheckRef.current = true;
@@ -98,17 +127,28 @@ export function useLiveWatchPlayback(
   const cleanupPlayback = useCallback(async () => {
     clearTrackWaitTimeout();
     clearPendingVideoLossCheckFrame();
+    audioPlaybackStatusCleanupRef.current?.();
+    audioPlaybackStatusCleanupRef.current = null;
     bindCleanupRef.current?.();
     bindCleanupRef.current = null;
     detachVideoTrack();
     detachAudioTrack();
     hasPlayableTrackRef.current = false;
     setMediaReady(false);
+    setAudioBlocked(false);
+    setUnlockAudioAction(null);
     const room = roomRef.current;
     roomRef.current = null;
     setRoom(null);
     await disconnectLiveWatchRoom(room);
-  }, [clearPendingVideoLossCheckFrame, clearTrackWaitTimeout, detachAudioTrack, detachVideoTrack]);
+  }, [
+    clearPendingVideoLossCheckFrame,
+    clearTrackWaitTimeout,
+    detachAudioTrack,
+    detachVideoTrack,
+    setAudioBlocked,
+    setUnlockAudioAction
+  ]);
 
   const setTrackWaitTimeout = useCallback(() => {
     clearTrackWaitTimeout();
@@ -129,11 +169,48 @@ export function useLiveWatchPlayback(
     setPlaybackState("playing");
   }, [clearPendingVideoLossCheckFrame, clearTrackWaitTimeout]);
 
+  const markVideoMediaSettled = useCallback(() => {
+    if (isDisposedRef.current) return;
+
+    clearPendingVideoLossCheckFrame();
+    clearTrackWaitTimeout();
+    hasPlayableTrackRef.current = true;
+    hasRequestedLiveStatusCheckRef.current = false;
+    setMediaReady(true);
+    setCanRetryPlayback(false);
+    setPlaybackMessage(null);
+    setPlaybackState("playing");
+  }, [clearPendingVideoLossCheckFrame, clearTrackWaitTimeout]);
+
+  const reconcileSettledVideoPlayback = useCallback(() => {
+    if (!hasSettledLiveWatchVideoPlayback(videoElementRef.current)) {
+      return false;
+    }
+
+    markVideoMediaSettled();
+    return true;
+  }, [markVideoMediaSettled]);
+
   const bindTrackPlaybackEvents = useCallback(
     (track: RemoteTrack) =>
       bindLiveWatchTrackPlaybackEvents(track, {
         onPlaybackFailed: () => {
           if (isDisposedRef.current) return;
+
+          if (track.kind === Track.Kind.Audio) {
+            setAudioBlocked(true);
+
+            if (hasPlayableTrackRef.current) {
+              setCanRetryPlayback(false);
+              return;
+            }
+
+            setCanRetryPlayback(true);
+            setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
+            setPlaybackState("playback_blocked");
+            return;
+          }
+
           if (track.kind === Track.Kind.Video && videoTrackRef.current === track) {
             setMediaReady(false);
           }
@@ -143,17 +220,23 @@ export function useLiveWatchPlayback(
           setPlaybackState("playback_blocked");
         },
         onPlaybackStarted: () => {
+          if (track.kind === Track.Kind.Audio) {
+            setAudioBlocked(false);
+          }
+
           if (
             track.kind === Track.Kind.Video &&
             videoTrackRef.current === track &&
             !isDisposedRef.current
           ) {
-            setMediaReady(true);
+            if (reconcileSettledVideoPlayback()) {
+              return;
+            }
           }
           handlePlaybackStarted();
         }
       }),
-    [handlePlaybackStarted]
+    [handlePlaybackStarted, reconcileSettledVideoPlayback, setAudioBlocked]
   );
 
   const attachTrack = useCallback(
@@ -170,6 +253,9 @@ export function useLiveWatchPlayback(
         const didAttach = await attachLiveWatchVideoTrack(track, videoElement);
         if (isDisposedRef.current || videoTrackRef.current !== track) return;
         if (didAttach) {
+          if (reconcileSettledVideoPlayback()) {
+            return;
+          }
           setMediaReady(true);
           return handlePlaybackStarted();
         }
@@ -188,24 +274,48 @@ export function useLiveWatchPlayback(
       detachAudioTrack();
       audioTrackRef.current = track;
       audioTrackCleanupRef.current = bindTrackPlaybackEvents(track);
-      audioElement.muted = isMutedRef.current;
+      audioElement.muted = isUserMutedRef.current;
 
       const didAttach = await attachLiveWatchAudioTrack(track, audioElement);
       if (isDisposedRef.current || audioTrackRef.current !== track) return;
-      if (didAttach) return handlePlaybackStarted();
+      if (didAttach) {
+        setAudioBlocked(false);
+        return handlePlaybackStarted();
+      }
+
+      setAudioBlocked(true);
+      if (hasPlayableTrackRef.current) {
+        setCanRetryPlayback(false);
+        return;
+      }
 
       setCanRetryPlayback(true);
-      if (hasPlayableTrackRef.current) return;
       setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
       setPlaybackState("playback_blocked");
     },
-    [bindTrackPlaybackEvents, clearPendingVideoLossCheckFrame, detachAudioTrack, detachVideoTrack, handlePlaybackStarted]
+    [
+      bindTrackPlaybackEvents,
+      clearPendingVideoLossCheckFrame,
+      detachAudioTrack,
+      detachVideoTrack,
+      handlePlaybackStarted,
+      reconcileSettledVideoPlayback,
+      setAudioBlocked
+    ]
   );
 
   const retryPlayback = useCallback(async () => {
-    const didRetry = await retryLiveWatchPlayback(videoElementRef.current, audioElementRef.current);
+    const didRetry = await retryLiveWatchPlayback({
+      room: roomRef.current,
+      videoElement: videoElementRef.current,
+      audioElement: audioElementRef.current
+    });
     if (isDisposedRef.current) return;
     if (didRetry) {
+      setAudioBlocked(false);
+      if (reconcileSettledVideoPlayback()) {
+        return;
+      }
       if (videoTrackRef.current && videoElementRef.current?.srcObject) {
         setMediaReady(true);
       }
@@ -214,7 +324,44 @@ export function useLiveWatchPlayback(
     setMediaReady(false);
     setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
     setPlaybackState("playback_blocked");
-  }, [handlePlaybackStarted]);
+  }, [handlePlaybackStarted, reconcileSettledVideoPlayback, setAudioBlocked]);
+
+  const unlockAudioFromUserGesture = useCallback(async () => {
+    const didUnlock = await retryLiveWatchPlayback({
+      room: roomRef.current,
+      videoElement: videoElementRef.current,
+      audioElement: audioElementRef.current
+    });
+
+    if (isDisposedRef.current) {
+      return false;
+    }
+
+    if (didUnlock) {
+      setAudioBlocked(false);
+
+      if (reconcileSettledVideoPlayback()) {
+        return true;
+      }
+
+      if (videoTrackRef.current && videoElementRef.current?.srcObject) {
+        setMediaReady(true);
+        handlePlaybackStarted();
+      }
+
+      return true;
+    }
+
+    if (videoTrackRef.current && videoElementRef.current?.srcObject) {
+      setAudioBlocked(true);
+      return false;
+    }
+
+    setMediaReady(false);
+    setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
+    setPlaybackState("playback_blocked");
+    return false;
+  }, [handlePlaybackStarted, reconcileSettledVideoPlayback, setAudioBlocked]);
 
   useEffect(() => {
     isDisposedRef.current = false;
@@ -223,6 +370,41 @@ export function useLiveWatchPlayback(
       clearPendingVideoLossCheckFrame();
     };
   }, [clearPendingVideoLossCheckFrame]);
+
+  useEffect(() => {
+    setUnlockAudioAction(unlockAudioFromUserGesture);
+
+    return () => {
+      setUnlockAudioAction(null);
+    };
+  }, [setUnlockAudioAction, unlockAudioFromUserGesture]);
+
+  useEffect(() => {
+    const videoElement = videoElementRef.current;
+    if (!videoElement) {
+      return;
+    }
+
+    const handlePossibleVideoSettle = () => {
+      reconcileSettledVideoPlayback();
+    };
+
+    handlePossibleVideoSettle();
+
+    videoElement.addEventListener("playing", handlePossibleVideoSettle);
+    videoElement.addEventListener("loadeddata", handlePossibleVideoSettle);
+    videoElement.addEventListener("canplay", handlePossibleVideoSettle);
+    videoElement.addEventListener("timeupdate", handlePossibleVideoSettle);
+    videoElement.addEventListener("resize", handlePossibleVideoSettle);
+
+    return () => {
+      videoElement.removeEventListener("playing", handlePossibleVideoSettle);
+      videoElement.removeEventListener("loadeddata", handlePossibleVideoSettle);
+      videoElement.removeEventListener("canplay", handlePossibleVideoSettle);
+      videoElement.removeEventListener("timeupdate", handlePossibleVideoSettle);
+      videoElement.removeEventListener("resize", handlePossibleVideoSettle);
+    };
+  }, [reconcileSettledVideoPlayback]);
 
   useEffect(() => {
     let didCancel = false;
@@ -260,10 +442,18 @@ export function useLiveWatchPlayback(
 
       roomRef.current = connectionResult.room;
       setRoom(connectionResult.room);
+      syncAudioBlockedFromRoom(connectionResult.room);
+      audioPlaybackStatusCleanupRef.current = bindLiveWatchAudioPlaybackStatus(
+        connectionResult.room,
+        () => {
+          syncAudioBlockedFromRoom(connectionResult.room);
+        }
+      ).cleanup;
 
       const binding = bindLiveWatchRoom(connectionResult.room, {
         onDisconnected: () => {
           if (isDisposedRef.current) return;
+          setAudioBlocked(false);
           setPlaybackMessage("Canlı yayın bağlantısı kesildi. Sayfa yenileniyor.");
           setPlaybackState("degraded");
         },
@@ -311,7 +501,9 @@ export function useLiveWatchPlayback(
     detachAudioTrack,
     detachVideoTrack,
     setDegradedPlaybackForStatusCheck,
+    setAudioBlocked,
     setTrackWaitTimeout,
+    syncAudioBlockedFromRoom,
     viewerConnectionKey,
     username
   ]);

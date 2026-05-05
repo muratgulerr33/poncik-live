@@ -5,13 +5,20 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode
 } from "react";
 
+type UnlockAudioAction = (() => Promise<boolean>) | null;
+
 type LiveWatchAudioControlContextValue = Readonly<{
   enabled: boolean;
-  isMuted: boolean;
+  isAudioBlocked: boolean;
+  isIconMuted: boolean;
+  isUserMuted: boolean;
+  setAudioBlocked: (blocked: boolean) => void;
+  setUnlockAudioAction: (action: UnlockAudioAction) => void;
   toggleMuted: () => void;
 }>;
 
@@ -25,19 +32,52 @@ export function LiveWatchAudioControlProvider({
   children: ReactNode;
   enabled: boolean;
 }>) {
-  const [isMuted, setIsMuted] = useState(false);
+  const unlockAudioActionRef = useRef<UnlockAudioAction>(null);
+  const [isAudioBlocked, setIsAudioBlocked] = useState(false);
+  const [isUserMuted, setIsUserMuted] = useState(false);
+
+  const setAudioBlocked = useCallback((blocked: boolean) => {
+    setIsAudioBlocked(blocked);
+  }, []);
+
+  const setUnlockAudioAction = useCallback((action: UnlockAudioAction) => {
+    unlockAudioActionRef.current = action;
+  }, []);
+
+  const isIconMuted = isUserMuted || isAudioBlocked;
 
   const toggleMuted = useCallback(() => {
-    setIsMuted((current) => !current);
-  }, []);
+    if (!enabled) {
+      return;
+    }
+
+    if (isAudioBlocked && unlockAudioActionRef.current) {
+      void unlockAudioActionRef.current();
+      return;
+    }
+
+    setIsUserMuted((current) => !current);
+  }, [enabled, isAudioBlocked]);
 
   const value = useMemo<LiveWatchAudioControlContextValue>(
     () => ({
       enabled,
-      isMuted,
+      isAudioBlocked,
+      isIconMuted,
+      isUserMuted,
+      setAudioBlocked,
+      setUnlockAudioAction,
       toggleMuted
     }),
-    [enabled, isMuted, toggleMuted]
+    [
+      enabled,
+      isAudioBlocked,
+      isIconMuted,
+      isUserMuted,
+      setAudioBlocked,
+      setUnlockAudioAction,
+      toggleMuted
+    ]
   );
 
   return (

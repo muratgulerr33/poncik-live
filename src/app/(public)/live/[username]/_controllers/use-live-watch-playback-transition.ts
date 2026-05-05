@@ -29,6 +29,7 @@ export function useLiveWatchPlaybackTransition({
   const lastScheduledRecoverySequenceRef = useRef(0);
   const recoveryTimeoutRef = useRef<number | null>(null);
   const router = useRouter();
+  const isMediaSettled = playbackState === "playing" && mediaReady;
 
   useEffect(() => {
     if (
@@ -48,7 +49,7 @@ export function useLiveWatchPlaybackTransition({
   }, [liveStatusCheckRequestSequence, router]);
 
   useEffect(() => {
-    if (playbackState !== "playing" || !mediaReady) {
+    if (!isMediaSettled) {
       return;
     }
 
@@ -72,11 +73,11 @@ export function useLiveWatchPlaybackTransition({
     return () => {
       window.clearTimeout(recoverySyncTimeout);
     };
-  }, [liveStatusCheckRequestSequence, mediaReady, playbackState, recoveredSequence]);
+  }, [isMediaSettled, liveStatusCheckRequestSequence, recoveredSequence]);
 
   useEffect(() => {
     if (
-      mediaReady ||
+      isMediaSettled ||
       playbackState === "playback_blocked" ||
       liveStatusCheckRequestSequence === 0 ||
       liveStatusCheckRequestSequence <= recoveredSequence ||
@@ -101,9 +102,10 @@ export function useLiveWatchPlaybackTransition({
         recoveryTimeoutRef.current = null;
       }
     };
-  }, [liveStatusCheckRequestSequence, mediaReady, playbackState, recoveredSequence]);
+  }, [isMediaSettled, liveStatusCheckRequestSequence, playbackState, recoveredSequence]);
 
-  const isStatusCheckPending = liveStatusCheckRequestSequence > recoveredSequence;
+  const isStatusCheckPending =
+    !isMediaSettled && liveStatusCheckRequestSequence > recoveredSequence;
   const shouldShowMessageFallback =
     playbackState === "playback_blocked" ||
     (playbackState === "degraded" && !isStatusCheckPending && playbackMessage !== null);

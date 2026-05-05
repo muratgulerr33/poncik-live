@@ -33,7 +33,7 @@ function LiveWatchTopChromeBridge({
         audioControl.enabled
           ? {
               enabled: true,
-              isMuted: audioControl.isMuted,
+              isMuted: audioControl.isIconMuted,
               onToggleMuted: audioControl.toggleMuted
             }
           : undefined
