@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo } from "react";
 
+import { useLiveWatchTransitionCoverContext } from "../_components/live-watch-transition-cover-context";
 import {
   useLiveWatchViewerCountContext,
   type LiveWatchViewerCountMetric
@@ -20,6 +21,9 @@ function getLiveWatchViewerConnectionKey(access: LiveWatchChatAccess) {
   return access.kind;
 }
 
+const useClientLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 export function LiveWatchPlaybackController({
   chatAccess,
   username
@@ -27,6 +31,7 @@ export function LiveWatchPlaybackController({
   chatAccess: LiveWatchChatAccess;
   username: string;
 }>) {
+  const { resetCoverVisible, setCoverVisible } = useLiveWatchTransitionCoverContext();
   const { setViewerCountMetric } = useLiveWatchViewerCountContext();
   const viewerConnectionKey = getLiveWatchViewerConnectionKey(chatAccess);
   const {
@@ -41,7 +46,7 @@ export function LiveWatchPlaybackController({
     videoRef
   } = useLiveWatchPlayback(username, viewerConnectionKey);
   const viewerCount = useLiveWatchViewerCountMetric(room);
-  const { isChatVisible, overlayAccessibleLabel, overlayMode } =
+  const { isChatVisible, overlayMode, shouldShowShellCover } =
     useLiveWatchPlaybackTransition({
       liveStatusCheckRequestSequence,
       mediaReady,
@@ -71,6 +76,16 @@ export function LiveWatchPlaybackController({
     };
   }, [setViewerCountMetric]);
 
+  useClientLayoutEffect(() => {
+    setCoverVisible(shouldShowShellCover);
+  }, [setCoverVisible, shouldShowShellCover]);
+
+  useEffect(() => {
+    return () => {
+      resetCoverVisible();
+    };
+  }, [resetCoverVisible]);
+
   return (
     <LiveWatchPlaybackSurface
       audioRef={audioRef}
@@ -82,7 +97,6 @@ export function LiveWatchPlaybackController({
           room={room}
         />
       }
-      overlayAccessibleLabel={overlayAccessibleLabel}
       overlayMode={overlayMode}
       playbackMessage={playbackMessage}
       playbackState={playbackState}

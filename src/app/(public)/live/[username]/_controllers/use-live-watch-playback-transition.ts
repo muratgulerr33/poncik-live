@@ -119,8 +119,7 @@ export function useLiveWatchPlaybackTransition({
 
   return {
     isChatVisible,
-    overlayAccessibleLabel:
-      overlayMode === "spinner_only" ? "Yayın durumu güncelleniyor" : null,
-    overlayMode
+    overlayMode,
+    shouldShowShellCover: overlayMode === "spinner_only"
   } as const;
 }

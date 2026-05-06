@@ -38,6 +38,7 @@
 }
 
 .shell {
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0.6rem;
@@ -47,12 +48,61 @@
     100dvh - max(1rem, calc(var(--safe-area-top) + 0.875rem)) -
       max(1.5rem, calc(var(--safe-area-bottom) + 1.25rem))
   );
+  overflow: clip;
 }
 
 .contentStack {
   display: grid;
   min-height: 0;
   align-items: stretch;
+}
+
+.transitionCover {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  padding:
+    max(1rem, calc(var(--safe-area-top) + 0.875rem))
+    max(clamp(1rem, 4vw, 3rem), calc(var(--safe-area-right) + 1rem))
+    max(1.5rem, calc(var(--safe-area-bottom) + 1.25rem))
+    max(clamp(1rem, 4vw, 3rem), calc(var(--safe-area-left) + 1rem));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    visibility 0s linear 180ms;
+}
+
+.transitionCover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklch, var(--surface-2) 82%, var(--background) 18%);
+}
+
+.transitionCover[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.transitionCoverInner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  text-align: center;
+}
+
+.transitionCopy {
+  margin: 0;
+  color: color-mix(in oklch, var(--foreground) 92%, var(--muted-foreground));
 }
 
 .frame {
@@ -182,6 +232,11 @@
   color: var(--muted-foreground);
 }
 
+.loadingScaffold {
+  align-self: stretch;
+  justify-self: stretch;
+}
+
 .stateCard {
   max-width: 42rem;
   width: min(100%, 42rem);
@@ -305,6 +360,18 @@
   .mediaStage[data-live-media-fit="safe-contain"] .playbackVideo {
     object-fit: contain;
   }
+
+  .transitionCover {
+    padding:
+      max(0.875rem, calc(var(--safe-area-top) + 0.7rem))
+      max(1rem, calc(var(--safe-area-right) + 1rem))
+      max(1.5rem, calc(var(--safe-area-bottom) + 1.25rem))
+      max(1rem, calc(var(--safe-area-left) + 1rem));
+  }
+
+  .transitionCover::before {
+    background: color-mix(in oklch, var(--surface-1) 76%, var(--background) 24%);
+  }
 }
 
 @media (orientation: landscape) {
@@ -326,5 +393,9 @@
 @media (prefers-reduced-motion: reduce) {
   .loadingSpinner {
     animation: none;
+  }
+
+  .transitionCover {
+    transition: none;
   }
 }

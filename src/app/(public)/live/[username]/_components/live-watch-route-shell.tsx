@@ -14,11 +14,14 @@ import {
   useLiveWatchViewerCountContext
 } from "./live-watch-viewer-count-context";
 import { LiveWatchSurfaceNoticeProvider } from "./LiveWatchSurfaceNoticeProvider";
+import { LiveWatchTransitionCover } from "./LiveWatchTransitionCover";
 import { LiveWatchTopChrome } from "./LiveWatchTopChrome";
+import { LiveWatchTransitionCoverProvider } from "./live-watch-transition-cover-context";
 
 type LiveWatchRouteShellProps = Readonly<{
   audioToggleEnabled: boolean;
   children: ReactNode;
+  defaultCoverVisible: boolean;
   username: string;
 }>;
 
@@ -53,6 +56,7 @@ function LiveWatchTopChromeBridge({
 export function LiveWatchRouteShell({
   audioToggleEnabled,
   children,
+  defaultCoverVisible,
   username
 }: LiveWatchRouteShellProps) {
   const router = useRouter();
@@ -73,15 +77,18 @@ export function LiveWatchRouteShell({
   return (
     <LiveWatchAudioControlProvider enabled={audioToggleEnabled}>
       <LiveWatchViewerCountProvider>
-        <LiveWatchSurfaceNoticeProvider>
-          <div className={styles.shell}>
-            <LiveWatchTopChromeBridge
-              onRequestClose={() => router.back()}
-              username={username}
-            />
-            <div className={styles.contentStack}>{children}</div>
-          </div>
-        </LiveWatchSurfaceNoticeProvider>
+        <LiveWatchTransitionCoverProvider defaultCoverVisible={defaultCoverVisible}>
+          <LiveWatchSurfaceNoticeProvider>
+            <div className={styles.shell}>
+              <LiveWatchTopChromeBridge
+                onRequestClose={() => router.back()}
+                username={username}
+              />
+              <div className={styles.contentStack}>{children}</div>
+              <LiveWatchTransitionCover />
+            </div>
+          </LiveWatchSurfaceNoticeProvider>
+        </LiveWatchTransitionCoverProvider>
       </LiveWatchViewerCountProvider>
     </LiveWatchAudioControlProvider>
   );

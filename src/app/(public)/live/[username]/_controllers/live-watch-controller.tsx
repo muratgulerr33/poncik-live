@@ -47,7 +47,11 @@ export async function LiveWatchController({
 
   if (view.kind === "live") {
     return (
-      <LiveWatchShell audioToggleEnabled username={view.username}>
+      <LiveWatchShell
+        audioToggleEnabled
+        defaultCoverVisible
+        username={view.username}
+      >
         <LiveWatchPlaybackController chatAccess={chatAccess} username={view.username} />
         <LiveWatchFreshness mode="live" />
       </LiveWatchShell>
@@ -56,7 +60,11 @@ export async function LiveWatchController({
 
   if (view.kind === "ended") {
     return (
-      <LiveWatchShell audioToggleEnabled={false} username={view.username}>
+      <LiveWatchShell
+        audioToggleEnabled={false}
+        defaultCoverVisible={false}
+        username={view.username}
+      >
         <LiveEndedState />
         <LiveWatchEndedRedirectOwner />
         <LiveWatchFreshness mode="non_live" />
@@ -65,7 +73,11 @@ export async function LiveWatchController({
   }
 
   return (
-    <LiveWatchShell audioToggleEnabled={false} username={view.username}>
+    <LiveWatchShell
+      audioToggleEnabled={false}
+      defaultCoverVisible={false}
+      username={view.username}
+    >
       <LiveUnavailableState username={view.username} />
       <LiveWatchFreshness mode="non_live" />
     </LiveWatchShell>

@@ -5,12 +5,14 @@ import { LiveWatchRouteShell } from "./live-watch-route-shell";
 
 type LiveWatchShellProps = Readonly<{
   audioToggleEnabled: boolean;
+  defaultCoverVisible: boolean;
   username: string;
   children: ReactNode;
 }>;
 
 export function LiveWatchShell({
   audioToggleEnabled,
+  defaultCoverVisible,
   username,
   children
 }: LiveWatchShellProps) {
@@ -18,6 +20,7 @@ export function LiveWatchShell({
     <main className={styles.page}>
       <LiveWatchRouteShell
         audioToggleEnabled={audioToggleEnabled}
+        defaultCoverVisible={defaultCoverVisible}
         username={username}
       >
         {children}

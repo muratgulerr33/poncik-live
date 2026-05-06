@@ -6,15 +6,12 @@ type LiveWatchMessageProps = Readonly<{
 
 export function LiveWatchLoadingState() {
   return (
-    <div className={styles.stateCard}>
-      <div className={styles.loadingPresence} aria-hidden="true">
-        <span className={styles.loadingSpinner} />
-      </div>
-      <h2 className="t-h3">Yayın yükleniyor</h2>
-      <p className={`t-body ${styles.stateBody}`}>
-        Canlı yayına bağlanıyor.
-      </p>
-    </div>
+    <section
+      aria-hidden="true"
+      className={`${styles.frame} ${styles.loadingScaffold}`}
+    >
+      <div className={styles.mediaStage} />
+    </section>
   );
 }
 
