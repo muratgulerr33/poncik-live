@@ -73,8 +73,8 @@
   visibility: hidden;
   pointer-events: none;
   transition:
-    opacity 180ms ease,
-    visibility 0s linear 180ms;
+    opacity 360ms ease,
+    visibility 0s linear 360ms;
 }
 
 .transitionCover::before {
@@ -88,6 +88,7 @@
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+  transition-duration: 180ms, 0s;
   transition-delay: 0s;
 }
 
@@ -103,6 +104,21 @@
 .transitionCopy {
   margin: 0;
   color: color-mix(in oklch, var(--foreground) 92%, var(--muted-foreground));
+}
+
+.transitionCoverButton {
+  margin-top: 0.2rem;
+  padding: 0.875rem 1.25rem;
+  border: 1px solid color-mix(in oklch, var(--border) 84%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface-1) 92%, var(--background));
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.transitionCoverButton:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
 }
 
 .frame {

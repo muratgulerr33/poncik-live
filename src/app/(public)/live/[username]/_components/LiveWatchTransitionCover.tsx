@@ -1,10 +1,33 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
 import styles from "./live-watch.module.css";
 import { useLiveWatchTransitionCoverContext } from "./live-watch-transition-cover-context";
 
+const LONG_CONNECTION_FALLBACK_DELAY_MS = 7000;
+
 export function LiveWatchTransitionCover() {
   const { isCoverVisible } = useLiveWatchTransitionCoverContext();
+  const [isLongConnectionFallbackVisible, setIsLongConnectionFallbackVisible] =
+    useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isCoverVisible) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsLongConnectionFallbackVisible(true);
+    }, LONG_CONNECTION_FALLBACK_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      setIsLongConnectionFallbackVisible(false);
+    };
+  }, [isCoverVisible]);
 
   return (
     <div
@@ -19,7 +42,22 @@ export function LiveWatchTransitionCover() {
         <div className={styles.loadingPresence} aria-hidden="true">
           <span className={styles.loadingSpinner} />
         </div>
-        <p className={`t-body ${styles.transitionCopy}`}>Canlı yayına bağlanıyor</p>
+        {isLongConnectionFallbackVisible ? (
+          <>
+            <p className={`t-body ${styles.transitionCopy}`}>Biraz uzun sürdü</p>
+            <button
+              className={styles.transitionCoverButton}
+              onClick={() => {
+                router.push("/");
+              }}
+              type="button"
+            >
+              Anasayfaya dön
+            </button>
+          </>
+        ) : (
+          <p className={`t-body ${styles.transitionCopy}`}>Canlı yayına bağlanıyor</p>
+        )}
       </div>
     </div>
   );
