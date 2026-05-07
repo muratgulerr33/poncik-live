@@ -4,7 +4,7 @@
 
 - PASS.
 - Tur 2 uzun baglanti fallback'i tamamlandi.
-- 7000ms sonrasi fallback ayni full-cover icinde gosteriliyor.
+- 12000ms sonrasi fallback ayni full-cover icinde gosteriliyor.
 - Dev-only test flag owner smoke icin kullanildi, ardindan product code'dan temizlendi.
 
 ## Scope
@@ -20,7 +20,7 @@
 - Ilk asama:
   - `Canlı yayına bağlanıyor`
   - spinner
-- 7000ms sonrasi:
+- 12000ms sonrasi:
   - spinner devam eder
   - `Biraz uzun sürdü`
   - `Anasayfaya dön`

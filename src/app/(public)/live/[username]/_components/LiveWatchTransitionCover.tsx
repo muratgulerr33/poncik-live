@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import styles from "./live-watch.module.css";
 import { useLiveWatchTransitionCoverContext } from "./live-watch-transition-cover-context";
 
-const LONG_CONNECTION_FALLBACK_DELAY_MS = 7000;
+const LONG_CONNECTION_FALLBACK_DELAY_MS = 12000;
 
 export function LiveWatchTransitionCover() {
   const { isCoverVisible } = useLiveWatchTransitionCoverContext();
