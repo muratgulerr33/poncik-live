@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  createStudioMobilePortraitCaptureConstraints,
+  isStudioPortraitSafeCameraTrack,
+  shouldUseStudioMobilePortraitCaptureContract
+} from "./studio-camera-capture-contract";
+
 const STUDIO_CAMERA_RELEASE_SETTLE_MS = 150;
 
 export type StudioCameraDeviceDescriptor = {
@@ -20,6 +26,39 @@ export type StudioCameraStreamRequestResult =
   | { kind: "not_readable" }
   | { kind: "degraded" };
 
+function isStudioCameraConstraintCompatibilityError(error: unknown) {
+  if (error instanceof TypeError) {
+    return true;
+  }
+
+  return (
+    error instanceof DOMException &&
+    ["OverconstrainedError", "ConstraintNotSatisfiedError"].includes(error.name)
+  );
+}
+
+function mapStudioCameraRequestError(error: unknown): StudioCameraStreamRequestResult {
+  if (
+    error instanceof DOMException &&
+    ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
+  ) {
+    return { kind: "blocked" };
+  }
+
+  if (
+    error instanceof DOMException &&
+    ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
+  ) {
+    return { kind: "unsupported" };
+  }
+
+  if (error instanceof DOMException && error.name === "NotReadableError") {
+    return { kind: "not_readable" };
+  }
+
+  return { kind: "degraded" };
+}
+
 function readStudioMediaDevices() {
   if (typeof window === "undefined" || typeof navigator === "undefined") {
     return null;
@@ -32,6 +71,32 @@ function readStudioMediaDevices() {
   }
 
   return mediaDevices;
+}
+
+async function requestStudioCameraLegacyStreamByDeviceId(input: {
+  deviceId: string;
+  includeAudio: boolean;
+}): Promise<StudioCameraStreamRequestResult> {
+  const mediaDevices = readStudioMediaDevices();
+
+  if (!mediaDevices || typeof mediaDevices.getUserMedia !== "function") {
+    return { kind: "unsupported" };
+  }
+
+  try {
+    const stream = await mediaDevices.getUserMedia({
+      audio: input.includeAudio,
+      video: {
+        deviceId: {
+          exact: input.deviceId
+        }
+      }
+    });
+
+    return { kind: "success", stream };
+  } catch (error) {
+    return mapStudioCameraRequestError(error);
+  }
 }
 
 export async function readStudioVideoInputDevices(): Promise<StudioCameraDeviceReadResult> {
@@ -121,17 +186,28 @@ export async function requestStudioCameraStreamByDeviceId(input: {
     return { kind: "unsupported" };
   }
 
+  if (!shouldUseStudioMobilePortraitCaptureContract()) {
+    return await requestStudioCameraLegacyStreamByDeviceId(input);
+  }
+
   try {
     const stream = await mediaDevices.getUserMedia({
       audio: input.includeAudio,
-      video: {
-        deviceId: {
-          exact: input.deviceId
-        }
-      }
+      video: createStudioMobilePortraitCaptureConstraints({
+        deviceId: input.deviceId
+      })
     });
+    const videoTrack =
+      stream
+        .getVideoTracks()
+        .find((track) => track.readyState !== "ended") ?? null;
 
-    return { kind: "success", stream };
+    if (isStudioPortraitSafeCameraTrack(videoTrack)) {
+      return { kind: "success", stream };
+    }
+
+    stopStudioMediaStream(stream);
+    return await requestStudioCameraLegacyStreamByDeviceId(input);
   } catch (error) {
     if (
       error instanceof DOMException &&
@@ -140,18 +216,15 @@ export async function requestStudioCameraStreamByDeviceId(input: {
       return { kind: "blocked" };
     }
 
-    if (
-      error instanceof DOMException &&
-      ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
-    ) {
-      return { kind: "unsupported" };
-    }
-
     if (error instanceof DOMException && error.name === "NotReadableError") {
       return { kind: "not_readable" };
     }
 
-    return { kind: "degraded" };
+    if (isStudioCameraConstraintCompatibilityError(error)) {
+      return await requestStudioCameraLegacyStreamByDeviceId(input);
+    }
+
+    return mapStudioCameraRequestError(error);
   }
 }
 

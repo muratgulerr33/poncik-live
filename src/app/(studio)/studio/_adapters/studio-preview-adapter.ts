@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  createStudioMobilePortraitCaptureConstraints,
+  isStudioPortraitSafeCameraTrack,
+  shouldUseStudioMobilePortraitCaptureContract
+} from "./studio-camera-capture-contract";
+
 export type StudioPreviewState =
   | "requesting"
   | "preview_ready"
@@ -23,30 +29,43 @@ export type StudioPreviewRequestResult =
       kind: "degraded";
     };
 
-export async function requestStudioPreviewStream(): Promise<StudioPreviewRequestResult> {
+function isStudioPreviewConstraintCompatibilityError(error: unknown) {
+  if (error instanceof TypeError) {
+    return true;
+  }
+
+  return (
+    error instanceof DOMException &&
+    ["OverconstrainedError", "ConstraintNotSatisfiedError"].includes(error.name)
+  );
+}
+
+function mapStudioPreviewRequestError(error: unknown): StudioPreviewRequestResult {
+  if (
+    error instanceof DOMException &&
+    ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
+  ) {
+    return {
+      kind: "blocked"
+    };
+  }
+
+  if (
+    error instanceof DOMException &&
+    ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
+  ) {
+    return {
+      kind: "unsupported"
+    };
+  }
+
+  return {
+    kind: "degraded"
+  };
+}
+
+async function requestStudioPreviewLegacyStream(): Promise<StudioPreviewRequestResult> {
   try {
-    const allowInsecureLanMediaDev =
-      process.env.NEXT_PUBLIC_ALLOW_INSECURE_LAN_MEDIA_DEV === "1";
-    const isDev = process.env.NODE_ENV === "development";
-
-    if (
-      typeof window === "undefined" ||
-      (!window.isSecureContext && !(isDev && allowInsecureLanMediaDev))
-    ) {
-      return {
-        kind: "unsupported"
-      };
-    }
-
-    if (
-      !("mediaDevices" in navigator) ||
-      typeof navigator.mediaDevices?.getUserMedia !== "function"
-    ) {
-      return {
-        kind: "unsupported"
-      };
-    }
-
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true
@@ -57,6 +76,57 @@ export async function requestStudioPreviewStream(): Promise<StudioPreviewRequest
       stream
     };
   } catch (error) {
+    return mapStudioPreviewRequestError(error);
+  }
+}
+
+export async function requestStudioPreviewStream(): Promise<StudioPreviewRequestResult> {
+  const allowInsecureLanMediaDev =
+    process.env.NEXT_PUBLIC_ALLOW_INSECURE_LAN_MEDIA_DEV === "1";
+  const isDev = process.env.NODE_ENV === "development";
+
+  if (
+    typeof window === "undefined" ||
+    (!window.isSecureContext && !(isDev && allowInsecureLanMediaDev))
+  ) {
+    return {
+      kind: "unsupported"
+    };
+  }
+
+  if (
+    !("mediaDevices" in navigator) ||
+    typeof navigator.mediaDevices?.getUserMedia !== "function"
+  ) {
+    return {
+      kind: "unsupported"
+    };
+  }
+
+  if (!shouldUseStudioMobilePortraitCaptureContract()) {
+    return await requestStudioPreviewLegacyStream();
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: createStudioMobilePortraitCaptureConstraints(),
+      audio: true
+    });
+    const videoTrack =
+      stream
+        .getVideoTracks()
+        .find((track) => track.readyState !== "ended") ?? null;
+
+    if (isStudioPortraitSafeCameraTrack(videoTrack)) {
+      return {
+        kind: "success",
+        stream
+      };
+    }
+
+    stopStudioPreviewStream(stream);
+    return await requestStudioPreviewLegacyStream();
+  } catch (error) {
     if (
       error instanceof DOMException &&
       ["NotAllowedError", "PermissionDeniedError"].includes(error.name)
@@ -66,18 +136,17 @@ export async function requestStudioPreviewStream(): Promise<StudioPreviewRequest
       };
     }
 
-    if (
-      error instanceof DOMException &&
-      ["NotFoundError", "OverconstrainedError", "SecurityError"].includes(error.name)
-    ) {
+    if (error instanceof DOMException && error.name === "NotReadableError") {
       return {
-        kind: "unsupported"
+        kind: "degraded"
       };
     }
 
-    return {
-      kind: "degraded"
-    };
+    if (isStudioPreviewConstraintCompatibilityError(error)) {
+      return await requestStudioPreviewLegacyStream();
+    }
+
+    return mapStudioPreviewRequestError(error);
   }
 }
 
