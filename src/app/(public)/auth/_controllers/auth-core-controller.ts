@@ -22,6 +22,26 @@ type AuthCoreControllerInput = Readonly<{
   updated: string | null | undefined;
 }>;
 
+function resolveSettingsNotice(
+  updated: string | null | undefined
+): AuthSettingsNoticeView {
+  if (updated === "username") {
+    return {
+      target: "username",
+      message: AUTH_COPY.settingsUsernameSuccessInlineLabel
+    };
+  }
+
+  if (updated === "password") {
+    return {
+      target: "password",
+      message: AUTH_COPY.settingsPasswordSuccessInlineLabel
+    };
+  }
+
+  return null;
+}
+
 function normalizeAdminStatusFilter(
   status: string | null | undefined
 ): AdminApprovalStatusFilter {
@@ -102,13 +122,8 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
     };
   } else if (currentSession?.roleType === "publisher") {
     selectedSurface = requestedSurface;
-
-    if (selectedSurface === "settings" && input.updated === "username") {
-      settingsNotice = {
-        title: AUTH_COPY.settingsUsernameSuccessTitle,
-        body: AUTH_COPY.settingsUsernameSuccessBody
-      };
-    }
+    settingsNotice =
+      selectedSurface === "settings" ? resolveSettingsNotice(input.updated) : null;
 
     if (selectedSurface === "settings") {
       return {
@@ -197,13 +212,8 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
     }
   } else if (currentSession?.roleType === "user") {
     selectedSurface = requestedSurface;
-
-    if (selectedSurface === "settings" && input.updated === "username") {
-      settingsNotice = {
-        title: AUTH_COPY.settingsUsernameSuccessTitle,
-        body: AUTH_COPY.settingsUsernameSuccessBody
-      };
-    }
+    settingsNotice =
+      selectedSurface === "settings" ? resolveSettingsNotice(input.updated) : null;
   }
 
   return {

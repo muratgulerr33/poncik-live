@@ -8,8 +8,8 @@ export type AuthSelectedSurface = "account" | "settings";
 
 export type AuthSettingsNoticeView =
   | {
-      title: string;
-      body: string;
+      target: "username" | "password";
+      message: string;
     }
   | null;
 

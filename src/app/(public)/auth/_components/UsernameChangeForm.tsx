@@ -11,8 +11,8 @@ import styles from "./auth-settings.module.css";
 type UsernameChangeFormProps = Readonly<{
   currentUsername: string;
   settingsNotice: {
-    title: string;
-    body: string;
+    target: "username" | "password";
+    message: string;
   } | null;
 }>;
 
@@ -55,9 +55,10 @@ export function UsernameChangeForm({
         </p>
       ) : null}
 
-      {settingsNotice ? (
+      {state.status !== "error" &&
+      settingsNotice?.target === "username" ? (
         <p className={`t-caption ${styles.formMessage} ${styles.formSuccess}`}>
-          {AUTH_COPY.settingsUsernameSuccessInlineLabel}
+          {settingsNotice.message}
         </p>
       ) : null}
 
