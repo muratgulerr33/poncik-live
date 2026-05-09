@@ -1,86 +1,81 @@
 .surface {
   display: grid;
-  gap: 1rem;
+  gap: 0.9rem;
 }
 
-.header {
+.form {
   display: grid;
-  gap: 0.35rem;
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--primary);
-}
-
-.title,
-.description,
-.noticeBody,
-.label,
-.value {
-  margin: 0;
-}
-
-.description {
-  color: var(--muted-foreground);
-}
-
-.notice {
-  padding: 0.85rem 0.95rem;
-  border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
-  border-radius: calc(var(--radius) + 0.1rem);
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid color-mix(in oklch, var(--border) 88%, transparent);
+  border-radius: calc(var(--radius) + 0.14rem);
   background:
     linear-gradient(
       180deg,
       color-mix(in oklch, var(--surface-1) 96%, transparent) 0%,
-      color-mix(in oklch, var(--surface-2) 88%, transparent) 100%
+      color-mix(in oklch, var(--surface-2) 92%, transparent) 100%
     );
 }
 
-.noticeBody {
-  color: var(--muted-foreground);
+.sectionLabel,
+.fieldLabel,
+.emailLabel,
+.emailValue {
+  margin: 0;
 }
 
-.grid {
+.field {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
-.row {
-  display: grid;
-  gap: 0.3rem;
-  padding: 0.85rem 0.95rem;
-  border: 1px solid color-mix(in oklch, var(--border) 88%, transparent);
-  border-radius: calc(var(--radius) + 0.1rem);
-  background: color-mix(in oklch, var(--surface-1) 94%, transparent);
-}
-
-.label {
-  color: var(--muted-foreground);
-}
-
-.value {
+.sectionLabel {
   color: var(--foreground);
-  word-break: break-word;
 }
 
-.footer {
+.input {
+  min-height: 3rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid color-mix(in oklch, var(--border) 88%, transparent);
+  border-radius: calc(var(--radius) + 0.08rem);
+  background: color-mix(in oklch, var(--surface-1) 96%, transparent);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.formMessage {
+  margin: 0;
+}
+
+.formError {
+  color: var(--danger);
+}
+
+.formSuccess {
+  color: var(--primary);
+}
+
+.formActions {
   display: flex;
   align-items: center;
 }
 
-.backLink {
-  color: var(--primary);
-  text-decoration: none;
+.emailBlock {
+  display: grid;
+  gap: 0.2rem;
+  padding-inline: 0.1rem;
 }
 
-.backLink:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 4px;
+.emailLabel {
+  color: var(--muted-foreground);
 }
 
-@media (any-pointer: fine) {
-  .backLink:hover {
-    text-decoration: underline;
-  }
+.emailValue {
+  color: var(--foreground);
+  word-break: break-word;
 }

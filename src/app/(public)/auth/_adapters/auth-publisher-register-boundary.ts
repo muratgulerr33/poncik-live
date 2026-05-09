@@ -5,10 +5,11 @@ import {
   DEFAULT_ACCOUNT_STATUS,
   DEFAULT_PUBLISHER_ROLE,
   findExistingAccounts,
+  getAccountWriteConflictTarget,
   getExistingAccountConflictMessage,
-  sanitizeEmail,
-  sanitizeUsername
+  sanitizeEmail
 } from "./auth-account-boundary";
+import { validateAuthUsernameInput } from "../_lib/auth-username-policy";
 import { createPublisherApplication } from "./auth-publisher-application-boundary";
 import { hashPassword } from "./auth-password-boundary";
 import {
@@ -36,17 +37,28 @@ export async function registerPublisherAccount(input: {
   password: string;
 }): Promise<RegisterResult> {
   const fullName = input.fullName.trim();
-  const username = sanitizeUsername(input.username);
+  const rawUsername = input.username;
   const phone = input.phone.trim();
   const email = sanitizeEmail(input.email);
   const password = input.password;
 
-  if (!fullName || !username || !phone || !email || !password) {
+  if (!fullName || !rawUsername || !phone || !email || !password) {
     return {
       ok: false,
       message: "Başvuru için tüm alanları doldur."
     };
   }
+
+  const usernameValidation = validateAuthUsernameInput(rawUsername);
+
+  if (!usernameValidation.ok) {
+    return {
+      ok: false,
+      message: usernameValidation.message
+    };
+  }
+
+  const username = usernameValidation.username;
 
   try {
     const existingAccounts = await findExistingAccounts(email, username);
@@ -116,7 +128,23 @@ export async function registerPublisherAccount(input: {
     return {
       ok: true
     };
-  } catch {
+  } catch (error) {
+    const conflictTarget = getAccountWriteConflictTarget(error);
+
+    if (conflictTarget === "username") {
+      return {
+        ok: false,
+        message: "Bu kullanıcı adı zaten kullanılıyor."
+      };
+    }
+
+    if (conflictTarget === "email") {
+      return {
+        ok: false,
+        message: "Bu e-posta zaten kullanılıyor."
+      };
+    }
+
     return {
       ok: false,
       message: REGISTER_UNAVAILABLE_MESSAGE

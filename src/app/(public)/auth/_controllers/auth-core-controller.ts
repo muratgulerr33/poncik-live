@@ -9,6 +9,7 @@ import { AUTH_COPY } from "../_lib/auth-copy";
 import {
   type AdminApprovalStatusFilter,
   type AuthSelectedSurface,
+  type AuthSettingsNoticeView,
   type AdminSurfaceView,
   type PublisherSurfaceView
 } from "./auth-surface-view";
@@ -18,6 +19,7 @@ type AuthCoreControllerInput = Readonly<{
   registered: string | null | undefined;
   status: string | null | undefined;
   surface: string | null | undefined;
+  updated: string | null | undefined;
 }>;
 
 function normalizeAdminStatusFilter(
@@ -55,6 +57,7 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
   let publisherSurface: PublisherSurfaceView = null;
   let adminSurface: AdminSurfaceView = null;
   let selectedSurface: AuthSelectedSurface = "account";
+  let settingsNotice: AuthSettingsNoticeView = null;
   let primaryAction: {
     href: string;
     label: string;
@@ -100,9 +103,17 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
   } else if (currentSession?.roleType === "publisher") {
     selectedSurface = requestedSurface;
 
+    if (selectedSurface === "settings" && input.updated === "username") {
+      settingsNotice = {
+        title: AUTH_COPY.settingsUsernameSuccessTitle,
+        body: AUTH_COPY.settingsUsernameSuccessBody
+      };
+    }
+
     if (selectedSurface === "settings") {
       return {
         selectedSurface,
+        settingsNotice,
         currentSession,
         degradedMessage:
           sessionState.kind === "degraded"
@@ -186,10 +197,18 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
     }
   } else if (currentSession?.roleType === "user") {
     selectedSurface = requestedSurface;
+
+    if (selectedSurface === "settings" && input.updated === "username") {
+      settingsNotice = {
+        title: AUTH_COPY.settingsUsernameSuccessTitle,
+        body: AUTH_COPY.settingsUsernameSuccessBody
+      };
+    }
   }
 
   return {
     selectedSurface,
+    settingsNotice,
     currentSession,
     degradedMessage:
       sessionState.kind === "degraded"

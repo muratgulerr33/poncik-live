@@ -51,6 +51,8 @@ export type ExistingAccountSummary = {
   username: string;
 };
 
+export type AccountWriteConflictTarget = "email" | "username" | null;
+
 export function sanitizeEmail(email: string) {
   return normalizeEmail(email);
 }
@@ -61,6 +63,41 @@ export function sanitizeUsername(username: string) {
 
 export function sanitizeIdentifier(identifier: string) {
   return normalizeIdentifier(identifier);
+}
+
+export function getAccountWriteConflictTarget(
+  error: unknown
+): AccountWriteConflictTarget {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const candidate = error as Record<string, unknown>;
+
+  if (candidate.code !== "23505") {
+    return null;
+  }
+
+  const signal = [
+    candidate.constraint,
+    candidate.constraint_name,
+    candidate.column_name,
+    candidate.detail,
+    candidate.message
+  ]
+    .filter((value) => typeof value === "string")
+    .join(" ")
+    .toLowerCase();
+
+  if (signal.includes("username")) {
+    return "username";
+  }
+
+  if (signal.includes("email")) {
+    return "email";
+  }
+
+  return null;
 }
 
 export async function findAccountByIdentifier(identifier: string) {

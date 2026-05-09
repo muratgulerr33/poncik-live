@@ -9,6 +9,7 @@ import {
   publisherSettings
 } from "@/db/schema";
 import { createStudioBroadcastLivenessReconciler } from "@/app/(studio)/studio/_adapters/studio-broadcast-liveness-adapter";
+import { getPublicLivePath } from "./public-live-path";
 
 const LIVE_BROADCAST_STATUS = "live";
 const PUBLISHER_ROLE = "publisher";
@@ -107,7 +108,7 @@ export async function readDiscoveryEntries(): Promise<DiscoveryResult> {
       liveEntries.push({
         id: row.username,
         username: row.username,
-        href: `/live/${row.username}`,
+        href: getPublicLivePath(row.username),
         coverImageId: row.coverImageId,
         coverImageStorageKey: row.coverImageStorageKey
       });

@@ -6,6 +6,13 @@ export type AdminApprovalStatusFilter =
 
 export type AuthSelectedSurface = "account" | "settings";
 
+export type AuthSettingsNoticeView =
+  | {
+      title: string;
+      body: string;
+    }
+  | null;
+
 export type PublisherCoverCatalogItem = {
   id: string;
   storageKey: string;

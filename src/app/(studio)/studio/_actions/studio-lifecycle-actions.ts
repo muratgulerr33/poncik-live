@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { getPublicLivePath } from "@/app/(public)/_lib/public-live-path";
 import { readPublisherApplicationStatus } from "@/app/(public)/auth/_adapters/auth-publisher-application-boundary";
 import { readCurrentSessionState } from "@/app/(public)/auth/_adapters/auth-session-boundary";
 
@@ -38,7 +39,7 @@ async function readApprovedPublisherSession() {
 function revalidateStudioRoutes(username: string) {
   revalidatePath("/studio");
   revalidatePath("/");
-  revalidatePath(`/live/${username}`);
+  revalidatePath(getPublicLivePath(username));
 }
 
 export async function startBroadcastAction(

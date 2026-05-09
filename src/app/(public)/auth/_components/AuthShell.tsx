@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useState } from "react";
 
 import { type AdminSurfaceView } from "../_controllers/auth-surface-view";
+import { type AuthSettingsNoticeView } from "../_controllers/auth-surface-view";
 import { type AuthSelectedSurface } from "../_controllers/auth-surface-view";
 import { type PublisherSurfaceView } from "../_controllers/auth-surface-view";
 import { AUTH_COPY } from "../_lib/auth-copy";
@@ -35,6 +36,7 @@ type AuthShellProps = Readonly<{
   } | null;
   degradedMessage: string | null;
   publisherSurface: PublisherSurfaceView;
+  settingsNotice: AuthSettingsNoticeView;
 }>;
 
 export function AuthShell({
@@ -44,14 +46,15 @@ export function AuthShell({
   adminSurface,
   currentSession,
   degradedMessage,
-  publisherSurface
+  publisherSurface,
+  settingsNotice
 }: AuthShellProps) {
   const [mode, setMode] = useState<"login" | "user-register" | "publisher-register">(
     "login"
   );
   const isPublisherSession = currentSession?.roleType === "publisher";
   const isSignedInNonPublisher = Boolean(currentSession && !isPublisherSession);
-  const showHero = !isSignedInNonPublisher;
+  const showHero = !isSignedInNonPublisher && selectedSurface !== "settings";
   const heroDescription = isPublisherSession ? null : AUTH_COPY.description;
   const menuItems = useMemo<AuthRouteMenuItem[]>(() => {
     if (!currentSession) {
@@ -115,7 +118,13 @@ export function AuthShell({
           type: "link",
           label: "Hesabım",
           href: "/auth",
-          isCurrent: true
+          isCurrent: selectedSurface === "account"
+        },
+        {
+          type: "link",
+          label: AUTH_COPY.settingsNavLabel,
+          href: "/auth?surface=settings",
+          isCurrent: selectedSurface === "settings"
         },
         {
           type: "action",
@@ -144,7 +153,13 @@ export function AuthShell({
         type: "link",
         label: "Hesabım",
         href: "/auth",
-        isCurrent: true
+        isCurrent: selectedSurface === "account"
+      },
+      {
+        type: "link",
+        label: AUTH_COPY.settingsNavLabel,
+        href: "/auth?surface=settings",
+        isCurrent: selectedSurface === "settings"
       },
       {
         type: "action",
@@ -152,7 +167,7 @@ export function AuthShell({
         actionId: "support"
       }
     ];
-  }, [currentSession, primaryAction.href, publisherSurface]);
+  }, [currentSession, primaryAction.href, publisherSurface, selectedSurface]);
 
   return (
     <main className={styles.page}>
@@ -190,7 +205,10 @@ export function AuthShell({
             ) : null}
             {currentSession ? (
               selectedSurface === "settings" ? (
-                <AuthSettingsSurface currentSession={currentSession} />
+                <AuthSettingsSurface
+                  currentSession={currentSession}
+                  settingsNotice={settingsNotice}
+                />
               ) : (
                 <CurrentSessionPanel
                   primaryActionHref={primaryAction.href}

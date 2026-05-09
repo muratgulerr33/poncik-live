@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { RoomServiceClient } from "livekit-server-sdk";
 
 import { getLiveKitBroadcastRoomName } from "@/app/api/livekit/_lib/livekit-room-naming";
+import { getPublicLivePath } from "@/app/(public)/_lib/public-live-path";
 import { getDb } from "@/db/client";
 import { broadcasts } from "@/db/schema";
 
@@ -65,7 +66,7 @@ function hasGraceExpired(updatedAt: Date) {
 function revalidateStudioLifecyclePaths(username: string) {
   revalidatePath("/studio");
   revalidatePath("/");
-  revalidatePath(`/live/${username}`);
+  revalidatePath(getPublicLivePath(username));
 }
 
 async function readPublisherPresence(

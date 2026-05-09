@@ -44,6 +44,11 @@ export function UserRegisterForm({ next }: UserRegisterFormProps) {
           name="username"
           className={styles.input}
           autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          minLength={3}
+          maxLength={24}
           required
         />
       </div>

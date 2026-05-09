@@ -7,6 +7,7 @@ type AuthPageProps = Readonly<{
     registered?: string;
     status?: string;
     surface?: string;
+    updated?: string;
   }>;
 }>;
 
@@ -16,7 +17,8 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
     next: resolvedSearchParams.next,
     registered: resolvedSearchParams.registered,
     status: resolvedSearchParams.status,
-    surface: resolvedSearchParams.surface
+    surface: resolvedSearchParams.surface,
+    updated: resolvedSearchParams.updated
   });
 
   return (
@@ -28,6 +30,7 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
       currentSession={view.currentSession}
       degradedMessage={view.degradedMessage}
       publisherSurface={view.publisherSurface}
+      settingsNotice={view.settingsNotice}
     />
   );
 }

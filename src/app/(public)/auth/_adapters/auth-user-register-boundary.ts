@@ -5,10 +5,11 @@ import {
   DEFAULT_ACCOUNT_STATUS,
   DEFAULT_USER_ROLE,
   findExistingAccounts,
+  getAccountWriteConflictTarget,
   getExistingAccountConflictMessage,
-  sanitizeEmail,
-  sanitizeUsername
+  sanitizeEmail
 } from "./auth-account-boundary";
+import { validateAuthUsernameInput } from "../_lib/auth-username-policy";
 import { hashPassword } from "./auth-password-boundary";
 import {
   createRegisterSessionSeed,
@@ -33,15 +34,26 @@ export async function registerUserAccount(input: {
   password: string;
 }): Promise<RegisterResult> {
   const email = sanitizeEmail(input.email);
-  const username = sanitizeUsername(input.username);
+  const rawUsername = input.username;
   const password = input.password;
 
-  if (!email || !username || !password) {
+  if (!email || !rawUsername || !password) {
     return {
       ok: false,
       message: "Kayıt için tüm alanları doldur."
     };
   }
+
+  const usernameValidation = validateAuthUsernameInput(rawUsername);
+
+  if (!usernameValidation.ok) {
+    return {
+      ok: false,
+      message: usernameValidation.message
+    };
+  }
+
+  const username = usernameValidation.username;
 
   try {
     const existingAccounts = await findExistingAccounts(email, username);
@@ -105,7 +117,23 @@ export async function registerUserAccount(input: {
     return {
       ok: true
     };
-  } catch {
+  } catch (error) {
+    const conflictTarget = getAccountWriteConflictTarget(error);
+
+    if (conflictTarget === "username") {
+      return {
+        ok: false,
+        message: "Bu kullanıcı adı zaten kullanılıyor."
+      };
+    }
+
+    if (conflictTarget === "email") {
+      return {
+        ok: false,
+        message: "Bu e-posta zaten kullanılıyor."
+      };
+    }
+
     return {
       ok: false,
       message: REGISTER_UNAVAILABLE_MESSAGE
