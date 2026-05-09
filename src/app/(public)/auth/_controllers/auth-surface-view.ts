@@ -4,6 +4,8 @@ export type AdminApprovalStatusFilter =
   | "rejected"
   | "all";
 
+export type AuthSelectedSurface = "account" | "settings";
+
 export type PublisherCoverCatalogItem = {
   id: string;
   storageKey: string;

@@ -6,6 +6,7 @@ type AuthPageProps = Readonly<{
     next?: string;
     registered?: string;
     status?: string;
+    surface?: string;
   }>;
 }>;
 
@@ -14,11 +15,13 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
   const view = await getAuthCoreView({
     next: resolvedSearchParams.next,
     registered: resolvedSearchParams.registered,
-    status: resolvedSearchParams.status
+    status: resolvedSearchParams.status,
+    surface: resolvedSearchParams.surface
   });
 
   return (
     <AuthShell
+      selectedSurface={view.selectedSurface}
       destination={view.continuation.destination}
       primaryAction={view.primaryAction}
       adminSurface={view.adminSurface}

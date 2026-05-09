@@ -4,11 +4,13 @@ import { useMemo } from "react";
 import { useState } from "react";
 
 import { type AdminSurfaceView } from "../_controllers/auth-surface-view";
+import { type AuthSelectedSurface } from "../_controllers/auth-surface-view";
 import { type PublisherSurfaceView } from "../_controllers/auth-surface-view";
 import { AUTH_COPY } from "../_lib/auth-copy";
 
 import { AuthModeToggle } from "./AuthModeToggle";
 import { AuthNotice } from "./AuthNotice";
+import { AuthSettingsSurface } from "./AuthSettingsSurface";
 import { type AuthRouteMenuItem } from "./auth-route-shell";
 import { AuthRouteShell } from "./auth-route-shell";
 import { CurrentSessionPanel } from "./CurrentSessionPanel";
@@ -18,6 +20,7 @@ import styles from "./auth.module.css";
 import { UserRegisterForm } from "./UserRegisterForm";
 
 type AuthShellProps = Readonly<{
+  selectedSurface: AuthSelectedSurface;
   destination: string;
   primaryAction: {
     href: string;
@@ -35,6 +38,7 @@ type AuthShellProps = Readonly<{
 }>;
 
 export function AuthShell({
+  selectedSurface,
   destination,
   primaryAction,
   adminSurface,
@@ -185,13 +189,17 @@ export function AuthShell({
               />
             ) : null}
             {currentSession ? (
-              <CurrentSessionPanel
-                primaryActionHref={primaryAction.href}
-                primaryActionLabel={primaryAction.label}
-                adminSurface={adminSurface}
-                currentSession={currentSession}
-                publisherSurface={publisherSurface}
-              />
+              selectedSurface === "settings" ? (
+                <AuthSettingsSurface currentSession={currentSession} />
+              ) : (
+                <CurrentSessionPanel
+                  primaryActionHref={primaryAction.href}
+                  primaryActionLabel={primaryAction.label}
+                  adminSurface={adminSurface}
+                  currentSession={currentSession}
+                  publisherSurface={publisherSurface}
+                />
+              )
             ) : (
               <>
                 <AuthModeToggle mode={mode} onChange={setMode} />

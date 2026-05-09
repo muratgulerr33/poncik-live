@@ -8,6 +8,7 @@ import { resolveAuthContinuation } from "../_lib/auth-continuation";
 import { AUTH_COPY } from "../_lib/auth-copy";
 import {
   type AdminApprovalStatusFilter,
+  type AuthSelectedSurface,
   type AdminSurfaceView,
   type PublisherSurfaceView
 } from "./auth-surface-view";
@@ -16,6 +17,7 @@ type AuthCoreControllerInput = Readonly<{
   next: string | null | undefined;
   registered: string | null | undefined;
   status: string | null | undefined;
+  surface: string | null | undefined;
 }>;
 
 function normalizeAdminStatusFilter(
@@ -33,14 +35,26 @@ function normalizeAdminStatusFilter(
   return "pending_review";
 }
 
+function normalizeSelectedSurface(
+  surface: string | null | undefined
+): AuthSelectedSurface {
+  if (surface === "settings") {
+    return "settings";
+  }
+
+  return "account";
+}
+
 export async function getAuthCoreView(input: AuthCoreControllerInput) {
   const sessionState = await readCurrentSession();
   const continuation = resolveAuthContinuation(input.next);
   const currentSession =
     sessionState.kind === "authenticated" ? sessionState.session : null;
   const selectedAdminFilter = normalizeAdminStatusFilter(input.status);
+  const requestedSurface = normalizeSelectedSurface(input.surface);
   let publisherSurface: PublisherSurfaceView = null;
   let adminSurface: AdminSurfaceView = null;
+  let selectedSurface: AuthSelectedSurface = "account";
   let primaryAction: {
     href: string;
     label: string;
@@ -84,6 +98,23 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
       label: AUTH_COPY.returnDiscoveryLabel
     };
   } else if (currentSession?.roleType === "publisher") {
+    selectedSurface = requestedSurface;
+
+    if (selectedSurface === "settings") {
+      return {
+        selectedSurface,
+        currentSession,
+        degradedMessage:
+          sessionState.kind === "degraded"
+            ? "Giriş işlemleri şu anda tamamlanamıyor. Lütfen biraz sonra tekrar dene."
+            : null,
+        continuation,
+        primaryAction,
+        adminSurface,
+        publisherSurface
+      };
+    }
+
     const applicationState = await readPublisherApplicationStatus(currentSession.accountId);
     const showContinuityHint = input.registered === "publisher";
 
@@ -153,9 +184,12 @@ export async function getAuthCoreView(input: AuthCoreControllerInput) {
         label: AUTH_COPY.returnDiscoveryLabel
       };
     }
+  } else if (currentSession?.roleType === "user") {
+    selectedSurface = requestedSurface;
   }
 
   return {
+    selectedSurface,
     currentSession,
     degradedMessage:
       sessionState.kind === "degraded"
