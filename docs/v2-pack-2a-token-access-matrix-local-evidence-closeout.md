@@ -28,7 +28,7 @@ Validated assumptions:
 
 - Public viewer token is allowed only when publicBroadcastVisible is true.
 - publicBroadcastVisible false represents public fallback / unavailable state.
-- Same publisher public broadcast token is denied when private call made pblic broadcast unavailable.
+- Same publisher public broadcast token is denied when private call made public broadcast unavailable.
 - Discovery / fallback behavior is represented through public broadcast visibility, not private call state leak.
 - Guest private token is denied.
 - Unrelated user private token is denied.

@@ -86,6 +86,14 @@ Kurallar:
 - `/live/[username]`
 - `/studio`
 
+V2 active 1v1 note:
+
+- Bu route omurgası V1 broadcast/live baseline omurgasıdır.
+- V2 active 1v1 için `/call/[sessionId]` yalnız owner-lock ve doc-only planning boundary’sidir.
+- Bu not genel route çoğaltma izni değildir.
+- `/call/[sessionId]` production implementation, route creation veya file freeze anlamına gelmez.
+- V2 docs, paid 1v1 alanında `00/01/02` V1 baseline dokümanlarını tamamlar; V1 public watch/studio/publish truth’unu bozmaz.
+
 Kurallar:
 
 - route çoğaltma

@@ -16,6 +16,13 @@ Canonical V1 route’ları:
 - `/live/[username]`
 - `/studio`
 
+V2 active 1v1 note:
+- Bu listedeki route’lar V1 route omurgasıdır.
+- V2 active 1v1 için `/call/[sessionId]` ayrı owner-lock boundary olarak V2 docs zincirinde planlanmıştır.
+- Bu, V1’de 1v1 route açıldığı anlamına gelmez.
+- Bu genel route çoğaltma izni değildir.
+- `/call/[sessionId]` production route creation hâlâ ayrı implementation readiness gate’e bağlıdır.
+
 ## 2) `/` — Discovery / home
 
 Ana amacı:

@@ -2,6 +2,13 @@
 
 ## 1) Amaç
 
+Kısa not:
+
+* Bu doküman V1 broadcast/live baseline scope dokümanıdır.
+* V2 active 1v1 planning ayrı docs zincirinde ilerler.
+* V2 `/call/[sessionId]`, `call_requests`, `call_sessions`, minute/payment/earning alanları V1 scope’a geri yazılmaz.
+* Bu dosya V2 implementation onayı değildir; V1/V2 separation baseline’dır.
+
 V1 bilinçli olarak dar tutulur. Amaç, Poncik Live’ın broadcast/live çekirdeğini gereksiz feature yükü olmadan güvenli şekilde kurmaktır. Bu fazda öncelik; discovery, public watch, auth/approval omurgası ve publisher’ın `/studio` üzerinden canlı yayın açabilmesidir. V2 ve V3+ alanları V1’e sızdırılmaz. 
 
 ## 2) V1 kapsamı

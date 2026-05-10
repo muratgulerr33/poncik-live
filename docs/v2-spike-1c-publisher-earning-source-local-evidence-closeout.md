@@ -30,7 +30,7 @@ Validated assumptions:
 - User minute ledger and publisher earning source stay separate.
 - Finalized 1v1 session can create one publisher earning source.
 - Duplicate 1v1 earning source is blocked.
-- Non-active call sessioncreates zero publisher earning.
+- Non-active call session creates zero publisher earning.
 - Active but non-finalized call session creates zero publisher earning.
 - Closed public broadcast can create broadcast earning source candidate.
 - Public broadcast with missing endedAt is rejected or pending review.

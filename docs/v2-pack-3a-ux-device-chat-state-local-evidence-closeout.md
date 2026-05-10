@@ -31,7 +31,7 @@ Validated assumptions:
 
 - User can enter active 1v1 with camera off and mic off.
 - User can watch and use ephemeral chat while camera/mic are off.
-- ic enabled is media/UX state only.
+- Mic enabled is media/UX state only.
 - Camera enabled is media/UX state only.
 - Camera + mic enabled changes media state but not financial truth.
 - Camera permission denied keeps call continuity.

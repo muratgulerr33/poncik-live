@@ -18,6 +18,13 @@ Bu doküman:
 
 Ama V1/V2 database yönü için ana referanstır.
 
+V2 active 1v1 note:
+- Current repo schema bugün hâlâ V1 core aileleriyle sınırlı olabilir.
+- Bu dokümandaki V2 extension aileleri conceptual/canonical direction’dır.
+- Exact Drizzle fields, migrations, enum names, constraints ve API karşılıkları hâlâ freeze değildir.
+- V2 active 1v1 planning zinciri `call_requests` / `call_sessions`, minute ledger ve publisher earning’i ayrı aileler olarak tutar.
+- `broadcasts` dar public lifecycle kalır; içine 1v1/payment/chat/earning state girmez.
+
 ---
 
 ## 2) Single-role doctrine
@@ -206,10 +213,8 @@ Gerçek canlı yayın lifecycle kaydını taşır.
 **Tutar:**
 - `publisher_account_id`
 - broadcast status
-- nötr teknik integration alanı olarak `media_session_ref`
 - `started_at`
 - `ended_at`
-- opsiyonel bitiş nedeni
 - temel zaman damgaları
 
 **Özellikle tutmaz:**
@@ -226,6 +231,8 @@ Gerçek canlı yayın lifecycle kaydını taşır.
 Not:
 Gerçek broadcast kaydı start sonrası oluşur.
 Prep/preview UI state’i DB truth’u değildir.
+Current repo schema implementation truth’tur.
+Conceptual direction ayrı olabilir; exact schema freeze değildir.
 
 ---
 
@@ -325,4 +332,3 @@ Bu database omurgası dar, güvenli ve genişlemeye uygundur.
 - `publisher_settings` ve `broadcasts` scope’u dar tutulur
 
 Bu da bakım kolaylığı, güvenli değişiklik ve sonraki genişleme için temiz bir temel sağlar.
-

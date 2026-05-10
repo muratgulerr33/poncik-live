@@ -30,7 +30,7 @@ Validated assumptions:
 - 1v1 auth/minute gate stays scoped to the phone action.
 - Logged-in user request creation does not start billing.
 - /studio incoming request stays as a narrow slot.
-- /studioactive call media ownership is not taken by StudioPreviewPanel.
+- /studio active call media ownership is not taken by StudioPreviewPanel.
 - Reject remains financially neutral.
 - Accept creates one session candidate.
 - Double accept does not create a second session candidate.
