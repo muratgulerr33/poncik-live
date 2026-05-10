@@ -13,7 +13,7 @@ db_change: false
 
 ## 1) Amaç
 
-Bu dokümanın amacı `/studio` publisher outbound medya kalitesi için dar, ölçülebilir ve güvenli bir kaliteamaktır.
+Bu dokümanın amacı `/studio` publisher outbound medya kalitesi için dar, ölçülebilir ve güvenli bir kalite kontratı tanımlamaktır.
 
 Bu doküman implementation değildir.
 
@@ -43,7 +43,11 @@ Bu kontrat için canonical kaynak hiyerarşisi:
 7. WebRTC Hacks / Sipfront gibi derin pratik WebRTC kaynakları
 8. provider docs yalnız uygulama seviyesinde yardımcı kaynak
 
-Provider dokümanları bu kontratta ana truth değildir.ülen ana problem:
+Provider dokümanları bu kontratta ana truth değildir.
+
+## 3) Problem tanımı
+
+Ölçümlerde görülen ana problem:
 
 - `/studio` source ve prelive sağlam.
 - Publish/connect kuruluyor.
@@ -80,7 +84,9 @@ Telefonda bu pratikte dikey kaynak olarak yaklaşık şu davranışı üretir:
 
 - 720x1280 @30fps
 
-Preview tarafı stream’i alır ve aynı stream pub evidence path:
+Preview tarafı stream’i alır ve aynı stream publish hattına gider.
+
+Current repo evidence path:
 
 - `src/app/(studio)/studio/_adapters/studio-preview-adapter.ts`
 
@@ -120,7 +126,9 @@ Ters ışık ve hareket testinde kamera şu işleri yapabilir:
 
 Bu işler piksel değişimini artırır.
 
-Pikselacı oynar
+Piksel değişimi artınca:
+- encoder yükü artar
+- bitrate ihtiyacı oynar
 - WebRTC bandwidth estimation dalgalanabilir
 - qualityLimitationReason bandwidth görünebilir
 
@@ -172,7 +180,7 @@ Rejected default:
 
 - resolution: 720x1280
 - fps: 30
-ski yüksek
+- reason: orta seviye mobile Chrome için encoder açısından yüksek risk taşır
 
 ## 8) Neden 540x960 @24fps?
 
@@ -224,7 +232,8 @@ Bugünkü V1 kalite işi için WebCodecs no-scope kabul edilir.
 Gerekçe:
 
 - custom encoder pipeline karmaşıktır
-- browegrasyon riski vardır
+- browser support riski vardır
+- LiveKit publish hattıyla entegrasyon riski vardır
 - V1 small PR disiplinini büyütür
 
 ## 11) Acceptance kriteri
@@ -274,7 +283,10 @@ PR-0 sonrası önerilen ölçüm matrix’i:
 - B: 540x960 @24 VP8 tuned
 - C: 540x960 @24 H264 compare
 
-Her prok ışık sabit
+Her profil şu sahnelerde ölçülür:
+
+1. iyi ışık sabit
+2. düşük ışık sabit
 3. ters ışık + hareket
 
 Toplam:
@@ -329,7 +341,11 @@ Bu iş viewer yüzeyini yeniden tasarlamaz.
 
 Bu iş yalnız `/studio` publisher outbound kalite kontratıdır.
 
-## contract
+## 15) Final hüküm
+
+Status:
+
+- draft-contract
 
 Problem:
 
