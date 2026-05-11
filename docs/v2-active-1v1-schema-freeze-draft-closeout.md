@@ -36,6 +36,12 @@ Migration cannot start yet.
 
 Production implementation cannot start yet.
 
+Superseded / owner decision update:
+
+- public broadcast duration publisher earning source is part of first-slice direction
+- compact publisher payment reconciliation is part of first-slice direction
+- full payout/accounting engine remains later scope
+
 ## Draft boundary
 
 This draft clarified:
@@ -94,7 +100,8 @@ The draft mapped these V2 families:
 - call_requests
 - call_sessions
 - publisher earning source
-- publisher payout / manual tracking
+- public broadcast duration publisher earning source
+- compact publisher payment reconciliation
 - system/global config for publisher minute unit rate
 - future publisher-specific rate override
 
@@ -110,6 +117,8 @@ The following families are first-slice candidates for later DB foundation planni
 - call_requests
 - call_sessions
 - publisher earning source
+- public broadcast duration publisher earning source
+- compact publisher payment reconciliation
 - system/global config for publisher minute unit rate
 
 Important:
@@ -122,7 +131,7 @@ It only means these families are relevant to the future DB foundation slice.
 
 The following should not bloat the first DB foundation slice:
 
-- publisher payout / manual tracking
+- full payout / accounting engine
 - correction/refund model
 - future publisher-specific rate override
 
@@ -152,7 +161,7 @@ State groups were mapped at meaning level only:
 - order/payment lifecycle
 - ledger direction/type
 - earning source lifecycle
-- payout/manual payment lifecycle
+- compact payment reconciliation lifecycle
 - correction/refund later
 
 Exact enum/state names are not frozen.
@@ -183,7 +192,8 @@ Dependency order was mapped as readiness only:
 - wallet + ledger before active start/finalize debit
 - call_requests before call_sessions
 - call_sessions before publisher earning source
-- earning source before payout/manual tracking
+- earning source before compact reconciliation/payment records summary
+- full payout/accounting later
 - constraints/indexes before production writes
 - backfill/data safety before migration execution
 - rollback safety before migration execution
@@ -199,6 +209,8 @@ The safest future DB-only foundation slice candidate would include, after final 
 - call request/session foundation
 - global publisher rate config foundation
 - publisher earning source foundation
+- public broadcast duration earning source foundation
+- compact publisher payment reconciliation foundation
 - core source/uniqueness guard needs
 
 It must not include:
@@ -224,7 +236,8 @@ The following remain not frozen:
 - exact source uniqueness key shape
 - exact global rate config storage
 - exact payment approval detail
-- exact payout/manual tracking boundary
+- exact compact reconciliation implementation
+- full payout/accounting engine
 - correction/refund model
 - exact API route names
 - exact request/response contracts

@@ -38,6 +38,12 @@ DB-only production PR cannot start yet.
 
 Production implementation cannot start yet.
 
+Superseded / owner decision update:
+
+- public broadcast duration publisher earning source is resolved into the first DB foundation slice
+- compact publisher payment reconciliation is resolved into the first DB foundation slice
+- full payout/accounting engine remains later/future scope
+
 ## Migration readis boundary
 
 This audit allows:
@@ -141,13 +147,15 @@ The following families are planning-ready but not migration-ready:
 - call_requests
 - call_sessions
 - publisher earning source
+- public broadcast duration publisher earning source
+- compact publisher payment reconciliation
 - global publisher minute unit rate config
 
 ### Later / excluded from first slice
 
 The following should stay outside the first DB foundation slice:
 
-- publisher payout / manual tracking
+- full payout / accounting engine
 - correction/refund model
 - future publisher-specific rate override
 
@@ -196,11 +204,18 @@ Required before migration:
 - confirm current DB state
 - write V1 no-touch list
 - avoid destructive migration in first DB foundation slice
-- define seed/default strategy for global publisher rate config
-- define package catalog seed/manual setup strategy
+- keep owner starting rate values fixed at planning level while exact storage/activation mechanics remain unresolved
+- keep resolved owner package catalog values fixed while exact seed/manual activation mechanics remain unresolved
 - define rollback/no-destructive policy
 - define backfill expectations
 - confirm payment approval needs no initial data
+
+Resolved owner values carried forward:
+
+- paid 1v1 publisher earning rate = 5 TL/minute
+- public broadcast duration earning rate = 1 TL/minute
+- started minute counts and any duration `> 0` yields minimum 1 minute
+- initial package catalog values are resolved as owner values
 
 ## First DB foundation migration candidate
 
@@ -211,6 +226,8 @@ Future first DB foundation migration planning may include:
 - call request/session foundation
 - global publisher rate config
 - publisher earning source
+- public broadcast duration publisher earning source
+- compact publisher payment reconciliation
 - core uniqueness / source guard needs
 
 It must exclude:
@@ -229,7 +246,7 @@ It must exclude:
 
 These remain later/future:
 
-- publisher payout/manual tracking
+- full payout/accounting engine
 - correction/refund model
 - future publisher-specific rate override
 - exact LiveKit grant/private token shape
@@ -267,13 +284,15 @@ This audit is PASS WITH NOTES because:
 - current repo schema remains V1 core
 - V2 families are document-level separated
 - first DB foundation slice can be planned at doc-only level
+- public broadcast duration earning is resolved into the first slice
+- compact reconciliation is resolved into the first slice while full payout/accounting remains later
 - migration writing remains blocked
 - DB-only production PR remains blocked
 - exact table/field/enum/constraint/index/source key/migration order remains open
 - source uniqueness and partial predicate blockers were identified
-- global rate config storage and initial value blockers were identified
+- exact global rate config storage/activation mechanics remain blockers while owner starting values are resolved
 - backfill/data safety/rollback blockers were identified
-- payout/correction/future rate override were kept outside the first slice
+- correction/future rate override/full payout-accounting were kept outside the first slice
 - Codex production prompt was not produced
 
 ## Next

@@ -36,6 +36,12 @@ Migration cannot start yet.
 
 Production implementation cannot start yet.
 
+Superseded / owner decision update:
+
+- public broadcast duration publisher earning source is part of the first DB foundation slice
+- compact publisher payment reconciliation is part of the first DB foundation slice
+- full payout/accounting engine remains later/future scope
+
 ## Freeze boundary
 
 This doent freezes at document level:
@@ -96,6 +102,8 @@ The following V2 families are document-level frozen as responsibilities:
 - call_requests
 - call_sessions
 - publisher earning source
+- public broadcast duration publisher earning source
+- compact publisher payment reconciliation
 - system/global config for publisher minute unit rate
 
 These are first DB foundation slice candidates.
@@ -108,7 +116,7 @@ First DB foundation slice candidate does not mean production PR can start.
 
 The following remain outside the first DB foundation slice:
 
-- publisher payout / manual tracking
+- full payout / accounting engine
 - correction/refund model
 - future publisher-specific rate override
 
@@ -140,7 +148,7 @@ Meaning groups:
 - order/payment lifecycle meaning
 - ledger direction/type meaning
 - earning source lifecycle meaning
-- payout/manual payment lifecycle meaning
+- compact payment reconciliation meaning
 - correction/refund later meaning
 
 Exact enum/state names remain not frozen.
@@ -175,7 +183,7 @@ Direction:
 4. wallet + ledger before active start / finalize debit
 5. call_requests before call_sessions
 6. call_sessions before publisher earning source
-7. publisher earning source before payout/manual tracking
+7. publisher earning source before compact reconciliation/payment records
 8. constraints/indexes before production writes
 9. backfill/data safety before migration
 10. rollback safety before migration
@@ -197,6 +205,8 @@ After migration readiness and later implementation planning, the first DB founda
 - call_sessions
 - global publisher minute unit rate config
 - publisher earning source
+- public broadcast duration publisher earning source
+- compact publisher payment reconciliation
 - core uniqueness / source guard needs
 
 It must not include:
@@ -221,14 +231,20 @@ The following policy directions are frozen at document level:
 - client timer is not financial truth
 - camera/mic/chat are not financial truth
 - active-start available minutes snapshot + max duration cap is required direction
-- active > 0 seconds means minimum 1 billable minute direction
-- started-minute / ceil-style rounding direction
+- active > 0 seconds means minimum 1 billable minute owner policy
+- started-minute / ceil-style rounding owner policy
 - debit is written at finalize boundary
 - negative balance is not recommended for V2 initial
 - publisher earning is not commission-based
-- publisher earning equals finalized paid minutes x global publisher minute unit rate
+- paid 1v1 publisher earning rate starts at 5 TL/minute
+- public broadcast duration earning rate starts at 1 TL/minute
+- paid 1v1 user debit and publisher earning share the same finalized billable minute truth
+- public broadcast duration earning may derive from `broadcasts.started_at` / `broadcasts.ended_at`
+- publisher earning equals finalized paid minutes x the applicable global publisher minute unit rate
+- effective rate + snapshot direction is resolved at policy level
 - user package price does not mix with publisher earning
-- manual payout does not mutate finalized earning source
+- compact reconciliation formula is `remaining payment = total earning - total admin payment`
+- admin payment records do not mutate finalized earning source
 - ledger is append-only audit truth
 - wallet summary is transactionally maintained current balance direction
 - ledger debit source uniqueness is required
@@ -249,7 +265,8 @@ Still not frozen:
 - exact source uniqueness key shape
 - exact global rate config storage implementation
 - exact payment approval detail
-- exact payout/manual tracking detail
+- exact compact reconciliation schema/table/field/constraint/UI detail
+- full payout/accounting engine design
 - correction/refund implementation
 - exact API route names/contracts
 - exact request/response contracts
@@ -292,6 +309,7 @@ This close-out is PASS WITH NOTES because:
 - broadcasts remains public lifecycle only
 - publisher_settings remains narrow
 - V2 families remain separate extensions
+- public broadcast duration earning source and compact reconciliation are included in first-slice boundary
 - field group needs are frozen only at category level
 - enum/state meanings are frozen only at meaning level
 - constraint/index needs are frozen only at need level

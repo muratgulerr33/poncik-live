@@ -62,7 +62,7 @@ Current `broadcasts` schema dar public lifecycle taşır: publisher id, status, 
 * Call bitince public broadcast otomatik geri dönmez.
 * User call sonunda kısa feedback görür ve `/` ana sayfaya yönlenir.
 * Backend raw active duration saniye bazlı tutulur.
-* V2 başlangıç billing rule adayı: active yoksa 0; active varsa başlayan dakika, minimum 1 dakika.
+* Owner billing policy resolved: active yoksa 0; active varsa başlayan dakika, minimum 1 dakika.
 
 ## Unknown
 
@@ -71,7 +71,7 @@ Current `broadcasts` schema dar public lifecycle taşır: publisher id, status, 
 * exact constraints
 * exact API endpoint design
 * exact payment approval flow
-* exact publisher earning / payout model
+* owner earning / compact reconciliation model product-policy levelinde resolved; exact schema/API/UI implementation değil
 * exact LiveKit private call token / handoff sequence
 * technical spike sonucu
 
@@ -88,8 +88,9 @@ Current `broadcasts` schema dar public lifecycle taşır: publisher id, status, 
 | `bank_transfer_orders` / payment approval ailesi | Manuel ödeme onay takibi                           | banka/havale ödeme durumu, admin approval izi                                              | call session, active duration, broadcast state                                         | V2 payment operasyon ailesidir          | Hayır                   |
 | `minute_wallets`                                 | User dakika bakiyesi özeti                         | user balance snapshot                                                                      | publisher earning, payout, call request state                                          | User minute truth’tur                   | Hayır                   |
 | `minute_ledger_entries`                          | Dakika hareket defteri                             | credit/debit history, source order/session                                                 | publisher payout, public broadcast, chat                                               | Wallet audit trail’idir                 | Hayır                   |
-| publisher earning source ailesi                  | Publisher kazanç kaynağı                           | finalized active session duration’dan türeyen earning source                               | user wallet, user ledger, bank order                                                   | Publisher earning truth ayrı kalır      | Hayır                   |
-| publisher manual payment tracking ailesi         | Publisher’a manuel ödeme/payout operasyonu         | payout period/status/manual settlement                                                     | user minute debit, call active truth                                                   | Banka sistemi değil, operasyon tracking | Hayır                   |
+| publisher earning source ailesi                  | Publisher kazanç kaynağı                           | paid 1v1 finalized minutes + public broadcast duration source                              | user wallet, user ledger, admin payment records                                         | Publisher earning truth ayrı kalır      | Hayır                   |
+| compact admin payment reconciliation ailesi      | Yayıncı Kazanç ve Ödeme Mutabakatı                 | separate admin payment records, remaining payment summary, reconciliation truth             | user minute debit, earning source mutation, call active truth                           | First-slice dar reconciliation modelidir | Hayır                  |
+| full payout/accounting engine                    | Detaylı payout/muhasebe later scope                | detaylı payout/accounting/bank/tax automation                                              | first-slice dar reconciliation truth                                                    | Later/future scope olarak ayrılır       | Hayır                   |
 | `broadcasts`                                     | Public broadcast lifecycle                         | public live status, started/ended truth                                                    | 1v1, dakika, payment, chat, kazanç, social state                                       | V1 public broadcast core olarak kalır   | V2 için yeni freeze yok |
 
 ---
@@ -182,8 +183,8 @@ Bu timestamp isimleri **exact field freeze değildir**. Contract seviyesinde tru
 | private active timestamp create        | backend/system            | session accepted/activating                                                 | active timestamp set                                     | timestamp overwrite yok                       | LiveKit handoff sırası        |
 | session end/finalize                   | user/publisher/system     | session active olmalı                                                       | ended/finalized duration                                 | double finalize yok                           | end reason seti               |
 | failed/timeout handling                | backend/system            | active öncesi/sonrası ayrılır                                               | active öncesi finansal etki yok; active sonrası finalize | tekrar failure noop                           | timeout süreleri              |
-| minute ledger debit                    | backend finalize          | finalized active duration                                                   | debit ledger entry                                       | source session unique                         | rounding exact implementation |
-| publisher earning source write         | backend finalize          | finalized paid active duration                                              | earning source entry                                     | source session unique                         | rate/payout model             |
+| minute ledger debit                    | backend finalize          | finalized active duration                                                   | debit ledger entry                                       | source session unique                         | exact rounding/db expression  |
+| publisher earning source write         | backend finalize          | finalized paid active duration or public broadcast duration                 | earning source entry                                     | source/session or source/broadcast uniqueness | exact schema/API shape        |
 | public viewer fallback read/signal     | public watch read/API     | public broadcast artık aktif canlı değil                                    | fallback read sonucu                                     | tekrar signal sorun çıkarmaz                  | exact read model              |
 
 ---
@@ -245,8 +246,9 @@ Kurallar:
 * Raw active duration saniye bazlı saklanır.
 * Billed minute derived finansal değerdir.
 * Active başlamadıysa 0 dakika.
-* Active başladıysa V2 başlangıç billing rule adayı: başlayan dakika, minimum 1 dakika.
-* Exact rounding implementation değildir; billing-ledger audit’te netleşir.
+* Active başladıysa owner policy resolved: başlayan dakika, minimum 1 dakika.
+* 10 dk 01 sn = 11 dk, 12 dk 01 sn = 13 dk policy examples.
+* Exact rounding implementation/SQL/Drizzle expression değildir; implementation katmanında netleşir.
 * Ledger write backend finalize transition’dan beslenir.
 * Double debit engellenmelidir.
 * Failed/timeout active öncesiyse dakika düşmez.
@@ -255,12 +257,18 @@ Kurallar:
 
 Kurallar:
 
-* Publisher earning finalized active session duration’dan türeyebilir.
+* Publisher earning paid 1v1 finalized minutes ve public broadcast duration source’undan türeyebilir.
 * Publisher earning user minute ledger değildir.
 * User minute debit ile publisher earning source aynı aileye yazılmaz.
-* Manual payment tracking banka sistemi değildir.
-* Publisher payout/payment tracking ayrı operasyon truth’u olmalıdır.
-* Exact table/field/model pending kalır.
+* Paid 1v1 publisher earning rate başlangıçta 5 TL/dakika, public broadcast duration rate başlangıçta 1 TL/dakikadır.
+* User package price ile publisher earning rate aynı şey değildir.
+* Public broadcast duration `broadcasts.started_at` / `broadcasts.ended_at` lifecycle truth’una dayanır.
+* Earning rows ayrı tutulur.
+* Admin payment records ayrı tutulur.
+* `remaining payment = total earning - total admin payment`
+* Admin payment records earning source’u mutate etmez.
+* Compact reconciliation banka sistemi değildir; full payout/accounting later scope’tur.
+* Owner model resolved olsa da exact table/field/API/UI implementation pending kalır.
 * Double earning source write engellenmelidir.
 
 ---
@@ -301,7 +309,7 @@ Gerçek açıklar:
 3. Exact DB constraints.
 4. Exact transaction boundaries.
 5. Exact payment approval flow.
-6. Exact publisher earning / payout model.
+6. Owner compact reconciliation model resolved; exact schema/API/UI implementation pending.
 7. Exact LiveKit private call token / handoff sequence.
 8. Exact request timeout durations.
 9. Exact minute exhausted behavior.
@@ -333,5 +341,4 @@ Migration veya implementation için **evet**, hâlâ şu alanlar kapanmalı:
 * exact API handoff
 * exact payment/earning model
 * technical spike evidence
-
 

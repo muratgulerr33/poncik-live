@@ -35,6 +35,12 @@ Billing planning can continue.
 
 Production impleentation cannot start yet.
 
+Superseded / owner decision update:
+
+- started-minute rounding and minimum 1 minute policy are resolved at owner-policy level
+- public broadcast duration earning is a first-slice source direction
+- compact admin payment reconciliation is first-slice direction while full payout/accounting remains later
+
 ## Billing truth confirmed
 
 The audit confirmed:
@@ -58,16 +64,16 @@ The audit confirmed:
 - no active timestamp means 0 billable minutes
 - raw active seconds should be snapshotted or derivable from trusted backend timestamps
 - billable minutes should be derived during finalize
-- exact rounding rule is not frozen in this audit
-- exact minimum minute policy is not frozen in this audit
+- owner rounding policy is resolved as started-minute rounding
+- owner minimum minute policy is resolved as duration `> 0` => minimum 1 minute
 - exact insufficient balance behavior is not frozen in this audit
 
-Strong candidate direction:
+Resolved owner policy examples:
 
-- active > 0 seconds may become minimum 1 billable minute
-- started minute / ceil-style rounding may be the simplest V2 candidate
+- 10 dk 01 sn = 11 dk
+- 12 dk 01 sn = 13 dk
 
-But this remains a policy decision and must not be treated as implementation truth yet.
+Exact implementation expression/SQL/Drizzle truth is still not frozen.
 
 ## User minute debit boundary
 
@@ -90,12 +96,17 @@ The audit confirmed V2 initial owner/business truth:
 
 - publisher earning is not commission-based
 - publisher earning is not derived from user package price
-- publisher earning = paid minutes x global publisher minute unit rate
+- paid 1v1 publisher earning rate starts at 5 TL/minute
+- public broadcast duration earning rate starts at 1 TL/minute
+- publisher earning = paid minutes x the applicable global publisher minute unit rate
+- public broadcast duration earning is a first-slice source direction
 - future publisher-specific rate override can be added later
 - duration snapshot should be considered
 - rate snapshot should be considered
 - computed amount snapshot should be considered
 - user package price and publisher earning must stay separate
+- paid 1v1 user debit and publisher earning share the same finalized billable minute truth
+- public broadcast duration uses `broadcasts.started_at` / `broadcasts.ended_at`
 - commission percentage is not V2 initial truth
 
 Exact schema and exact rate config storage remain pending.
@@ -133,9 +144,13 @@ Exact PostgreSQL constraint names, Drizzle definitions, transaction isolation, S
 The audit confirmed:
 
 - manual payout tracking must not mutate finalized earning source
+- compact admin payment reconciliation is first-slice direction
 - payout status is operational payment truth, not earning calculation truth
 - finalized earning source should remain auditable
+- earning rows and admin payment records should remain separate
+- `remaining payment = total earning - total admin payment`
 - correction/refund should not directly rewrite original finalized source
+- full payout/accounting engine remains later scope
 - correction/refund model remains unknown
 - payout period close policy remains unknown
 
@@ -156,12 +171,11 @@ The audit confirmed:
 
 Still pending before relevant production implementation:
 
-- exact rounding rule
-- exact minimum billable minute policy
+- exact rounding expression / DB implementation
 - exact active transition condition
 - exact insufficient balance behavior
 - exact balance reservation or max duration policy
-- exact global publisher minute unit rate source
+- exact global publisher minute unit rate storage/activation mechanics
 - exact transaction boundary
 - exact idempotency guard
 - exact schema fields
@@ -217,6 +231,8 @@ This audit is PASS WITH NOTES because:
 - publisher earning remains separate from user package price
 - commission percentage was not made V2 initial truth
 - duration snapshot, rate snapshot, and computed amount snapshot were identified
+- started-minute and minimum-1-minute owner policy were resolved without freezing exact implementation
+- public broadcast duration first-slice earning source and compact reconciliation direction were resolved
 - manual payout does not mutate earning source
 - transaction/idempotency needs were identified without freezing constraints
 - exact schema/API/migration/rounding/rate config were not frozen

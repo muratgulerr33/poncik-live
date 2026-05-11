@@ -37,6 +37,12 @@ Migration cannot start yet.
 
 Production implementation cannot start yet.
 
+Superseded / owner decision update:
+
+- publisher earning source direction now includes paid 1v1 plus public broadcast duration
+- compact publisher payment reconciliation is a first-slice direction
+- full payout/accounting engine remains later scope
+
 ## Current schema truth
 
 Current repo schema remains V1 core.
@@ -117,20 +123,24 @@ The following families need more detail inside the schema freeze draft:
 
 - bank_transfer_orders / payment approval family
 - publisher earning source family
+- compact publisher payment reconciliation family
 - system/global config family for publisher minute unit rate
 
 Reasons:
 
 - payment approval must not become broad admin scope
 - earning source must not mix with user package price
-- global publisher minute unit rate source is needed before earning source can be finalized
+- earning source now covers paid 1v1 finalized minutes plus public broadcast duration source
+- compact reconciliation is first-slice direction but exact schema detail remains unresolved
+- global publisher minute unit rate source/storage mechanics are needed before exact schema freeze
 
 ### Partial / later
 
-The following families are not first-slice foundation unless needed later:
+The following boundary split applies:
 
-- publisher payout / manual payment tracking family
-- correction/refund later family
+- compact publisher payment reconciliation family is first-slice readiness direction
+- full payout / accounting engine remains later
+- correction/refund later family remains later
 
 These are important, but they should not bloat the first DB foundation slice.
 
@@ -207,9 +217,9 @@ Conceptual order direction:
 4. wallet + ledger before call finalize
 5. call_requests before call_sessions
 6. call_sessions before earning source
-7. earning source before payout tracking
+7. earning source before compact reconciliation/payment records
 8. constraints/indexes with data safety
-9. payout/correction later if needed
+9. full payout/accounting and correction later if needed
 
 This is not a migration plan.
 
@@ -288,9 +298,10 @@ Still pending:
 - exact constraint/index names
 - exact migration order
 - exact source uniqueness key shape
-- exact global publisher minute unit rate source
+- exact global publisher minute unit rate storage/activation mechanics
 - exact payment approval schema detail
-- exact payout/manual tracking boundary
+- exact compact reconciliation schema/field/source/detail remains not frozen
+- full payout/accounting later
 - exact API route/request/response contracts
 - exact auth/ownership guard contracts
 
@@ -321,6 +332,7 @@ This audit is PASS WITH NOTES because:
 - migration order was discussed only as readiness
 - transaction/schema coupling was mapped
 - API/schema coupling risk was mapped
+- public broadcast duration earning and compact reconciliation were carried into first-slice readiness direction
 - schema freeze draft preparation can begin
 - migration and production implementation remain blocked
 
