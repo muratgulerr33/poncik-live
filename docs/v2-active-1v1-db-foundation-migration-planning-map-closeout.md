@@ -76,10 +76,12 @@ The first DB foundation slice candidate includes:
 - call sessions
 - global publisher minute unit rate config
 - publisher earning source
+- public broadcast duration publisher earning source
+- compact publisher payment reconciliation
 
 The first DB foundation slice excludes:
 
-- publisher payout / manual tracking
+- full payout / accounting engine
 - correction / refund model
 - future publisher-specific rate override
 - UI / admin panel breadth
@@ -95,13 +97,17 @@ This addendum does not change the close-out result.
 It clarifies publisher earning source direction:
 
 - paid 1v1 earning remains required in the first slice
-- finalized paid `call_sessions` minutes remain the mandatory first-slice publisher earning source
+- finalized paid `call_sessions` minutes remain a mandatory first-slice publisher earning source
+- public broadcast duration derived from `broadcasts.started_at` / `broadcasts.ended_at` is also a first-slice publisher earning source direction
 - publisher earning source model must not be conceptually hard-coded to `call_sessions` only
-- owner-approved future source may also come from public broadcast duration derived from `broadcasts.started_at` / `broadcasts.ended_at`
 - `broadcasts` remains public broadcast lifecycle only and must not absorb earning/payment/payout state
-- public broadcast duration source is not automatically included in the first DB foundation slice by this close-out
+- public broadcast duration earning is resolved into the first DB foundation slice by owner decision
+- paid 1v1 finalized billable minutes and publisher earning must share the same started-minute rule
+- owner starting rates are 5 TL/minute for paid 1v1 earning and 1 TL/minute for public broadcast duration earning
+- started minute counts and any duration `> 0` yields minimum 1 minute
+- compact publisher payment reconciliation is in the first slice; full payout/accounting engine remains later scope
+- publisher earning visibility is intended for the first release after backend finalize/calculation; realtime transport remains not frozen
 - gift or other future earning sources remain outside the first slice unless separately approved in a later review
-- public broadcast duration first-slice vs future-source placement must be reviewed in the Visual Schema / Flow / Surface Map Checkpoint
 
 ## V1 protection result
 
@@ -234,7 +240,8 @@ Direction:
 - ledger debit source should prevent duplicate call finalize debit
 - ledger credit source should prevent duplicate payment approval credit
 - publisher earning source should prevent duplicate earning for the same finalized call session
-- publisher earning source family should remain open to owner-approved future source types such as public broadcast duration
+- publisher earning source should prevent duplicate earning for the same broadcast duration source
+- compact admin payment records should remain separate reconciliation entries/sources from earning rows
 - original financial sources should not be mutated by payout, correction, or refund
 
 Still unknown:
@@ -250,9 +257,12 @@ The planning map confirmed:
 
 - global publisher minute unit rate should be separate from user package price
 - publisher-specific override remains future
+- effective rate + snapshot is the correct direction
 - earning source should snapshot the rate used at finalize time
+- old earning rows should keep their old snapped rate
+- new rates should apply only to new earning rows
 - one active global rate must be guarded conceptually
-- initial global rate value requires owner decision before migration
+- owner starting rates are resolved as 5 TL/minute for paid 1v1 and 1 TL/minute for public broadcast duration
 
 Candidate storage direction:
 
@@ -260,7 +270,7 @@ Candidate storage direction:
 
 Important:
 
-Exact storage, exact field names, exact precision, exact seed, and exact owner value remain not frozen.
+Exact storage, exact field names, exact precision, exact activation/seed mechanics, and exact schema implementation remain not frozen.
 
 ## Seed / backfill / rollback direction
 
@@ -269,8 +279,12 @@ The planning map confirmed:
 - first DB foundation should be additive and V1-safe
 - destructive migration should be avoided in the first DB foundation slice
 - actual DB state inspection is required before migration
-- global publisher rate initial seed/value must be decided before migration
-- minute package catalog values must be decided before migration or explicit empty/manual setup must be accepted
+- initial minute package catalog owner values are resolved
+- package snapshot rules are resolved: sold package minute/price values do not mutate retroactively
+- admin may add packages, deactivate packages, and edit only never-sold packages
+- if a sold package must change, it should be deactivated and replaced by a new package
+- order-time package minute and price snapshot is required conceptually
+- compact publisher payment reconciliation is part of the first slice
 - V1 tables should be no-touch unless proven necessary
 - rollback safety must be considered before migration execution
 - backup/checkpoint should exist before applying DB changes
@@ -278,11 +292,29 @@ The planning map confirmed:
 Still unknown:
 
 - actual DB state
-- final global publisher minute unit rate
-- actual package catalog values
 - exact generated diff
 - exact migration file split
 - migration dry-run result
+
+Resolved owner package catalog values:
+
+1. 10 dakika = 150 TL
+2. 15 dakika = 175 TL
+3. 30 dakika = 325 TL
+4. 45 dakika = 405 TL
+5. 60 dakika = 490 TL
+6. 70 dakika = 655 TL
+7. 80 dakika = 730 TL
+8. 90 dakika = 810 TL
+9. 120 dakika = 1090 TL
+10. 145 dakika = 1290 TL
+11. 180 dakika = 1565 TL
+
+Note:
+
+- this curve is PASS WITH NOTE as an owner value set
+- final launch pricing may still be revised by Mehmet/Murti
+- this is not a production billing engine freeze
 
 ## Migration order direction
 
@@ -297,9 +329,10 @@ The planning map direction is:
 7. call requests boundary
 8. call sessions boundary
 9. publisher earning source boundary
-10. constraint/index review
-11. seed review
-12. rollback checkpoint
+10. compact reconciliation / payment records boundary
+11. constraint/index review
+12. seed review
+13. rollback checkpoint
 
 This is not a migration plan.
 
@@ -325,8 +358,6 @@ Still blocks actual migration:
 - exact migration file split
 - exact generated diff review
 - actual DB state inspection
-- final owner value for global publisher rate
-- package catalog actual values
 - exact lock order
 - exact transaction implementation
 - final code review
@@ -370,7 +401,7 @@ This planning map is PASS WITH NOTES because:
 - V1 schema boundary remains protected
 - current repo schema remains V1 core
 - V2 first DB foundation families remain separate extensions
-- publisher payout / correction / publisher-specific rate override remain outside the first slice
+- compact publisher payment reconciliation is in the first slice while full payout/accounting engine, correction, and publisher-specific rate override remain later scope
 - table/family boundary candidates were mapped without schema implementation freeze
 - field intent candidates were mapped without Drizzle field freeze
 - enum/state naming candidates were mapped without production enum freeze
@@ -378,6 +409,8 @@ This planning map is PASS WITH NOTES because:
 - source_type + source_id was identified as insufficient alone
 - safer source uniqueness direction was identified
 - global publisher minute rate config direction was identified
+- public broadcast duration earning is resolved into the first slice
+- owner rate values and package catalog owner values are resolved without freezing exact schema implementation
 - seed/backfill/rollback direction was identified
 - migration / SQL / Drizzle schema / Codex prompt were not produced
 
