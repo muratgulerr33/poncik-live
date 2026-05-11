@@ -88,6 +88,21 @@ The first DB foundation slice excludes:
 - API route implementation
 - gift / DM / social scope
 
+## Owner-rule addendum / clarification
+
+This addendum does not change the close-out result.
+
+It clarifies publisher earning source direction:
+
+- paid 1v1 earning remains required in the first slice
+- finalized paid `call_sessions` minutes remain the mandatory first-slice publisher earning source
+- publisher earning source model must not be conceptually hard-coded to `call_sessions` only
+- owner-approved future source may also come from public broadcast duration derived from `broadcasts.started_at` / `broadcasts.ended_at`
+- `broadcasts` remains public broadcast lifecycle only and must not absorb earning/payment/payout state
+- public broadcast duration source is not automatically included in the first DB foundation slice by this close-out
+- gift or other future earning sources remain outside the first slice unless separately approved in a later review
+- public broadcast duration first-slice vs future-source placement must be reviewed in the Visual Schema / Flow / Surface Map Checkpoint
+
 ## V1 protection result
 
 V1 schema must remain protected.
@@ -219,6 +234,7 @@ Direction:
 - ledger debit source should prevent duplicate call finalize debit
 - ledger credit source should prevent duplicate payment approval credit
 - publisher earning source should prevent duplicate earning for the same finalized call session
+- publisher earning source family should remain open to owner-approved future source types such as public broadcast duration
 - original financial sources should not be mutated by payout, correction, or refund
 
 Still unknown:

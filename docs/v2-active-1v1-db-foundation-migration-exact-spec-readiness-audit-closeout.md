@@ -63,6 +63,21 @@ This audit does not allow:
 - starting chat transport implementation
 - giving Codex a production prompt
 
+## Owner-rule addendum / clarification
+
+This addendum does not change the audit result.
+
+It clarifies publisher earning source scope before visual review:
+
+- paid 1v1 earning remains the required first-slice source direction
+- finalized paid `call_sessions` minutes remain the mandatory first-slice publisher earning source
+- publisher earning source family must stay source-based and not be narrowed to `call_sessions` only
+- owner-approved future source may also come from public broadcast duration derived from `broadcasts.started_at` / `broadcasts.ended_at`
+- `broadcasts` remains lifecycle-only truth and must not absorb earning/payment/payout state
+- public broadcast duration earning is not frozen into the first DB foundation slice by this audit
+- gift and similar future earning sources remain future and outside the first slice
+- public broadcast duration first-slice vs future-source placement must be decided in the Visual Schema / Flow / Surface Map Checkpoint owner review
+
 ## Planning candidate vs implementation freeze result
 
 The following remain planning candidates only:
@@ -189,6 +204,7 @@ This protects against:
 - duplicate call finalize debit
 - duplicate payment approval credit
 - duplicate publisher earning for the same finalized call session
+- over-narrowing publisher earning source to a single source family before owner review
 - accidental mutation of original financial source by payout, correction, or refund
 
 Still unknown:

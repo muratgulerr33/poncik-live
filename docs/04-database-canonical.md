@@ -269,6 +269,22 @@ Bu aile paid 1v1 çekirdeğini taşır.
 V1 `broadcasts` modeli hibritleşmez.
 V2 geldiğinde yeni aile olarak eklenir.
 
+### Publisher earning source ailesi
+
+Publisher earning V2 extension ailesi olarak source-based ve immutable kalır.
+
+İlk zorunlu kaynak yönü:
+- finalized paid `call_sessions` dakikaları
+
+Owner-approved future kaynak yönü:
+- `broadcasts.started_at` / `broadcasts.ended_at` lifecycle truth’undan türeyen public broadcast duration
+
+Guard:
+- bu yön `broadcasts` içine earning/payment/payout state taşımaz
+- `broadcasts` yalnız public live lifecycle truth ve duration reference olarak kalır
+- publisher earning source ailesi `source_type` / `source_id` yaklaşımında yalnız call session finalize kaynağına daraltılmaz
+- payout veya manual payment ayrı ailelerde kalır ve original earning source’u mutate etmez
+
 ### V1’i bozmadan nasıl eklenir?
 
 Çünkü V1 core yalnız şunları bilir:
@@ -302,6 +318,7 @@ Bu yüzden V2 tabloları V1 core’un anlamını değiştirmez.
 Ek notlar:
 - `publisher_settings` V1/V2’de pratikte `cover_image_id` merkezlidir
 - `broadcasts` içinde chat, 1v1, payment, join/leave, katılımcı listesi tutulmaz
+- `broadcasts` earning/payment/payout state taşımaz; yalnız lifecycle truth ve gerekirse duration reference sağlar
 - `media_session_ref` gibi nötr teknik entegrasyon alanı olabilir
 
 ---
