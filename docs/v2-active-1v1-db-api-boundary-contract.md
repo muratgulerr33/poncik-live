@@ -339,6 +339,5 @@ Migration veya implementation için **evet**, hâlâ şu alanlar kapanmalı:
 * exact enum/status
 * exact constraints
 * exact API handoff
-* exact payment/earning model
+* exact payment/earning schema/API/UI implementation
 * technical spike evidence
-

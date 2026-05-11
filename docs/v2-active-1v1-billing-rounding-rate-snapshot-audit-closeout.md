@@ -145,7 +145,7 @@ The audit confirmed:
 
 - manual payout tracking must not mutate finalized earning source
 - compact admin payment reconciliation is first-slice direction
-- payout status is operational payment truth, not earning calculation truth
+- admin payment records are the operational payment truth for compact reconciliation, not earning calculation truth
 - finalized earning source should remain auditable
 - earning rows and admin payment records should remain separate
 - `remaining payment = total earning - total admin payment`
