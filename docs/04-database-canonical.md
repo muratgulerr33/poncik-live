@@ -273,17 +273,36 @@ V2 geldiğinde yeni aile olarak eklenir.
 
 Publisher earning V2 extension ailesi olarak source-based ve immutable kalır.
 
-İlk zorunlu kaynak yönü:
+İlk slice earning source yönleri:
 - finalized paid `call_sessions` dakikaları
-
-Owner-approved future kaynak yönü:
 - `broadcasts.started_at` / `broadcasts.ended_at` lifecycle truth’undan türeyen public broadcast duration
+
+Owner values:
+- paid 1v1 publisher earning başlangıç oranı: 5 TL / dakika
+- public broadcast duration earning başlangıç oranı: 1 TL / dakika
+- her iki yönde de başlayan dakika sayılır
+- süre `> 0` ise minimum 1 dakika sayılır
+- finalized billable minute hesabı paid 1v1 user debit ve publisher earning için aynı truth’a dayanır
 
 Guard:
 - bu yön `broadcasts` içine earning/payment/payout state taşımaz
 - `broadcasts` yalnız public live lifecycle truth ve duration reference olarak kalır
 - publisher earning source ailesi `source_type` / `source_id` yaklaşımında yalnız call session finalize kaynağına daraltılmaz
 - payout veya manual payment ayrı ailelerde kalır ve original earning source’u mutate etmez
+
+### Compact admin payment / reconciliation ailesi
+
+İlk slice içinde dar bir reconciliation modeli bulunabilir.
+
+Bu aile:
+- publisher earning kayıtlarını ayrı tutar
+- manual admin payment kayıtlarını ayrı tutar
+- kalan ödeme hesabını mutasyonla değil matematikle üretir
+
+Kural:
+- `kalan ödeme = toplam kazanç - toplam admin ödemesi`
+- earning satırında bekliyor/ödendi payout state tutulmaz
+- detaylı payout/accounting engine future scope olarak ayrı kalır
 
 ### V1’i bozmadan nasıl eklenir?
 

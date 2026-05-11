@@ -52,7 +52,6 @@ This checkpoint allows:
 - owner review of wallet / ledger / earning flow
 - owner review of user / publisher / admin visible surfaces
 - owner review of first DB slice in/out boundary
-- owner review of public broadcast duration earning placement
 - doc-only migration spec boundary draft preparation
 
 This checkpoint does not allow:
@@ -102,10 +101,10 @@ Guards:
 - call_sessions
 - publisher_minute_rates
 - publisher_earning_entries
+- compact publisher payment reconciliation family
 
 ### Later / future
 
-- publisher payout / manual tracking
 - correction / refund
 - publisher-specific rate override
 - gift / DM / social / growth
@@ -160,6 +159,7 @@ The visual checkpoint confirmed the financial flow:
 - wallet debit
 - minute ledger debit entry
 - publisher earning source entry
+- started-minute rounding
 
 Core rules:
 
@@ -167,39 +167,46 @@ Core rules:
 - wallet summary remains transactionally maintained current balance direction
 - user package price is separate from publisher earning rate
 - publisher earning is not commission-based
-- publisher earning equals finalized paid minutes multiplied by global publisher minute unit rate
+- publisher earning equals finalized paid minutes multiplied by the applicable global publisher minute unit rate
 - rate snapshot should be captured for earning source
+- paid 1v1 user debit and publisher earning share the same finalized billable minute truth
+- started minute counts
+- any duration `> 0` yields minimum 1 minute
 - payout/manual payment does not mutate original earning source
+
+Owner values:
+
+- paid 1v1 publisher earning rate starts at 5 TL/minute
+- public broadcast duration earning rate starts at 1 TL/minute
 
 ## Publisher earning source map result
 
-The visual checkpoint confirmed three earning-source categories.
+The visual checkpoint confirmed first-slice and future earning-source categories.
 
-### First-slice mandatory source
+### First-slice source directions
 
 Paid 1v1 source:
 
 - call_sessions finalized paid minutes
-- global publisher minute unit rate
+- 5 TL/minute starting owner value
 - publisher_earning_entries
-
-This remains mandatory for the first DB foundation slice.
-
-### Owner-review / future source
 
 Public broadcast duration source:
 
 - broadcasts.started_at
 - broadcasts.ended_at
-- public broadcast duration
-- future / owner-approved publisher earning source type
+- started-minute duration
+- 1 TL/minute starting owner value
+- publisher_earning_entries
 
 Guards:
 
 - broadcasts remains lifecycle-only truth
 - broadcasts does not carry earning/payment/payout state
 - publisher earning source model must not be hard-coded to call_sessions only
-- public broadcast duration first-slice vs future-source placement remains owner review
+- public broadcast duration stays source-based and immutable like paid 1v1 earning
+
+This combined source set is in the first DB foundation slice.
 
 ### Future sources
 
@@ -234,24 +241,31 @@ Rules:
 - accept / reject
 - active private call transition to `/call`
 - public broadcast control remains in studio
-- earning visibility is owner review / later decision
+- earning visibility in first release after backend finalize/calculation
+- total earning / total admin payment / remaining payment summary
+- separate earning and admin payment movements
+- minimal date filter for earning/payment movements
 
 Rules:
 
 - `/studio` must not become a god surface
 - accept does not start billing
-- public broadcast duration earning is owner review
+- visible earning is formed earning, not paid-out money
 
 ### Admin surfaces
 
 - publisher approval
 - narrow payment / bank transfer approval
-- owner/admin ops effect for public broadcast duration earning decision
+- publisher earning/payment detail drawer or equivalent detail surface
+- total earning
+- total admin payment
+- remaining payment
+- add payment record
 
 Rules:
 
 - admin is not a private call participant
-- payout/manual tracking stays outside first slice
+- this is not a broad accounting, tax, invoice, or automatic payout system
 - broad admin panel does not enter first slice
 
 ## First DB slice in/out result
@@ -267,18 +281,14 @@ Rules:
 - call_sessions
 - global publisher minute rate config
 - paid 1v1 publisher earning source
-
-### OWNER REVIEW
-
-- public broadcast duration earning source first-slice vs future-source placement
-- global publisher minute unit rate starting value
-- package catalog actual values or empty/manual setup
-- publisher earning visibility first release vs later
-- payout/manual tracking remaining outside first release
+- public broadcast duration publisher earning source
+- compact publisher payment reconciliation
+- publisher earning visibility in first release
+- owner package catalog starting values
+- owner global rate starting values
 
 ### OUT
 
-- payout/manual tracking
 - correction / refund
 - publisher-specific rate override
 - gift / DM / social
@@ -321,7 +331,8 @@ Source categories:
 - ledger credit from payment approval
 - ledger debit from call finalize
 - publisher earning from finalized paid 1v1
-- future publisher earning from public broadcast duration
+- publisher earning from public broadcast duration
+- manual admin payment / payout records for reconciliation
 - later correction/refund sources
 
 Rules:
@@ -329,15 +340,13 @@ Rules:
 - original source is immutable
 - payout does not mutate original earning source
 - correction/refund remains future and separate
+- compact reconciliation payment rows stay separate from earning rows
 
 ## Blocker map result
 
 The visual checkpoint preserved these blockers before actual migration / DB-only production PR:
 
 - actual DB state inspection
-- final global publisher rate value
-- package catalog actual values or explicit empty/manual setup decision
-- public broadcast duration earning first-slice vs future-source owner decision
 - exact Drizzle syntax
 - exact SQL
 - exact migration file split
@@ -351,17 +360,24 @@ The visual checkpoint preserved these blockers before actual migration / DB-only
 - exact enum/state names
 - exact precision/scale for money/rate fields
 
+Resolved owner values carried by this checkpoint:
+
+- paid 1v1 publisher earning rate: 5 TL/minute
+- public broadcast duration earning rate: 1 TL/minute
+- started minute counts and any duration `> 0` yields minimum 1 minute
+- public broadcast duration earning is in the first slice
+- publisher earning visibility is in the first release
+- compact publisher payment reconciliation is in the first slice
+- initial package catalog owner values:
+  10 dakika = 150 TL, 15 dakika = 175 TL, 30 dakika = 325 TL, 45 dakika = 405 TL, 60 dakika = 490 TL, 70 dakika = 655 TL, 80 dakika = 730 TL, 90 dakika = 810 TL, 120 dakika = 1090 TL, 145 dakika = 1290 TL, 180 dakika = 1565 TL
+
 ## Owner review questions
 
 Questions to carry forward:
 
-1. Should public broadcast duration earning enter the first DB slice, or stay as a future source?
-2. What is the initial global publisher minute unit rate?
-3. Should initial minute packages be seeded, or created later through manual/admin setup?
-4. Should publisher earning visibility appear in the first release, or later?
-5. Should payout/manual payment tracking stay outside the first release?
-6. Is empty/manual setup acceptable for initial package/rate values?
-7. Is V1 public watch no-touch still approved?
+1. Is V1 public watch no-touch still approved?
+2. Are package price revisions before launch still owned by Mehmet/Murti?
+3. Is the compact reconciliation naming acceptable for docs carryover?
 
 ## Decision result
 
@@ -410,7 +426,7 @@ This checkpoint is PASS WITH NOTES because:
 - 1v1 flow is understandable
 - wallet / ledger / earning flow is understandable
 - paid 1v1 earning source is mandatory for first slice
-- public broadcast duration earning is visible as owner-review / future source
+- public broadcast duration earning is resolved into the first slice
 - broadcasts remains lifecycle-only truth
 - source_type + source_id weakness remains visible
 - state / predicate risk remains visible

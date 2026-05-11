@@ -71,12 +71,15 @@ It clarifies publisher earning source scope before visual review:
 
 - paid 1v1 earning remains the required first-slice source direction
 - finalized paid `call_sessions` minutes remain the mandatory first-slice publisher earning source
+- public broadcast duration derived from `broadcasts.started_at` / `broadcasts.ended_at` is also a first-slice publisher earning source direction
 - publisher earning source family must stay source-based and not be narrowed to `call_sessions` only
-- owner-approved future source may also come from public broadcast duration derived from `broadcasts.started_at` / `broadcasts.ended_at`
 - `broadcasts` remains lifecycle-only truth and must not absorb earning/payment/payout state
-- public broadcast duration earning is not frozen into the first DB foundation slice by this audit
+- public broadcast duration earning is resolved into the first DB foundation slice by owner decision
+- paid 1v1 finalized billable minutes and publisher earning must share the same started-minute rule
+- global owner values are 5 TL/minute for paid 1v1 earning and 1 TL/minute for public broadcast duration earning
+- started minute counts and any duration `> 0` yields minimum 1 minute
+- compact admin payment records + reconciliation are in the first slice; full payout/accounting engine remains later scope
 - gift and similar future earning sources remain future and outside the first slice
-- public broadcast duration first-slice vs future-source placement must be decided in the Visual Schema / Flow / Surface Map Checkpoint owner review
 
 ## Planning candidate vs implementation freeze result
 
@@ -204,7 +207,8 @@ This protects against:
 - duplicate call finalize debit
 - duplicate payment approval credit
 - duplicate publisher earning for the same finalized call session
-- over-narrowing publisher earning source to a single source family before owner review
+- duplicate publisher earning for the same broadcast duration source
+- over-narrowing publisher earning source to a single source family
 - accidental mutation of original financial source by payout, correction, or refund
 
 Still unknown:
@@ -222,15 +226,15 @@ The audit confirms:
 - publisher-specific override remains future
 - earning source should snapshot the rate used at finalize time
 - one active global rate must be guarded conceptually
-- initial global rate value requires owner decision before migration
+- owner starting rates are resolved as 5 TL/minute for paid 1v1 and 1 TL/minute for public broadcast duration
 
-Still unknown:
+Still not frozen:
 
 - exact storage shape
 - exact field names
 - exact precision / scale
-- exact seed value
-- final owner value
+- exact rate config family shape
+- exact seed/activation mechanics
 
 ## Seed / backfill / rollback readiness result
 
@@ -239,20 +243,41 @@ The audit confirms:
 - actual DB state inspection is required before migration
 - first DB foundation should be additive and V1-safe
 - destructive migration should be avoided in the first DB foundation slice
-- global rate initial value requires owner input
-- package catalog values require owner input or explicit empty/manual setup acceptance
+- initial minute package catalog owner values are resolved
+- package snapshot rules are resolved: sold package minute/price values do not mutate retroactively
+- admin may add packages, deactivate packages, and edit only never-sold packages
+- order-time package minute and price snapshot is required conceptually
+- compact admin payment records + reconciliation are part of the first slice
 - rollback checkpoint and backup are required before applying DB changes
 - migration dry-run remains required before production DB work
 
 Still blocking actual migration:
 
 - actual DB state inspection
-- final global publisher rate value
-- package catalog actual values or explicit empty/manual setup decision
 - exact generated diff
 - exact migration file split
 - migration dry-run result
 - backup/checkpoint before applying
+
+Resolved owner package catalog values:
+
+1. 10 dakika = 150 TL
+2. 15 dakika = 175 TL
+3. 30 dakika = 325 TL
+4. 45 dakika = 405 TL
+5. 60 dakika = 490 TL
+6. 70 dakika = 655 TL
+7. 80 dakika = 730 TL
+8. 90 dakika = 810 TL
+9. 120 dakika = 1090 TL
+10. 145 dakika = 1290 TL
+11. 180 dakika = 1565 TL
+
+Note:
+
+- this curve is PASS WITH NOTE as an owner value set
+- final launch pricing may still be revised by Mehmet/Murti
+- this is not a production billing engine freeze
 
 ## V1 no-touch readiness result
 
@@ -287,8 +312,6 @@ These remain blockers before actual migration / DB-only production PR:
 - exact migration file split
 - exact generated diff review
 - actual DB state inspection
-- final owner value for global publisher rate
-- package catalog actual values or explicit empty/manual setup decision
 - exact lock order
 - exact transaction implementation
 - exact partial index predicates
@@ -384,7 +407,9 @@ This audit is PASS WITH NOTES because:
 - source_type + source_id alone was confirmed insufficient
 - safer source uniqueness direction remains valid
 - global publisher rate config remains separate from package price
+- owner rate values are resolved without freezing exact schema fields
 - ledger append-only audit truth and wallet current balance summary remain separated
+- compact admin payment records + reconciliation are included without freezing detailed payout/accounting design
 - seed/backfill/rollback blockers remain explicit
 - visual checkpoint was inserted before migration spec / plan
 - migration / SQL / Drizzle schema / Codex prompt / production PR were not produced
