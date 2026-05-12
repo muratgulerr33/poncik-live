@@ -187,6 +187,30 @@ Bu timestamp isimleri **exact field freeze değildir**. Contract seviyesinde tru
 | publisher earning source write         | backend finalize          | finalized paid active duration or public broadcast duration                 | earning source entry                                     | source/session or source/broadcast uniqueness | exact schema/API shape        |
 | public viewer fallback read/signal     | public watch read/API     | public broadcast artık aktif canlı değil                                    | fallback read sonucu                                     | tekrar signal sorun çıkarmaz                  | exact read model              |
 
+### Request-create guard scope
+
+`user request create` yalnız 1v1 istek oluşturma write-boundary doğrulamasıdır.
+
+Bu guardlar şuralara taşınmaz:
+
+- discovery read path
+- public watch/read path
+- live viewer polling / heartbeat
+- broadcast lifecycle start/stop
+- her izleyici girişinde çalışan genel live read
+
+`target approved publisher` guard'ı ikinci bir approval sistemi değildir.
+
+Bu guard'ın anlamı:
+
+- hedef yayıncı hâlâ 1v1 isteği almaya uygun mu?
+- stale / eski ekran üzerinden geçersiz request açılıyor mu?
+- doğrudan API'ye atılan geçersiz request engelleniyor mu?
+
+Bu kontrol performans dostu kalmalıdır.
+Sadece 1v1 request create anında çalışır.
+Sürekli read/watch/polling kontrolüne dönüşmez.
+
 ---
 
 # 9. Idempotency and authorization boundary
