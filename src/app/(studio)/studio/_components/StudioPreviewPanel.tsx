@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import type { StudioCameraControl, StudioMicControl } from "./StudioTopChrome";
 import { StudioPreviewScene } from "./studio-preview-panel/StudioPreviewScene";
+import { useStudioStartSuccessFeedback } from "./studio-preview-panel/useStudioStartSuccessFeedback";
 import { useStudioMicUtilitySurface } from "./useStudioMicUtilitySurface";
 import { useStudioPreviewMediaPolish } from "./useStudioPreviewMediaPolish";
 import { useStudioPublishedCameraSwitch } from "./useStudioPublishedCameraSwitch";
@@ -30,55 +31,6 @@ type StudioPreviewPanelProps = {
   username: string;
 };
 
-type StartSuccessFeedbackSnapshot = {
-  isVisible: boolean;
-  token: number;
-  visibleUntil: number;
-};
-
-const START_SUCCESS_FEEDBACK_DURATION_MS = 1800;
-
-let startSuccessFeedbackSnapshot: StartSuccessFeedbackSnapshot = {
-  isVisible: false,
-  token: 0,
-  visibleUntil: 0
-};
-let startSuccessFeedbackDeferredClearTimeout: ReturnType<typeof setTimeout> | null =
-  null;
-
-function cancelStartSuccessFeedbackDeferredClear() {
-  if (!startSuccessFeedbackDeferredClearTimeout) {
-    return;
-  }
-
-  clearTimeout(startSuccessFeedbackDeferredClearTimeout);
-  startSuccessFeedbackDeferredClearTimeout = null;
-}
-
-function clearStartSuccessFeedbackSnapshot() {
-  startSuccessFeedbackSnapshot = {
-    isVisible: false,
-    token: 0,
-    visibleUntil: 0
-  };
-}
-
-function hasActiveStartSuccessFeedbackSnapshot(token: number) {
-  return (
-    startSuccessFeedbackSnapshot.isVisible &&
-    startSuccessFeedbackSnapshot.token === token &&
-    startSuccessFeedbackSnapshot.visibleUntil > Date.now()
-  );
-}
-
-function scheduleStartSuccessFeedbackDeferredClear() {
-  cancelStartSuccessFeedbackDeferredClear();
-  startSuccessFeedbackDeferredClearTimeout = setTimeout(() => {
-    clearStartSuccessFeedbackSnapshot();
-    startSuccessFeedbackDeferredClearTimeout = null;
-  }, 0);
-}
-
 export function StudioPreviewPanel({
   lifecycle,
   onCameraControlChange,
@@ -88,16 +40,8 @@ export function StudioPreviewPanel({
   username
 }: StudioPreviewPanelProps) {
   const [isSecondTriggerBlockActive, setIsSecondTriggerBlockActive] = useState(false);
-  const [hasVisibleStartSuccessFeedback, setHasVisibleStartSuccessFeedback] =
-    useState(false);
-  const [visibleSuccessToken, setVisibleSuccessToken] = useState(0);
   const hasSecondTriggerBlockSeenStartProgressRef = useRef(false);
-  const lastConsumedStartSuccessSequenceRef = useRef(0);
   const secondTriggerBlockResetTimeoutRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startSuccessFeedbackSyncTimeoutRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startSuccessFeedbackHideTimeoutRef =
     useRef<ReturnType<typeof setTimeout> | null>(null);
   const onPublisherRoomChangeRef =
     useRef<StudioPreviewPanelProps["onPublisherRoomChange"]>(onPublisherRoomChange);
@@ -136,7 +80,6 @@ export function StudioPreviewPanel({
     isStopping,
     previewState
   });
-  const [initialStartSuccessSequence] = useState(startSuccessSequence);
   const isHealthyPreview = previewState === "preview_ready";
   const isInitialRequestFlashSuppressed =
     isInitialBootstrapPending && previewState === "requesting";
@@ -152,10 +95,6 @@ export function StudioPreviewPanel({
     (effectiveLifecycleKind !== "live" || isLiveCameraControlAvailable) &&
     !isStarting &&
     !isStopping;
-  const shouldShowSuccessFeedback =
-    isHealthyPreview &&
-    hasVisibleStartSuccessFeedback &&
-    visibleSuccessToken === startSuccessSequence;
   const shouldShowSupportStack =
     !isInitialRequestFlashSuppressed && (!isHealthyPreview || canRetry);
   const previewFrameRef = useStudioPreviewMediaPolish({
@@ -203,64 +142,6 @@ export function StudioPreviewPanel({
     secondTriggerBlockResetTimeoutRef.current = null;
   }, []);
 
-  const clearStartSuccessFeedbackSyncTimeout = useCallback(() => {
-    if (!startSuccessFeedbackSyncTimeoutRef.current) {
-      return;
-    }
-
-    clearTimeout(startSuccessFeedbackSyncTimeoutRef.current);
-    startSuccessFeedbackSyncTimeoutRef.current = null;
-  }, []);
-
-  const clearStartSuccessFeedbackHideTimeout = useCallback(() => {
-    if (!startSuccessFeedbackHideTimeoutRef.current) {
-      return;
-    }
-
-    clearTimeout(startSuccessFeedbackHideTimeoutRef.current);
-    startSuccessFeedbackHideTimeoutRef.current = null;
-  }, []);
-
-  const hideStartSuccessFeedback = useCallback(
-    (token: number, visibleUntil: number) => {
-      clearStartSuccessFeedbackHideTimeout();
-      startSuccessFeedbackSnapshot = {
-        isVisible: false,
-        token,
-        visibleUntil
-      };
-      setHasVisibleStartSuccessFeedback(false);
-      setVisibleSuccessToken(token);
-    },
-    [clearStartSuccessFeedbackHideTimeout]
-  );
-
-  const showStartSuccessFeedbackWindow = useCallback(
-    (token: number, visibleUntil: number) => {
-      cancelStartSuccessFeedbackDeferredClear();
-      clearStartSuccessFeedbackHideTimeout();
-      startSuccessFeedbackSnapshot = {
-        isVisible: true,
-        token,
-        visibleUntil
-      };
-      setVisibleSuccessToken(token);
-      setHasVisibleStartSuccessFeedback(true);
-
-      const remainingDuration = Math.max(visibleUntil - Date.now(), 0);
-
-      if (remainingDuration === 0) {
-        hideStartSuccessFeedback(token, visibleUntil);
-        return;
-      }
-
-      startSuccessFeedbackHideTimeoutRef.current = setTimeout(() => {
-        hideStartSuccessFeedback(token, visibleUntil);
-      }, remainingDuration);
-    },
-    [clearStartSuccessFeedbackHideTimeout, hideStartSuccessFeedback]
-  );
-
   useEffect(() => {
     if (isSecondTriggerBlockActive && (isStarting || effectiveLifecycleKind === "live")) {
       hasSecondTriggerBlockSeenStartProgressRef.current = true;
@@ -293,58 +174,12 @@ export function StudioPreviewPanel({
     isStarting
   ]);
 
-  useEffect(() => {
-    cancelStartSuccessFeedbackDeferredClear();
-    clearStartSuccessFeedbackSyncTimeout();
-
-    if (hasActiveStartSuccessFeedbackSnapshot(initialStartSuccessSequence)) {
-      startSuccessFeedbackSyncTimeoutRef.current = setTimeout(() => {
-        startSuccessFeedbackSyncTimeoutRef.current = null;
-        showStartSuccessFeedbackWindow(
-          initialStartSuccessSequence,
-          startSuccessFeedbackSnapshot.visibleUntil
-        );
-      }, 0);
-    }
-
-    lastConsumedStartSuccessSequenceRef.current = initialStartSuccessSequence;
-
-    return () => {
-      clearSecondTriggerBlockResetTimeout();
-      clearStartSuccessFeedbackHideTimeout();
-      clearStartSuccessFeedbackSyncTimeout();
-      scheduleStartSuccessFeedbackDeferredClear();
-    };
-  }, [
+  const isStartSuccessFeedbackVisible = useStudioStartSuccessFeedback({
     clearSecondTriggerBlockResetTimeout,
-    clearStartSuccessFeedbackHideTimeout,
-    clearStartSuccessFeedbackSyncTimeout,
-    initialStartSuccessSequence,
-    showStartSuccessFeedbackWindow
-  ]);
-
-  useEffect(() => {
-    if (
-      startSuccessSequence <= lastConsumedStartSuccessSequenceRef.current ||
-      hasActiveStartSuccessFeedbackSnapshot(startSuccessSequence)
-    ) {
-      return;
-    }
-
-    lastConsumedStartSuccessSequenceRef.current = startSuccessSequence;
-    clearStartSuccessFeedbackSyncTimeout();
-    startSuccessFeedbackSyncTimeoutRef.current = setTimeout(() => {
-      startSuccessFeedbackSyncTimeoutRef.current = null;
-      showStartSuccessFeedbackWindow(
-        startSuccessSequence,
-        Date.now() + START_SUCCESS_FEEDBACK_DURATION_MS
-      );
-    }, 0);
-  }, [
-    clearStartSuccessFeedbackSyncTimeout,
-    showStartSuccessFeedbackWindow,
     startSuccessSequence
-  ]);
+  });
+  const shouldShowSuccessFeedback =
+    isHealthyPreview && isStartSuccessFeedbackVisible;
 
   const lifecycleActions =
     !isInitialRequestFlashSuppressed && isEntryControlVisible ? (
