@@ -3,14 +3,9 @@
 import type { Room } from "livekit-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { STUDIO_COPY } from "../_lib/studio-copy";
-import { StudioChatOwners } from "./StudioChatOwners";
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
-import { StudioPreviewMediaFrame } from "./StudioPreviewMediaFrame";
 import type { StudioCameraControl, StudioMicControl } from "./StudioTopChrome";
-import { StudioPermissionNotice } from "./StudioPermissionNotice";
-import { StudioStartFeedback } from "./StudioStartFeedback";
-import styles from "./studio-preview-panel.module.css";
+import { StudioPreviewScene } from "./studio-preview-panel/StudioPreviewScene";
 import { useStudioMicUtilitySurface } from "./useStudioMicUtilitySurface";
 import { useStudioPreviewMediaPolish } from "./useStudioPreviewMediaPolish";
 import { useStudioPublishedCameraSwitch } from "./useStudioPublishedCameraSwitch";
@@ -445,84 +440,27 @@ export function StudioPreviewPanel({
   }, []);
 
   return (
-    <section
-      className={styles.previewScene}
-      data-host-contract={isInitialRequestFlashSuppressed ? "initial-scene" : undefined}
-      data-state={previewState}
-      data-surface="approved"
-    >
-      <div
-        className={styles.previewStageStack}
-        data-host-contract={isInitialRequestFlashSuppressed ? "initial-scene" : undefined}
-        data-layout={usesSceneLayout ? "scene" : "panel"}
-        data-surface="approved"
-      >
-        <div
-          className={usesSceneLayout ? styles.sceneMediaRoot : styles.previewCard}
-          data-state={previewState}
-        >
-          {shouldShowRequestFallback ? (
-            <p className={styles.previewLabel}>{STUDIO_COPY.previewLabel}</p>
-          ) : null}
-
-          <StudioPreviewMediaFrame
-            fitMode={mediaFitMode}
-            isVideoVisible={previewState === "preview_ready"}
-            placeholder={STUDIO_COPY.previewPlaceholder}
-            previewFrameRef={previewFrameRef}
-            showPlaceholder={shouldShowRequestFallback}
-            videoRef={videoRef}
-          />
-
-          {shouldShowRequestFallback ? (
-            <p className={styles.previewBody}>{STUDIO_COPY.previewBody}</p>
-          ) : null}
-        </div>
-
-        {isHealthyPreview ? (
-          <>
-            <div className={styles.sceneSuccessFeedbackLane}>
-              {shouldShowSuccessFeedback ? (
-                <StudioStartFeedback
-                  message={STUDIO_COPY.startBroadcastSuccessLabel}
-                />
-              ) : null}
-            </div>
-
-            <StudioChatOwners
-              effectiveLifecycleKind={effectiveLifecycleKind}
-              isStarting={isStarting}
-              isStopping={isStopping}
-              room={publisherRoom}
-              username={username}
-            />
-
-            <div className={styles.sceneActionSurface}>
-              <div className={styles.sceneActionBudget}>{lifecycleActions}</div>
-            </div>
-          </>
-        ) : (
-          lifecycleActions
-        )}
-      </div>
-
-      {shouldShowSupportStack ? (
-        <div className={styles.sceneSupportStack}>
-          <StudioPermissionNotice state={previewState} />
-
-          {canRetry ? (
-            <button
-              className={`${styles.stackAction} ui-action ui-action-secondary`}
-              onClick={() => {
-                void retryPreview();
-              }}
-              type="button"
-            >
-              {STUDIO_COPY.retryPreviewLabel}
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-    </section>
+    <StudioPreviewScene
+      canRetry={canRetry}
+      effectiveLifecycleKind={effectiveLifecycleKind}
+      isHealthyPreview={isHealthyPreview}
+      isInitialRequestFlashSuppressed={isInitialRequestFlashSuppressed}
+      isStarting={isStarting}
+      isStopping={isStopping}
+      lifecycleActions={lifecycleActions}
+      mediaFitMode={mediaFitMode}
+      onRetryPreview={() => {
+        void retryPreview();
+      }}
+      previewFrameRef={previewFrameRef}
+      previewState={previewState}
+      publisherRoom={publisherRoom}
+      shouldShowRequestFallback={shouldShowRequestFallback}
+      shouldShowSuccessFeedback={shouldShowSuccessFeedback}
+      shouldShowSupportStack={shouldShowSupportStack}
+      username={username}
+      usesSceneLayout={usesSceneLayout}
+      videoRef={videoRef}
+    />
   );
 }
