@@ -1,10 +1,11 @@
 "use client";
 
 import type { Room } from "livekit-client";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import type { StudioCameraControl, StudioMicControl } from "./StudioTopChrome";
+import { useStudioPreviewCameraControl } from "./studio-preview-panel/useStudioPreviewCameraControl";
 import { StudioPreviewScene } from "./studio-preview-panel/StudioPreviewScene";
 import { useStudioPreviewStartAction } from "./studio-preview-panel/useStudioPreviewStartAction";
 import { useStudioStartSuccessFeedback } from "./studio-preview-panel/useStudioStartSuccessFeedback";
@@ -84,13 +85,6 @@ export function StudioPreviewPanel({
   const shouldShowRequestFallback = !isHealthyPreview && !isInitialRequestFlashSuppressed;
   const isEntryControlVisible = effectiveLifecycleKind !== "live";
   const mediaFitMode = isHealthyPreview ? "canonical-fill" : "fallback-contain";
-  const isLiveCameraControlAvailable =
-    effectiveLifecycleKind === "live" && publisherRoom !== null;
-  const isCameraControlAvailable =
-    previewState === "preview_ready" &&
-    (effectiveLifecycleKind !== "live" || isLiveCameraControlAvailable) &&
-    !isStarting &&
-    !isStopping;
   const shouldShowSupportStack =
     !isInitialRequestFlashSuppressed && (!isHealthyPreview || canRetry);
   const previewFrameRef = useStudioPreviewMediaPolish({
@@ -104,30 +98,17 @@ export function StudioPreviewPanel({
     getPublisherRoom,
     switchPreviewCamera
   });
-  const handleCameraToggle = useCallback(() => {
-    if (effectiveLifecycleKind === "live") {
-      void switchPublishedCamera();
-      return;
-    }
-
-    void switchPreviewCamera();
-  }, [effectiveLifecycleKind, switchPreviewCamera, switchPublishedCamera]);
-  const cameraControl = useMemo<StudioCameraControl | null>(() => {
-    if (!isCameraControlAvailable) {
-      return null;
-    }
-
-    return {
-      isAvailable: true,
-      isPending: isCameraSwitchPending || isPublishedCameraSwitchPending,
-      onToggle: handleCameraToggle
-    };
-  }, [
-    handleCameraToggle,
-    isCameraControlAvailable,
+  const cameraControl = useStudioPreviewCameraControl({
+    effectiveLifecycleKind,
     isCameraSwitchPending,
-    isPublishedCameraSwitchPending
-  ]);
+    isPublishedCameraSwitchPending,
+    isStarting,
+    isStopping,
+    previewState,
+    publisherRoom,
+    switchPreviewCamera,
+    switchPublishedCamera
+  });
   const {
     clearSecondTriggerBlockResetTimeout,
     handleStartPublishing,
