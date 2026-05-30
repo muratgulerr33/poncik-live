@@ -1,11 +1,12 @@
 "use client";
 
 import type { Room } from "livekit-client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import type { StudioCameraControl, StudioMicControl } from "./StudioTopChrome";
 import { StudioPreviewScene } from "./studio-preview-panel/StudioPreviewScene";
+import { useStudioPreviewStartAction } from "./studio-preview-panel/useStudioPreviewStartAction";
 import { useStudioStartSuccessFeedback } from "./studio-preview-panel/useStudioStartSuccessFeedback";
 import { useStudioMicUtilitySurface } from "./useStudioMicUtilitySurface";
 import { useStudioPreviewMediaPolish } from "./useStudioPreviewMediaPolish";
@@ -39,10 +40,6 @@ export function StudioPreviewPanel({
   onPublisherRoomChange,
   username
 }: StudioPreviewPanelProps) {
-  const [isSecondTriggerBlockActive, setIsSecondTriggerBlockActive] = useState(false);
-  const hasSecondTriggerBlockSeenStartProgressRef = useRef(false);
-  const secondTriggerBlockResetTimeoutRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
   const onPublisherRoomChangeRef =
     useRef<StudioPreviewPanelProps["onPublisherRoomChange"]>(onPublisherRoomChange);
   const {
@@ -86,7 +83,6 @@ export function StudioPreviewPanel({
   const usesSceneLayout = isHealthyPreview || isInitialRequestFlashSuppressed;
   const shouldShowRequestFallback = !isHealthyPreview && !isInitialRequestFlashSuppressed;
   const isEntryControlVisible = effectiveLifecycleKind !== "live";
-  const isEntryActionPending = isStarting || isSecondTriggerBlockActive;
   const mediaFitMode = isHealthyPreview ? "canonical-fill" : "fallback-contain";
   const isLiveCameraControlAvailable =
     effectiveLifecycleKind === "live" && publisherRoom !== null;
@@ -132,47 +128,17 @@ export function StudioPreviewPanel({
     isCameraSwitchPending,
     isPublishedCameraSwitchPending
   ]);
-
-  const clearSecondTriggerBlockResetTimeout = useCallback(() => {
-    if (!secondTriggerBlockResetTimeoutRef.current) {
-      return;
-    }
-
-    clearTimeout(secondTriggerBlockResetTimeoutRef.current);
-    secondTriggerBlockResetTimeoutRef.current = null;
-  }, []);
-
-  useEffect(() => {
-    if (isSecondTriggerBlockActive && (isStarting || effectiveLifecycleKind === "live")) {
-      hasSecondTriggerBlockSeenStartProgressRef.current = true;
-    }
-
-    const shouldResetSecondTriggerBlock =
-      isSecondTriggerBlockActive &&
-      hasSecondTriggerBlockSeenStartProgressRef.current &&
-      !isStarting &&
-      effectiveLifecycleKind !== "live";
-
-    if (!shouldResetSecondTriggerBlock) {
-      clearSecondTriggerBlockResetTimeout();
-      return;
-    }
-
-    if (secondTriggerBlockResetTimeoutRef.current) {
-      return;
-    }
-
-    secondTriggerBlockResetTimeoutRef.current = setTimeout(() => {
-      secondTriggerBlockResetTimeoutRef.current = null;
-      hasSecondTriggerBlockSeenStartProgressRef.current = false;
-      setIsSecondTriggerBlockActive(false);
-    }, 0);
-  }, [
+  const {
     clearSecondTriggerBlockResetTimeout,
+    handleStartPublishing,
+    isStartActionPending
+  } = useStudioPreviewStartAction({
+    captureMicStartSnapshot,
     effectiveLifecycleKind,
-    isSecondTriggerBlockActive,
-    isStarting
-  ]);
+    isStarting,
+    reportStartError,
+    startPublishing
+  });
 
   const isStartSuccessFeedbackVisible = useStudioStartSuccessFeedback({
     clearSecondTriggerBlockResetTimeout,
@@ -185,26 +151,9 @@ export function StudioPreviewPanel({
     !isInitialRequestFlashSuppressed && isEntryControlVisible ? (
       <StudioLifecycleActions
         canStart={canStart}
-        isStarting={isEntryActionPending}
+        isStarting={isStartActionPending}
         message={lifecycleMessage}
-        onStart={() => {
-          if (isSecondTriggerBlockActive) {
-            return;
-          }
-
-          const startSnapshot = captureMicStartSnapshot();
-
-          if (!startSnapshot) {
-            reportStartError();
-            return;
-          }
-
-          hasSecondTriggerBlockSeenStartProgressRef.current = false;
-          setIsSecondTriggerBlockActive(true);
-          void startPublishing({
-            initialMicMuted: startSnapshot.initialMicMuted
-          });
-        }}
+        onStart={handleStartPublishing}
         presentation={isHealthyPreview ? "scene-native" : "fallback"}
       />
     ) : null;
