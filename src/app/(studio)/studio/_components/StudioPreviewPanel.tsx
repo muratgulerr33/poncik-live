@@ -1,11 +1,11 @@
 "use client";
 
 import type { Room } from "livekit-client";
-import { useEffect, useRef } from "react";
 
 import { StudioLifecycleActions } from "./StudioLifecycleActions";
 import type { StudioCameraControl, StudioMicControl } from "./StudioTopChrome";
 import { useStudioPreviewCameraControl } from "./studio-preview-panel/useStudioPreviewCameraControl";
+import { useStudioPreviewParentControls } from "./studio-preview-panel/useStudioPreviewParentControls";
 import { StudioPreviewScene } from "./studio-preview-panel/StudioPreviewScene";
 import { useStudioPreviewStartAction } from "./studio-preview-panel/useStudioPreviewStartAction";
 import { useStudioStartSuccessFeedback } from "./studio-preview-panel/useStudioStartSuccessFeedback";
@@ -41,8 +41,6 @@ export function StudioPreviewPanel({
   onPublisherRoomChange,
   username
 }: StudioPreviewPanelProps) {
-  const onPublisherRoomChangeRef =
-    useRef<StudioPreviewPanelProps["onPublisherRoomChange"]>(onPublisherRoomChange);
   const {
     canRetry,
     getPreviewStream,
@@ -139,70 +137,19 @@ export function StudioPreviewPanel({
       />
     ) : null;
 
-  useEffect(() => {
-    if (!onExitControlChange) {
-      return;
-    }
-
-    onExitControlChange({
-      effectiveLifecycleKind,
-      isStopping,
-      lifecycleMessage,
-      requestStopForExit: stopPublishing
-    });
-  }, [
+  useStudioPreviewParentControls({
+    cameraControl,
     effectiveLifecycleKind,
     isStopping,
     lifecycleMessage,
+    micControl,
+    onCameraControlChange,
     onExitControlChange,
+    onMicControlChange,
+    onPublisherRoomChange,
+    publisherRoom,
     stopPublishing
-  ]);
-
-  useEffect(() => {
-    if (!onMicControlChange) {
-      return;
-    }
-
-    onMicControlChange(micControl);
-  }, [micControl, onMicControlChange]);
-
-  useEffect(() => {
-    onCameraControlChange?.(cameraControl);
-  }, [cameraControl, onCameraControlChange]);
-
-  useEffect(() => {
-    onPublisherRoomChangeRef.current = onPublisherRoomChange;
-  }, [onPublisherRoomChange]);
-
-  useEffect(() => {
-    onPublisherRoomChange?.(publisherRoom);
-  }, [onPublisherRoomChange, publisherRoom]);
-
-  useEffect(() => {
-    if (!onMicControlChange) {
-      return;
-    }
-
-    return () => {
-      onMicControlChange(null);
-    };
-  }, [onMicControlChange]);
-
-  useEffect(() => {
-    if (!onCameraControlChange) {
-      return;
-    }
-
-    return () => {
-      onCameraControlChange(null);
-    };
-  }, [onCameraControlChange]);
-
-  useEffect(() => {
-    return () => {
-      onPublisherRoomChangeRef.current?.(null);
-    };
-  }, []);
+  });
 
   return (
     <StudioPreviewScene
