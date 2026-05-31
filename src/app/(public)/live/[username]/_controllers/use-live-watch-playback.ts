@@ -18,6 +18,7 @@ import {
 } from "../_adapters/live-watch-provider-adapter";
 import { fetchLiveWatchViewerToken } from "../_adapters/live-watch-token-adapter";
 import { hasSettledLiveWatchVideoPlayback } from "./live-watch-playback/has-settled-live-watch-video-playback";
+import { useLiveWatchVideoSettleEvents } from "./live-watch-playback/use-live-watch-video-settle-events";
 
 const TRACK_WAIT_TIMEOUT_MS = 12000;
 const PLAYBACK_DEGRADED_MESSAGE = "Canlı yayın akışı şu anda bağlanamıyor.";
@@ -364,32 +365,10 @@ export function useLiveWatchPlayback(
     };
   }, [setUnlockAudioAction, unlockAudioFromUserGesture]);
 
-  useEffect(() => {
-    const videoElement = videoElementRef.current;
-    if (!videoElement) {
-      return;
-    }
-
-    const handlePossibleVideoSettle = () => {
-      reconcileSettledVideoPlayback();
-    };
-
-    handlePossibleVideoSettle();
-
-    videoElement.addEventListener("playing", handlePossibleVideoSettle);
-    videoElement.addEventListener("loadeddata", handlePossibleVideoSettle);
-    videoElement.addEventListener("canplay", handlePossibleVideoSettle);
-    videoElement.addEventListener("timeupdate", handlePossibleVideoSettle);
-    videoElement.addEventListener("resize", handlePossibleVideoSettle);
-
-    return () => {
-      videoElement.removeEventListener("playing", handlePossibleVideoSettle);
-      videoElement.removeEventListener("loadeddata", handlePossibleVideoSettle);
-      videoElement.removeEventListener("canplay", handlePossibleVideoSettle);
-      videoElement.removeEventListener("timeupdate", handlePossibleVideoSettle);
-      videoElement.removeEventListener("resize", handlePossibleVideoSettle);
-    };
-  }, [reconcileSettledVideoPlayback]);
+  useLiveWatchVideoSettleEvents({
+    onPossibleVideoSettle: reconcileSettledVideoPlayback,
+    videoElementRef
+  });
 
   useEffect(() => {
     let didCancel = false;
