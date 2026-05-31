@@ -18,6 +18,7 @@ import {
 } from "../_adapters/live-watch-provider-adapter";
 import { fetchLiveWatchViewerToken } from "../_adapters/live-watch-token-adapter";
 import { hasSettledLiveWatchVideoPlayback } from "./live-watch-playback/has-settled-live-watch-video-playback";
+import { useLiveWatchAudioUnlockAction } from "./live-watch-playback/use-live-watch-audio-unlock-action";
 import { useLiveWatchVideoSettleEvents } from "./live-watch-playback/use-live-watch-video-settle-events";
 
 const TRACK_WAIT_TIMEOUT_MS = 12000;
@@ -357,13 +358,10 @@ export function useLiveWatchPlayback(
     };
   }, [clearPendingVideoLossCheckFrame]);
 
-  useEffect(() => {
-    setUnlockAudioAction(unlockAudioFromUserGesture);
-
-    return () => {
-      setUnlockAudioAction(null);
-    };
-  }, [setUnlockAudioAction, unlockAudioFromUserGesture]);
+  useLiveWatchAudioUnlockAction({
+    setUnlockAudioAction,
+    unlockAudioFromUserGesture
+  });
 
   useLiveWatchVideoSettleEvents({
     onPossibleVideoSettle: reconcileSettledVideoPlayback,
