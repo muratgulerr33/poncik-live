@@ -17,26 +17,11 @@ import {
   retryLiveWatchPlayback
 } from "../_adapters/live-watch-provider-adapter";
 import { fetchLiveWatchViewerToken } from "../_adapters/live-watch-token-adapter";
+import { hasSettledLiveWatchVideoPlayback } from "./live-watch-playback/has-settled-live-watch-video-playback";
 
 const TRACK_WAIT_TIMEOUT_MS = 12000;
 const PLAYBACK_DEGRADED_MESSAGE = "Canlı yayın akışı şu anda bağlanamıyor.";
 type LiveWatchPlaybackState = "connecting" | "playing" | "playback_blocked" | "degraded";
-
-function hasSettledLiveWatchVideoPlayback(videoElement: HTMLVideoElement | null) {
-  if (!videoElement || videoElement.srcObject === null) {
-    return false;
-  }
-
-  if (videoElement.paused || videoElement.ended) {
-    return false;
-  }
-
-  if (videoElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
-    return false;
-  }
-
-  return videoElement.videoWidth > 0 && videoElement.videoHeight > 0;
-}
 
 export function useLiveWatchPlayback(
   username: string,
