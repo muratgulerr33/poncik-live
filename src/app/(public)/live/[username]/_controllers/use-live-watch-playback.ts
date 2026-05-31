@@ -13,12 +13,12 @@ import {
   connectLiveWatchRoom,
   detachLiveWatchTrack,
   disconnectLiveWatchRoom,
-  readLiveWatchCanPlaybackAudio,
-  retryLiveWatchPlayback
+  readLiveWatchCanPlaybackAudio
 } from "../_adapters/live-watch-provider-adapter";
 import { fetchLiveWatchViewerToken } from "../_adapters/live-watch-token-adapter";
 import { hasSettledLiveWatchVideoPlayback } from "./live-watch-playback/has-settled-live-watch-video-playback";
 import { useLiveWatchAudioUnlockAction } from "./live-watch-playback/use-live-watch-audio-unlock-action";
+import { useLiveWatchPlaybackRetryActions } from "./live-watch-playback/use-live-watch-playback-retry-actions";
 import { useLiveWatchVideoSettleEvents } from "./live-watch-playback/use-live-watch-video-settle-events";
 
 const TRACK_WAIT_TIMEOUT_MS = 12000;
@@ -291,64 +291,20 @@ export function useLiveWatchPlayback(
     ]
   );
 
-  const retryPlayback = useCallback(async () => {
-    const didRetry = await retryLiveWatchPlayback({
-      room: roomRef.current,
-      videoElement: videoElementRef.current,
-      audioElement: audioElementRef.current
+  const { retryPlayback, unlockAudioFromUserGesture } =
+    useLiveWatchPlaybackRetryActions({
+      audioElementRef,
+      handlePlaybackStarted,
+      isDisposedRef,
+      reconcileSettledVideoPlayback,
+      roomRef,
+      setAudioBlocked,
+      setMediaReady,
+      setPlaybackMessage,
+      setPlaybackState,
+      videoElementRef,
+      videoTrackRef
     });
-    if (isDisposedRef.current) return;
-    if (didRetry) {
-      setAudioBlocked(false);
-      if (reconcileSettledVideoPlayback()) {
-        return;
-      }
-      if (videoTrackRef.current && videoElementRef.current?.srcObject) {
-        setMediaReady(true);
-      }
-      return handlePlaybackStarted();
-    }
-    setMediaReady(false);
-    setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
-    setPlaybackState("playback_blocked");
-  }, [handlePlaybackStarted, reconcileSettledVideoPlayback, setAudioBlocked]);
-
-  const unlockAudioFromUserGesture = useCallback(async () => {
-    const didUnlock = await retryLiveWatchPlayback({
-      room: roomRef.current,
-      videoElement: videoElementRef.current,
-      audioElement: audioElementRef.current
-    });
-
-    if (isDisposedRef.current) {
-      return false;
-    }
-
-    if (didUnlock) {
-      setAudioBlocked(false);
-
-      if (reconcileSettledVideoPlayback()) {
-        return true;
-      }
-
-      if (videoTrackRef.current && videoElementRef.current?.srcObject) {
-        setMediaReady(true);
-        handlePlaybackStarted();
-      }
-
-      return true;
-    }
-
-    if (videoTrackRef.current && videoElementRef.current?.srcObject) {
-      setAudioBlocked(true);
-      return false;
-    }
-
-    setMediaReady(false);
-    setPlaybackMessage("Yayını açmak için oynatmayı başlatman gerekebilir.");
-    setPlaybackState("playback_blocked");
-    return false;
-  }, [handlePlaybackStarted, reconcileSettledVideoPlayback, setAudioBlocked]);
 
   useEffect(() => {
     isDisposedRef.current = false;
